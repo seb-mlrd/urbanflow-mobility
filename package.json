@@ -1,0 +1,13 @@
+{
+  "name": "urbanflow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "UrbanFlow Mobility — PWA de mobilité urbaine (Next.js + NestJS)",
+  "scripts": {
+    "dev": "pnpm --parallel --filter ./apps/* dev",
+    "build": "pnpm --recursive --filter ./apps/* build",
+    "lint": "pnpm --recursive lint",
+    "test": "pnpm --recursive test"
+  },
+  "license": "UNLICENSED"
+}
