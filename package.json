@@ -4,8 +4,8 @@
   "private": true,
   "description": "UrbanFlow Mobility — PWA de mobilité urbaine (Next.js + NestJS)",
   "scripts": {
-    "dev": "pnpm --parallel --filter ./apps/* dev",
-    "build": "pnpm --recursive --filter ./apps/* build",
+    "dev": "pnpm --parallel --filter \"@urbanflow/*\" dev",
+    "build": "pnpm --recursive --filter \"@urbanflow/*\" build",
     "lint": "pnpm --recursive lint",
     "test": "pnpm --recursive test"
   },
