@@ -8,6 +8,7 @@ import KeyvRedis from '@keyv/redis';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { envValidationSchema } from './config/env.validation';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { envValidationSchema } from './config/env.validation';
         stores: [new Keyv({ store: new KeyvRedis(process.env.REDIS_URL) })],
       }),
     }),
+    DatabaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],
