@@ -18,7 +18,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migration:generate": "TS_NODE_PROJECT=tsconfig.migrations.json typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts",
+    "migration:run": "TS_NODE_PROJECT=tsconfig.migrations.json typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
+    "migration:revert": "TS_NODE_PROJECT=tsconfig.migrations.json typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts"
   },
   "dependencies": {
     "@keyv/redis": "^5.1.6",
@@ -89,6 +92,9 @@
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "moduleNameMapper": {
+      "^(\\.\\.?/.*)\\.js$": "$1"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

@@ -1,3 +1,5 @@
+SHELL := /bin/zsh -l
+
 .PHONY: up down stop dev dev-web dev-api build logs ps clean
 
 ## Démarre Postgres + Redis (Docker Compose) en arrière-plan
