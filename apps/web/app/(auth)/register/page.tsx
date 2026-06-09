@@ -3,25 +3,52 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { RegisterFormErrors, RegisterFormValues, validateRegisterForm } from '../../../lib/auth.validation';
+import { AuthCard } from '../../../components/auth/AuthCard';
+import { AuthFeatureList } from '../../../components/auth/AuthFeatureList';
 import { Button } from '../../../components/ui/Button';
 import { Checkbox } from '../../../components/ui/Checkbox';
-import { Header } from '../../../components/ui/Header';
 import { Input } from '../../../components/ui/Input';
 import { ModeChip } from '../../../components/ui/ModeChip';
+import {
+  RegisterFormErrors,
+  RegisterFormValues,
+  validateRegisterForm,
+} from '../../../lib/auth.validation';
 
-const MODES = ['Vélo', 'Trottinette', 'TC', 'Marche', 'Voiture'];
+const MODES = ['Vélo', 'Trottinette', 'Transports', 'Marche', 'Voiture'];
+
+const registerLeftContent = (
+  <AuthFeatureList
+    badge="UrbanFlow Mobility"
+    title="Déplacez-vous plus intelligemment"
+    description="Rejoignez des milliers de citoyens qui optimisent leurs trajets urbains tout en réduisant leur empreinte carbone."
+    features={[
+      { title: 'Itinéraires multimodaux', desc: 'Vélo, TC, trottinette, covoiturage combinés' },
+      { title: 'Suivi empreinte carbone', desc: 'Mesurez et réduisez votre impact CO₂' },
+      { title: 'Alertes en temps réel', desc: 'Perturbations et alternatives immédiates' },
+      { title: 'Tableau de bord personnel', desc: 'Visualisez vos habitudes de mobilité' },
+    ]}
+  />
+);
 
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [form, setForm] = useState<RegisterFormValues>({ firstName: '', lastName: '', email: '', password: '' });
+  const [form, setForm] = useState<RegisterFormValues>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [selectedModes, setSelectedModes] = useState<string[]>([]);
   const [cguAccepted, setCguAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<RegisterFormErrors>({});
   const [apiError, setApiError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   function toggleMode(mode: string) {
     setSelectedModes((prev) =>
@@ -29,7 +56,12 @@ export default function RegisterPage() {
     );
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleChange(field: keyof RegisterFormValues, value: string) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (fieldErrors[field]) setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+  }
+
+  async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault();
     setApiError(null);
 
@@ -45,7 +77,7 @@ export default function RegisterPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ firstName: form.firstName, lastName: form.lastName, email: form.email, password: form.password }),
       });
 
       if (!res.ok) {
@@ -54,7 +86,8 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push('/');
+      setSuccessMessage('Compte créé avec succès ! Vous allez être redirigé vers la connexion…');
+      setTimeout(() => router.push('/login'), 2000);
     } catch {
       setApiError('Impossible de contacter le serveur.');
     } finally {
@@ -62,43 +95,33 @@ export default function RegisterPage() {
     }
   }
 
-  function handleChange(field: keyof typeof form, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }));
-    clearError(field);
-  }
-
-  function clearError(field: keyof RegisterFormErrors) {
-    if (fieldErrors[field]) setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
-  }
-
   return (
-    <main className="min-h-screen bg-white flex flex-col">
-      <Header title="Créer un compte" />
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-4 py-8 flex-1" noValidate>
-        <div className="mb-2">
-          <h1 className="text-2xl font-bold text-gray-900">Rejoignez UrbanFlow</h1>
-          <p className="text-sm text-gray-500 mt-1">Créez votre profil de mobilité personnalisé.</p>
+    <AuthCard activeTab="register" leftContent={registerLeftContent}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full" noValidate>
+        {/* Prénom + Nom côte à côte, même largeur totale que les autres champs */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <Input
+            label="Prénom"
+            placeholder="Jean"
+            autoComplete="given-name"
+            value={form.firstName}
+            onChange={(e) => handleChange('firstName', e.target.value)}
+            error={fieldErrors.firstName}
+            wrapperClassName="flex-1 min-w-0"
+          />
+          <Input
+            label="Nom"
+            placeholder="Dupont"
+            autoComplete="family-name"
+            value={form.lastName}
+            onChange={(e) => handleChange('lastName', e.target.value)}
+            error={fieldErrors.lastName}
+            wrapperClassName="flex-1 min-w-0"
+          />
         </div>
 
         <Input
-          label="Prénom"
-          placeholder="Jean"
-          autoComplete="given-name"
-          value={form.firstName}
-          onChange={(e) => handleChange('firstName', e.target.value)}
-          error={fieldErrors.firstName}
-        />
-        <Input
-          label="Nom"
-          placeholder="Dupont"
-          autoComplete="family-name"
-          value={form.lastName}
-          onChange={(e) => handleChange('lastName', e.target.value)}
-          error={fieldErrors.lastName}
-        />
-        <Input
-          label="Email"
+          label="Adresse email"
           type="email"
           placeholder="jean.dupont@email.com"
           autoComplete="email"
@@ -106,6 +129,7 @@ export default function RegisterPage() {
           onChange={(e) => handleChange('email', e.target.value)}
           error={fieldErrors.email}
         />
+
         <Input
           label="Mot de passe"
           type={showPassword ? 'text' : 'password'}
@@ -125,8 +149,27 @@ export default function RegisterPage() {
           }
         />
 
+        <Input
+          label="Confirmer votre mot de passe"
+          type={showConfirmPassword ? 'text' : 'password'}
+          placeholder="········"
+          autoComplete="new-password"
+          value={form.confirmPassword}
+          onChange={(e) => handleChange('confirmPassword', e.target.value)}
+          error={fieldErrors.confirmPassword}
+          rightElement={
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((v) => !v)}
+              className="text-sm text-gray-500 shrink-0"
+            >
+              {showConfirmPassword ? 'Masquer' : 'Voir'}
+            </button>
+          }
+        />
+
         <div className="flex flex-col gap-3">
-          <span className="text-base font-bold text-gray-900">Modes préférés</span>
+          <span className="text-sm font-semibold text-gray-900">Modes de transport préférés</span>
           <div className="flex flex-wrap gap-2">
             {MODES.map((mode) => (
               <ModeChip
@@ -145,24 +188,33 @@ export default function RegisterPage() {
               <span>
                 J&apos;accepte les{' '}
                 <Link href="/cgu" className="underline text-gray-900">
-                  CGU
+                  Conditions Générales d&apos;Utilisation
                 </Link>{' '}
-                et la politique RGPD
+                et la{' '}
+                <Link href="/confidentialite" className="underline text-gray-900">
+                  politique de confidentialité
+                </Link>{' '}
+                (RGPD)
               </span>
             }
             checked={cguAccepted}
             onChange={(e) => {
               setCguAccepted(e.target.checked);
-              clearError('cgu');
+              if (fieldErrors.cgu) setFieldErrors((prev) => ({ ...prev, cgu: undefined }));
             }}
           />
           {fieldErrors.cgu && <p className="text-xs text-red-500 ml-8">{fieldErrors.cgu}</p>}
         </div>
 
+        {successMessage && (
+          <p role="status" className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+            {successMessage}
+          </p>
+        )}
         {apiError && <p className="text-sm text-red-500">{apiError}</p>}
 
-        <Button type="submit" loading={loading} disabled={loading}>
-          Créer mon compte
+        <Button type="submit" loading={loading} disabled={loading || !!successMessage}>
+          Créer mon compte et continuer →
         </Button>
 
         <p className="text-center text-sm text-gray-500">
@@ -172,6 +224,6 @@ export default function RegisterPage() {
           </Link>
         </p>
       </form>
-    </main>
+    </AuthCard>
   );
 }
