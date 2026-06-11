@@ -2,6 +2,7 @@ import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/co
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service.js';
+import { ProfileService } from '../profile/profile.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { User } from '../users/user.entity.js';
@@ -13,6 +14,7 @@ const PG_UNIQUE_VIOLATION = '23505';
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
+    private readonly profileService: ProfileService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -27,6 +29,8 @@ export class AuthService {
         lastName: dto.lastName,
       });
 
+      await this.profileService.create(user.id, dto.transportModes ?? []);
+
       const { password: _, ...result } = user;
       return result;
     } catch (err: any) {
@@ -37,7 +41,7 @@ export class AuthService {
     }
   }
 
-  async login(dto: LoginDto): Promise<{ accessToken: string }> {
+  async login(dto: LoginDto): Promise<{ accessToken: string; user: { id: string; firstName: string; lastName: string; email: string } }> {
     const user = await this.usersService.findByEmail(dto.email);
 
     // Message identique dans les deux cas pour éviter l'énumération d'emails
@@ -53,6 +57,9 @@ export class AuthService {
       email: user.email,
     });
 
-    return { accessToken };
+    return {
+      accessToken,
+      user: { id: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email },
+    };
   }
 }

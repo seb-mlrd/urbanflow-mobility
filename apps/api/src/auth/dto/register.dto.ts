@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsArray, IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail()
@@ -13,4 +13,9 @@ export class RegisterDto {
 
   @IsString()
   lastName!: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  transportModes?: string[];
 }
