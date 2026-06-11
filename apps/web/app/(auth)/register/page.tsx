@@ -77,7 +77,7 @@ export default function RegisterPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName: form.firstName, lastName: form.lastName, email: form.email, password: form.password }),
+        body: JSON.stringify({ firstName: form.firstName, lastName: form.lastName, email: form.email, password: form.password, transportModes: selectedModes }),
       });
 
       if (!res.ok) {
@@ -142,7 +142,8 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="text-sm text-gray-500 shrink-0"
+              className="text-sm shrink-0"
+              style={{ color: 'var(--color-on-surface-variant)' }}
             >
               {showPassword ? 'Masquer' : 'Voir'}
             </button>
@@ -161,7 +162,8 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => setShowConfirmPassword((v) => !v)}
-              className="text-sm text-gray-500 shrink-0"
+              className="text-sm shrink-0"
+              style={{ color: 'var(--color-on-surface-variant)' }}
             >
               {showConfirmPassword ? 'Masquer' : 'Voir'}
             </button>
@@ -169,7 +171,7 @@ export default function RegisterPage() {
         />
 
         <div className="flex flex-col gap-3">
-          <span className="text-sm font-semibold text-gray-900">Modes de transport préférés</span>
+          <span className="text-sm font-semibold" style={{ color: 'var(--color-on-surface)' }}>Modes de transport préférés</span>
           <div className="flex flex-wrap gap-2">
             {MODES.map((mode) => (
               <ModeChip
@@ -187,11 +189,11 @@ export default function RegisterPage() {
             label={
               <span>
                 J&apos;accepte les{' '}
-                <Link href="/cgu" className="underline text-gray-900">
+                <Link href="/cgu" className="underline" style={{ color: 'var(--color-primary)' }}>
                   Conditions Générales d&apos;Utilisation
                 </Link>{' '}
                 et la{' '}
-                <Link href="/confidentialite" className="underline text-gray-900">
+                <Link href="/confidentialite" className="underline" style={{ color: 'var(--color-primary)' }}>
                   politique de confidentialité
                 </Link>{' '}
                 (RGPD)
@@ -203,23 +205,23 @@ export default function RegisterPage() {
               if (fieldErrors.cgu) setFieldErrors((prev) => ({ ...prev, cgu: undefined }));
             }}
           />
-          {fieldErrors.cgu && <p className="text-xs text-red-500 ml-8">{fieldErrors.cgu}</p>}
+          {fieldErrors.cgu && <p className="text-xs ml-8" style={{ color: 'var(--color-error)' }}>{fieldErrors.cgu}</p>}
         </div>
 
         {successMessage && (
-          <p role="status" className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+          <p role="status" className="text-sm rounded-lg px-4 py-3" style={{ color: 'var(--color-primary)', background: 'var(--color-surface-container-high)', border: '1px solid var(--color-primary)' }}>
             {successMessage}
           </p>
         )}
-        {apiError && <p className="text-sm text-red-500">{apiError}</p>}
+        {apiError && <p className="text-sm" style={{ color: 'var(--color-error)' }}>{apiError}</p>}
 
         <Button type="submit" loading={loading} disabled={loading || !!successMessage}>
           Créer mon compte et continuer →
         </Button>
 
-        <p className="text-center text-sm text-gray-500">
+        <p className="text-center text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
           Déjà un compte ?{' '}
-          <Link href="/login" className="font-semibold text-gray-900">
+          <Link href="/login" className="font-semibold" style={{ color: 'var(--color-primary)' }}>
             Se connecter
           </Link>
         </p>

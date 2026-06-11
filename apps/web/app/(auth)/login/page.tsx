@@ -26,7 +26,7 @@ const loginLeftContent = (
 
 export default function LoginPage() {
   const router = useRouter();
-  const setAccessToken = useAuthStore((s) => s.setAccessToken);
+  const setAuth = useAuthStore((s) => s.setAuth);
 
   const [form, setForm] = useState<LoginFormValues>({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -66,11 +66,23 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
-      if (!data.accessToken) {
+      if (!data.accessToken || !data.user) {
         setApiError('Une erreur est survenue. Veuillez réessayer.');
         return;
       }
-      setAccessToken(data.accessToken);
+
+      let transportModes: string[] = [];
+      try {
+        const profileRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+          headers: { Authorization: `Bearer ${data.accessToken}` },
+        });
+        if (profileRes.ok) {
+          const profile = await profileRes.json();
+          transportModes = profile.transportModes ?? [];
+        }
+      } catch {}
+
+      setAuth(data.accessToken, data.user, transportModes);
       setSuccessMessage('Connexion réussie ! Vous allez être redirigé…');
       setTimeout(() => router.push('/'), 1500);
     } catch {
@@ -84,8 +96,8 @@ export default function LoginPage() {
     <AuthCard activeTab="login" leftContent={loginLeftContent}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full" noValidate>
         <div className="mb-1">
-          <h1 className="text-xl font-bold text-gray-900">Connexion à votre compte</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-xl font-bold" style={{ color: 'var(--color-on-surface)' }}>Connexion à votre compte</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--color-on-surface-variant)' }}>
             Entrez vos identifiants pour accéder à votre espace mobilité.
           </p>
         </div>
@@ -112,7 +124,8 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="text-sm text-gray-500 shrink-0"
+              className="text-sm shrink-0"
+              style={{ color: 'var(--color-on-surface-variant)' }}
             >
               {showPassword ? 'Masquer' : 'Voir'}
             </button>
@@ -120,19 +133,19 @@ export default function LoginPage() {
         />
 
         {successMessage && (
-          <p role="status" className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+          <p role="status" className="text-sm rounded-lg px-4 py-3" style={{ color: 'var(--color-primary)', background: 'var(--color-surface-container-high)', border: '1px solid var(--color-primary)' }}>
             {successMessage}
           </p>
         )}
-        {apiError && <p className="text-sm text-red-500">{apiError}</p>}
+        {apiError && <p className="text-sm" style={{ color: 'var(--color-error)' }}>{apiError}</p>}
 
         <Button type="submit" loading={loading} disabled={loading || !!successMessage}>
           Se connecter →
         </Button>
 
-        <p className="text-center text-sm text-gray-500">
+        <p className="text-center text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
           Pas encore de compte ?{' '}
-          <Link href="/register" className="font-semibold text-gray-900">
+          <Link href="/register" className="font-semibold" style={{ color: 'var(--color-primary)' }}>
             S&apos;inscrire gratuitement
           </Link>
         </p>

@@ -1,3 +1,5 @@
+import { colors, typography } from '../../lib/tokens';
+
 interface Feature {
   title: string;
   desc: string;
@@ -14,19 +16,31 @@ export function AuthFeatureList({ badge, title, description, features }: AuthFea
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+        <p style={{ ...typography.labelMd, color: colors.primary, marginBottom: '16px' }}>
           {badge}
         </p>
-        <h2 className="text-2xl font-bold text-gray-900 leading-snug">{title}</h2>
-        <p className="text-sm text-gray-500 mt-3 leading-relaxed">{description}</p>
+        <h2 style={{ ...typography.headlineLgMobile, color: colors.onSurface }}>
+          {title}
+        </h2>
+        <p style={{ ...typography.bodySm, color: colors.onSurfaceVariant, marginTop: '12px', lineHeight: '1.6' }}>
+          {description}
+        </p>
       </div>
       <ul className="flex flex-col gap-4">
         {features.map((item) => (
           <li key={item.title} className="flex items-start gap-3">
-            <span className="mt-0.5 w-5 h-5 shrink-0 bg-gray-900 rounded-sm" aria-hidden="true" />
+            <span
+              className="mt-0.5 w-5 h-5 shrink-0 rounded-sm"
+              aria-hidden="true"
+              style={{ background: colors.secondaryContainer }}
+            />
             <div>
-              <p className="text-sm font-semibold text-gray-900">{item.title}</p>
-              <p className="text-xs text-gray-500">{item.desc}</p>
+              <p style={{ ...typography.bodySm, fontWeight: '600', color: colors.onSurface }}>
+                {item.title}
+              </p>
+              <p style={{ ...typography.labelMd, color: colors.onSurfaceVariant, textTransform: 'none', letterSpacing: 0 }}>
+                {item.desc}
+              </p>
             </div>
           </li>
         ))}
