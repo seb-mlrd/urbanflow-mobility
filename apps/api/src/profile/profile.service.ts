@@ -17,7 +17,6 @@ export class ProfileService {
       where: { user: { id: userId } },
       relations: { user: true },
     });
-
     if (!profile) throw new NotFoundException('Profil introuvable.');
     return profile;
   }

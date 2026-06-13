@@ -54,7 +54,6 @@ export class ProfileController {
       if (Object.keys(userFields).length > 0) {
         await this.profileService.updateUserInfo(req.user.sub, userFields);
       }
-
       if (transportModes !== undefined) {
         await this.profileService.updateTransportModes(req.user.sub, transportModes);
       }

@@ -7,10 +7,13 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { TRANSPORT_MODES } from '@urbanflow/shared';
 import type { User } from '../users/user.entity.js';
 
 @Entity('profiles')
 export class Profile {
+  static readonly TRANSPORT_MODES = TRANSPORT_MODES;
+
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

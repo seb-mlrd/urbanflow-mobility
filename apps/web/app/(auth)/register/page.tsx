@@ -9,13 +9,12 @@ import { Button } from '../../../components/ui/Button';
 import { Checkbox } from '../../../components/ui/Checkbox';
 import { Input } from '../../../components/ui/Input';
 import { ModeChip } from '../../../components/ui/ModeChip';
+import { TRANSPORT_MODES } from '@urbanflow/shared';
 import {
   RegisterFormErrors,
   RegisterFormValues,
   validateRegisterForm,
 } from '../../../lib/auth.validation';
-
-const MODES = ['Vélo', 'Trottinette', 'Transports', 'Marche', 'Voiture'];
 
 const registerLeftContent = (
   <AuthFeatureList
@@ -173,7 +172,7 @@ export default function RegisterPage() {
         <div className="flex flex-col gap-3">
           <span className="text-sm font-semibold" style={{ color: 'var(--color-on-surface)' }}>Modes de transport préférés</span>
           <div className="flex flex-wrap gap-2">
-            {MODES.map((mode) => (
+            {TRANSPORT_MODES.map((mode) => (
               <ModeChip
                 key={mode}
                 label={mode}
