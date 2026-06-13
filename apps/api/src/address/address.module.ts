@@ -2,17 +2,15 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from '../users/users.module.js';
 import { ProfileModule } from '../profile/profile.module.js';
-import { AuthController } from './auth.controller.js';
-import { AuthService } from './auth.service.js';
-import { RefreshToken } from './refresh-token.entity.js';
+import { Address } from './address.entity.js';
+import { AddressController } from './address.controller.js';
+import { AddressService } from './address.service.js';
 
 @Module({
   imports: [
-    UsersModule,
+    TypeOrmModule.forFeature([Address]),
     ProfileModule,
-    TypeOrmModule.forFeature([RefreshToken]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -22,7 +20,7 @@ import { RefreshToken } from './refresh-token.entity.js';
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService],
+  controllers: [AddressController],
+  providers: [AddressService],
 })
-export class AuthModule {}
+export class AddressModule {}

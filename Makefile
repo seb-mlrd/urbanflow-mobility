@@ -1,26 +1,27 @@
 SHELL := /bin/zsh -l
+COMPOSE := docker compose --env-file .env.local
 
 .PHONY: up down stop dev dev-web dev-api build logs ps clean
 
 ## Démarre Postgres + Redis (Docker Compose) en arrière-plan
 up:
-	docker compose up -d
+	$(COMPOSE) up -d
 
 ## Arrête les conteneurs Docker (conserve les volumes/données)
 down:
-	docker compose down
+	$(COMPOSE) down
 
 ## Arrête les conteneurs ET supprime les volumes (reset complet des données)
 clean:
-	docker compose down -v
+	$(COMPOSE) down -v
 
 ## Affiche le statut des conteneurs
 ps:
-	docker compose ps
+	$(COMPOSE) ps
 
 ## Affiche les logs des conteneurs (Ctrl+C pour quitter)
 logs:
-	docker compose logs -f
+	$(COMPOSE) logs -f
 
 ## Lance web + api en parallèle (nécessite `make up` au préalable)
 dev:
@@ -43,3 +44,7 @@ build:
 stop:
 	-lsof -ti :3000 | xargs kill
 	-lsof -ti :3001 | xargs kill
+
+## Migration
+migration:
+	pnpm --filter @urbanflow/api migration:run

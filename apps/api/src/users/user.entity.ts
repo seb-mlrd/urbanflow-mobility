@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import type { Profile } from '../profile/profile.entity.js';
 
 @Entity('users')
 export class User {
@@ -22,6 +24,9 @@ export class User {
 
   @Column()
   lastName!: string;
+
+  @OneToOne('Profile', (profile: Profile) => profile.user)
+  profile!: Profile;
 
   @CreateDateColumn()
   createdAt!: Date;
