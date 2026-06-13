@@ -5,3 +5,11 @@ node_modules
 dist
 coverage
 docs
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# Build artifacts du package shared
+packages/shared/src/*.js
+packages/shared/src/*.js.map
+packages/shared/src/*.d.ts

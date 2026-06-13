@@ -11,6 +11,7 @@ import { envValidationSchema } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
+import { AddressModule } from './address/address.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ProfileModule } from './profile/profile.module';
     DatabaseModule,
     AuthModule,
     ProfileModule,
+    AddressModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -2,22 +2,12 @@
 
 import { TRANSPORT_MODES } from '@urbanflow/shared';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from '../../../components/ui/Input';
+import { Modal } from '../../../components/ui/Modal';
 import { useAuthStore } from '../../../store/useAuthStore';
 
 const OTHER_SETTINGS = [
-  {
-    key: 'adresses',
-    label: 'Adresses enregistrées',
-    subtitle: 'Domicile, Bureau +2',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <path d="M3 8.5L10 3l7 5.5V17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-        <path d="M7 18v-6h6v6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
   {
     key: 'environnement',
     label: 'Mon impact environnemental',
@@ -41,6 +31,20 @@ const OTHER_SETTINGS = [
     ),
   },
 ];
+
+interface Address {
+  id: string;
+  name: string;
+  label: string;
+  lat: number;
+  lng: number;
+}
+
+interface AutocompleteSuggestion {
+  label: string;
+  lat: number;
+  lng: number;
+}
 
 const fieldConfig = [
   { label: 'Prénom', key: 'firstName' as const, type: 'text', autoComplete: 'given-name' },
@@ -87,6 +91,30 @@ export default function ProfilPage() {
   const [draftModes, setDraftModes] = useState<string[]>([]);
   const [savingModes, setSavingModes] = useState(false);
 
+  const [addressOpen, setAddressOpen] = useState(false);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [addressLoaded, setAddressLoaded] = useState(false);
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const [draftName, setDraftName] = useState('');
+  const [draftAddressQuery, setDraftAddressQuery] = useState('');
+  const [draftLat, setDraftLat] = useState<number | null>(null);
+  const [draftLng, setDraftLng] = useState<number | null>(null);
+  const [suggestions, setSuggestions] = useState<AutocompleteSuggestion[]>([]);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/addresses`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      credentials: 'include',
+    })
+      .then((res) => res.ok ? res.json() : [])
+      .then((data) => { setAddresses(data); setAddressLoaded(true); })
+      .catch(() => setAddressLoaded(true));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (!user) return null;
 
   const transportSubtitle = transportModes.length > 0
@@ -96,6 +124,92 @@ export default function ProfilPage() {
   function openTransport() {
     setTransportOpen((v) => !v);
     setEditingModes(false);
+  }
+
+  async function loadAddresses() {
+    if (addressLoaded) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/addresses`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: 'include',
+      });
+      if (res.ok) setAddresses(await res.json());
+    } catch {}
+    setAddressLoaded(true);
+  }
+
+  function toggleAddressSection() {
+    if (!addressOpen) loadAddresses();
+    setAddressOpen((v) => !v);
+  }
+
+  function handleAddressQueryChange(value: string) {
+    setDraftAddressQuery(value);
+    setDraftLat(null);
+    setDraftLng(null);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (value.length < 3) { setSuggestions([]); return; }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(value)}&limit=5`,
+        );
+        const data = await res.json();
+        setSuggestions(
+          data.features.map((f: any) => ({
+            label: f.properties.label,
+            lat: f.geometry.coordinates[1],
+            lng: f.geometry.coordinates[0],
+          })),
+        );
+      } catch {}
+    }, 300);
+  }
+
+  function selectSuggestion(s: AutocompleteSuggestion) {
+    setDraftAddressQuery(s.label);
+    setDraftLat(s.lat);
+    setDraftLng(s.lng);
+    setSuggestions([]);
+  }
+
+  function closeAddressModal() {
+    setAddressModalOpen(false);
+    setDraftName('');
+    setDraftAddressQuery('');
+    setDraftLat(null);
+    setDraftLng(null);
+    setSuggestions([]);
+  }
+
+  async function saveAddress() {
+    if (!draftName.trim() || draftLat === null || draftLng === null) return;
+    setSavingAddress(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/addresses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        credentials: 'include',
+        body: JSON.stringify({ name: draftName.trim(), label: draftAddressQuery, lat: draftLat, lng: draftLng }),
+      });
+      if (res.ok) {
+        const newAddress = await res.json();
+        setAddresses((prev) => [...prev, newAddress]);
+        closeAddressModal();
+      }
+    } catch {}
+    setSavingAddress(false);
+  }
+
+  async function deleteAddress(id: string) {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/addresses/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: 'include',
+      });
+      setAddresses((prev) => prev.filter((a) => a.id !== id));
+    } catch {}
   }
 
   function startEditingModes() {
@@ -421,6 +535,86 @@ export default function ProfilPage() {
           )}
         </div>
 
+        {/* ── Adresses — item expandable ── */}
+        <div style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
+          <button
+            type="button"
+            onClick={toggleAddressSection}
+            aria-expanded={addressOpen}
+            className="w-full flex items-center gap-4 px-4 py-4 min-h-[64px] text-left transition-colors duration-150"
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-surface-container-high)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '')}
+          >
+            <span
+              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: 'var(--color-surface-container-high)', color: 'var(--color-on-surface-variant)' }}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M3 8.5L10 3l7 5.5V17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                <path d="M7 18v-6h6v6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-sm font-medium" style={{ color: 'var(--color-on-surface)' }}>
+                Adresses enregistrées
+              </span>
+              <span className="block text-xs mt-0.5 truncate" style={{ color: 'var(--color-on-surface-variant)' }}>
+                {addresses.length > 0 ? addresses.map((a) => a.name).join(', ') : 'Aucune adresse enregistrée'}
+              </span>
+            </span>
+            <ChevronDown open={addressOpen} />
+          </button>
+
+          {addressOpen && (
+            <div className="px-4 pb-4" style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
+              {addresses.length > 0 ? (
+                <ul className="flex flex-col gap-2 pt-4">
+                  {addresses.map((address) => (
+                    <li
+                      key={address.id}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg"
+                      style={{ background: 'var(--color-surface-container-high)' }}
+                    >
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-medium" style={{ color: 'var(--color-on-surface)' }}>{address.name}</span>
+                        <span className="block text-xs mt-0.5 truncate" style={{ color: 'var(--color-on-surface-variant)' }}>{address.label}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => deleteAddress(address.id)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg shrink-0 transition-colors duration-150"
+                        style={{ color: 'var(--color-error)' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-error-container)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = '')}
+                        aria-label={`Supprimer ${address.name}`}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                          <path d="M2 4h10M5 4V2h4v2M12 4l-.8 8H2.8L2 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="pt-4 text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
+                  Aucune adresse enregistrée.
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={() => setAddressModalOpen(true)}
+                className="mt-4 flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg min-h-[36px] transition-colors duration-150"
+                style={{ color: 'var(--color-primary)', border: '1px solid var(--color-primary)' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                Ajouter une adresse
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* ── Autres items ── */}
         {OTHER_SETTINGS.map(({ key, label, subtitle, icon }, i) => (
           <button
@@ -447,6 +641,69 @@ export default function ProfilPage() {
           </button>
         ))}
       </section>
+
+      {/* ── Modal ajout adresse ── */}
+      <Modal open={addressModalOpen} onClose={closeAddressModal} title="Ajouter une adresse">
+        <div className="flex flex-col gap-3">
+          <Input
+            label="Nom (ex : Domicile)"
+            placeholder="Domicile"
+            value={draftName}
+            onChange={(e) => setDraftName(e.target.value)}
+            autoComplete="off"
+          />
+          <div className="relative">
+            <Input
+              label="Adresse"
+              placeholder="10 rue de Rivoli, Paris"
+              value={draftAddressQuery}
+              onChange={(e) => handleAddressQueryChange(e.target.value)}
+              autoComplete="off"
+            />
+            {suggestions.length > 0 && (
+              <ul
+                className="absolute left-0 right-0 top-full mt-1 rounded-xl overflow-hidden z-10"
+                style={{ background: 'var(--color-surface-container-highest)', border: '1px solid var(--color-outline-variant)' }}
+              >
+                {suggestions.map((s, i) => (
+                  <li key={i}>
+                    <button
+                      type="button"
+                      className="w-full text-left px-4 py-3 text-sm transition-colors duration-150"
+                      style={{ color: 'var(--color-on-surface)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-surface-container-high)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = '')}
+                      onClick={() => selectSuggestion(s)}
+                    >
+                      {s.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="flex gap-3 mt-1">
+            <button
+              type="button"
+              onClick={saveAddress}
+              disabled={savingAddress || !draftName.trim() || draftLat === null}
+              className="flex-1 flex items-center justify-center text-sm font-semibold px-4 py-2.5 rounded-lg min-h-[44px] transition-colors duration-150 disabled:opacity-50"
+              style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+            >
+              {savingAddress ? 'Enregistrement…' : 'Enregistrer'}
+            </button>
+            <button
+              type="button"
+              onClick={closeAddressModal}
+              disabled={savingAddress}
+              className="px-4 py-2.5 rounded-lg text-sm font-medium min-h-[44px] transition-colors duration-150"
+              style={{ color: 'var(--color-on-surface-variant)', border: '1px solid var(--color-outline-variant)' }}
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* ── Déconnexion ── */}
       <button
