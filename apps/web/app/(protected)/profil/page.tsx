@@ -1,22 +1,12 @@
 'use client';
 
+import { TRANSPORT_MODES } from '@urbanflow/shared';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { Input } from '../../../components/ui/Input';
 import { useAuthStore } from '../../../store/useAuthStore';
 
-const SETTINGS_ITEMS = [
-  {
-    key: 'transport',
-    label: 'Préférences de transport',
-    subtitle: 'Vélo, Métro privilégiés',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <circle cx="6" cy="14" r="2" stroke="currentColor" strokeWidth="1.4" />
-        <circle cx="14" cy="14" r="2" stroke="currentColor" strokeWidth="1.4" />
-        <path d="M8 14h4M6 12V8l2-3h4l2 3v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
+const OTHER_SETTINGS = [
   {
     key: 'adresses',
     label: 'Adresses enregistrées',
@@ -29,14 +19,13 @@ const SETTINGS_ITEMS = [
     ),
   },
   {
-    key: 'paiement',
-    label: 'Moyens de paiement',
-    subtitle: 'Visa se terminant par 4242',
+    key: 'environnement',
+    label: 'Mon impact environnemental',
+    subtitle: 'Consommation CO₂ par mois/trajet',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <rect x="2" y="5" width="16" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-        <path d="M2 8.5h16" stroke="currentColor" strokeWidth="1.4" />
-        <path d="M5 13h3M14 13h1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        <path d="M10 17C10 17 3 13 3 7.5a7 7 0 0 1 7-7 7 7 0 0 1 7 7C17 13 10 17 10 17Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+        <path d="M10 10V17M10 10C10 10 7 8 7 5.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -67,6 +56,18 @@ function ChevronRight() {
   );
 }
 
+function ChevronDown({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"
+      className="transition-transform duration-200 shrink-0"
+      style={{ color: 'var(--color-on-surface-variant)', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+    >
+      <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function ProfilPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -74,15 +75,65 @@ export default function ProfilPage() {
   const transportModes = useAuthStore((s) => s.transportModes);
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const setAuth = useAuthStore((s) => s.setAuth);
+  const setTransportModes = useAuthStore((s) => s.setTransportModes);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ firstName: '', lastName: '', email: '' });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  const [transportOpen, setTransportOpen] = useState(false);
+  const [editingModes, setEditingModes] = useState(false);
+  const [draftModes, setDraftModes] = useState<string[]>([]);
+  const [savingModes, setSavingModes] = useState(false);
+
   if (!user) return null;
 
-  function handleLogout() {
+  const transportSubtitle = transportModes.length > 0
+    ? transportModes.join(', ')
+    : 'Aucun mode sélectionné';
+
+  function openTransport() {
+    setTransportOpen((v) => !v);
+    setEditingModes(false);
+  }
+
+  function startEditingModes() {
+    setDraftModes([...transportModes]);
+    setEditingModes(true);
+  }
+
+  function toggleDraftMode(mode: string) {
+    setDraftModes((prev) =>
+      prev.includes(mode) ? prev.filter((m) => m !== mode) : [...prev, mode],
+    );
+  }
+
+  async function saveModes() {
+    setSavingModes(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        credentials: 'include',
+        body: JSON.stringify({ transportModes: draftModes }),
+      });
+      if (res.ok) {
+        setTransportModes(draftModes);
+        setEditingModes(false);
+      }
+    } catch {
+      // erreur silencieuse — l'état local reste inchangé
+    } finally {
+      setSavingModes(false);
+    }
+  }
+
+  async function handleLogout() {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    }).catch(() => {});
     clearAuth();
     router.push('/');
   }
@@ -105,6 +156,7 @@ export default function ProfilPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        credentials: 'include',
         body: JSON.stringify(editForm),
       });
       if (!res.ok) {
@@ -135,7 +187,6 @@ export default function ProfilPage() {
         className="rounded-xl p-6 mb-4 flex flex-col items-center gap-4 text-center"
         style={{ background: 'var(--color-surface-container)' }}
       >
-        {/* Avatar */}
         <div
           aria-label={`Avatar de ${user.firstName} ${user.lastName}`}
           className="w-20 h-20 rounded-lg flex items-center justify-center"
@@ -157,32 +208,16 @@ export default function ProfilPage() {
         </div>
 
         {isEditing ? (
-          <div className="w-full max-w-sm flex flex-col gap-3">
+          <div className="w-full max-w-sm flex flex-col gap-3 text-left">
             {fieldConfig.map(({ label, key, type, autoComplete }) => (
-              <div key={key} className="flex flex-col gap-1.5 text-left">
-                <label
-                  htmlFor={`field-${key}`}
-                  className="text-xs font-semibold uppercase tracking-wide"
-                  style={{ color: 'var(--color-on-surface-variant)' }}
-                >
-                  {label}
-                </label>
-                <input
-                  id={`field-${key}`}
-                  type={type}
-                  autoComplete={autoComplete}
-                  value={editForm[key]}
-                  onChange={(e) => setEditForm((f) => ({ ...f, [key]: e.target.value }))}
-                  className="px-3 py-2.5 rounded-lg text-sm min-h-[44px] outline-none transition-colors duration-150"
-                  style={{
-                    background: 'var(--color-surface-container-high)',
-                    color: 'var(--color-on-surface)',
-                    border: '1px solid var(--color-outline-variant)',
-                  }}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--color-outline-variant)')}
-                />
-              </div>
+              <Input
+                key={key}
+                label={label}
+                type={type}
+                autoComplete={autoComplete}
+                value={editForm[key]}
+                onChange={(e) => setEditForm((f) => ({ ...f, [key]: e.target.value }))}
+              />
             ))}
 
             {saveError && (
@@ -231,8 +266,6 @@ export default function ProfilPage() {
 
       {/* ── Stats row ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-
-        {/* Impact écologique */}
         <section
           aria-labelledby="stat-co2"
           className="rounded-xl p-4 relative overflow-hidden"
@@ -243,88 +276,45 @@ export default function ProfilPage() {
               <path d="M8 2C5 2 3 4.5 3 7c0 2 1.5 3.5 3 4v2h4v-2c1.5-.5 3-2 3-4 0-2.5-2-5-5-5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
               <path d="M6 9c1-1 3-1 4 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
             </svg>
-            <h2
-              id="stat-co2"
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: 'var(--color-primary)', letterSpacing: '0.08em' }}
-            >
+            <h2 id="stat-co2" className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--color-primary)', letterSpacing: '0.08em' }}>
               Impact écologique
             </h2>
           </div>
           <p className="text-3xl font-bold mb-1" style={{ color: 'var(--color-on-surface)' }}>
             124 <span className="text-xl font-semibold">kg</span>
           </p>
-          <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
-            de CO₂ économisés ce mois
-          </p>
-          {/* Filigrane décoratif */}
-          <svg
-            width="80"
-            height="80"
-            viewBox="0 0 16 16"
-            fill="none"
-            aria-hidden="true"
-            className="absolute right-3 bottom-2 opacity-10"
-            style={{ color: 'var(--color-primary)' }}
-          >
+          <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>de CO₂ économisés ce mois</p>
+          <svg width="80" height="80" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="absolute right-3 bottom-2 opacity-10" style={{ color: 'var(--color-primary)' }}>
             <path d="M8 2C5 2 3 4.5 3 7c0 2 1.5 3.5 3 4v2h4v-2c1.5-.5 3-2 3-4 0-2.5-2-5-5-5Z" stroke="currentColor" strokeWidth="0.8" strokeLinejoin="round" />
           </svg>
         </section>
 
-        {/* Points Flow */}
-        <section
-          aria-labelledby="stat-points"
-          className="rounded-xl p-4"
-          style={{ background: 'var(--color-surface-container)' }}
-        >
+        <section aria-labelledby="stat-points" className="rounded-xl p-4" style={{ background: 'var(--color-surface-container)' }}>
           <div className="flex items-center gap-2 mb-3">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ color: 'var(--color-secondary)' }}>
               <path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.2l-3.7 2.1.7-4.1-3-2.9 4.2-.7L8 1Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
             </svg>
-            <h2
-              id="stat-points"
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: 'var(--color-on-surface-variant)', letterSpacing: '0.08em' }}
-            >
+            <h2 id="stat-points" className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--color-on-surface-variant)', letterSpacing: '0.08em' }}>
               Points Flow
             </h2>
           </div>
-          <p className="text-3xl font-bold mb-2" style={{ color: 'var(--color-on-surface)' }}>
-            2,450
-          </p>
-          <button
-            type="button"
-            className="text-sm font-medium"
-            style={{ color: 'var(--color-primary)' }}
-          >
+          <p className="text-3xl font-bold mb-2" style={{ color: 'var(--color-on-surface)' }}>2,450</p>
+          <button type="button" className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
             Voir les récompenses
           </button>
         </section>
 
-        {/* Trajets */}
-        <section
-          aria-labelledby="stat-trajets"
-          className="rounded-xl p-4"
-          style={{ background: 'var(--color-surface-container)' }}
-        >
+        <section aria-labelledby="stat-trajets" className="rounded-xl p-4" style={{ background: 'var(--color-surface-container)' }}>
           <div className="flex items-center gap-2 mb-3">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ color: 'var(--color-on-surface-variant)' }}>
               <path d="M8 2v12M4 6l4-4 4 4M4 10l4 4 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <h2
-              id="stat-trajets"
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: 'var(--color-on-surface-variant)', letterSpacing: '0.08em' }}
-            >
+            <h2 id="stat-trajets" className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--color-on-surface-variant)', letterSpacing: '0.08em' }}>
               Trajets (mois)
             </h2>
           </div>
-          <p className="text-3xl font-bold mb-1" style={{ color: 'var(--color-on-surface)' }}>
-            48
-          </p>
-          <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
-            +12% vs mois dernier
-          </p>
+          <p className="text-3xl font-bold mb-1" style={{ color: 'var(--color-on-surface)' }}>48</p>
+          <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>+12% vs mois dernier</p>
         </section>
       </div>
 
@@ -334,13 +324,111 @@ export default function ProfilPage() {
         className="rounded-xl overflow-hidden mb-4"
         style={{ background: 'var(--color-surface-container)' }}
       >
-        {SETTINGS_ITEMS.map(({ key, label, subtitle, icon }, i) => (
+        {/* ── Transport — item expandable ── */}
+        <div style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
+          <button
+            type="button"
+            onClick={openTransport}
+            aria-expanded={transportOpen}
+            className="w-full flex items-center gap-4 px-4 py-4 min-h-[64px] text-left transition-colors duration-150"
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-surface-container-high)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '')}
+          >
+            <span
+              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: 'var(--color-surface-container-high)', color: 'var(--color-on-surface-variant)' }}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <circle cx="6" cy="14" r="2" stroke="currentColor" strokeWidth="1.4" />
+                <circle cx="14" cy="14" r="2" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M8 14h4M6 12V8l2-3h4l2 3v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-sm font-medium" style={{ color: 'var(--color-on-surface)' }}>
+                Préférences de transport
+              </span>
+              <span className="block text-xs mt-0.5 truncate" style={{ color: 'var(--color-on-surface-variant)' }}>
+                {transportSubtitle}
+              </span>
+            </span>
+            <ChevronDown open={transportOpen} />
+          </button>
+
+          {transportOpen && (
+            <div className="px-4 pb-4" style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
+              <div className="flex flex-wrap gap-2 pt-4">
+                {TRANSPORT_MODES.map((mode) => {
+                  const active = editingModes ? draftModes.includes(mode) : transportModes.includes(mode);
+                  return (
+                    <button
+                      key={mode}
+                      type="button"
+                      disabled={!editingModes}
+                      onClick={() => toggleDraftMode(mode)}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-150 disabled:cursor-default"
+                      style={
+                        active
+                          ? { background: 'var(--color-secondary-container)', color: 'var(--color-on-secondary-container)', border: '1px solid transparent' }
+                          : { background: 'transparent', color: 'var(--color-on-surface-variant)', border: '1px solid var(--color-outline-variant)' }
+                      }
+                    >
+                      {active && (
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                          <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                      {mode}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex gap-2 mt-4">
+                {editingModes ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={saveModes}
+                      disabled={savingModes}
+                      className="text-sm font-semibold px-4 py-2 rounded-lg min-h-[36px] transition-colors duration-150 disabled:opacity-50"
+                      style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+                    >
+                      {savingModes ? 'Enregistrement…' : 'Enregistrer'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingModes(false)}
+                      disabled={savingModes}
+                      className="text-sm font-medium px-4 py-2 rounded-lg min-h-[36px] transition-colors duration-150"
+                      style={{ color: 'var(--color-on-surface-variant)', border: '1px solid var(--color-outline-variant)' }}
+                    >
+                      Annuler
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={startEditingModes}
+                    className="text-sm font-medium px-4 py-2 rounded-lg min-h-[36px] transition-colors duration-150"
+                    style={{ color: 'var(--color-primary)', border: '1px solid var(--color-primary)' }}
+                  >
+                    Modifier
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Autres items ── */}
+        {OTHER_SETTINGS.map(({ key, label, subtitle, icon }, i) => (
           <button
             key={key}
             type="button"
             className="w-full flex items-center gap-4 px-4 py-4 min-h-[64px] text-left transition-colors duration-150"
             style={{
-              borderBottom: i < SETTINGS_ITEMS.length - 1 ? '1px solid var(--color-outline-variant)' : undefined,
+              borderBottom: i < OTHER_SETTINGS.length - 1 ? '1px solid var(--color-outline-variant)' : undefined,
             }}
             onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-surface-container-high)')}
             onMouseLeave={(e) => (e.currentTarget.style.background = '')}
@@ -352,12 +440,8 @@ export default function ProfilPage() {
               {icon}
             </span>
             <span className="flex-1 min-w-0">
-              <span className="block text-sm font-medium" style={{ color: 'var(--color-on-surface)' }}>
-                {label}
-              </span>
-              <span className="block text-xs mt-0.5" style={{ color: 'var(--color-on-surface-variant)' }}>
-                {subtitle}
-              </span>
+              <span className="block text-sm font-medium" style={{ color: 'var(--color-on-surface)' }}>{label}</span>
+              <span className="block text-xs mt-0.5" style={{ color: 'var(--color-on-surface-variant)' }}>{subtitle}</span>
             </span>
             <ChevronRight />
           </button>

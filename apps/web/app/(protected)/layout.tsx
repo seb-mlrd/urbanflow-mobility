@@ -10,23 +10,47 @@ import { BottomNav } from '../../components/ui/BottomNav';
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const accessToken = useAuthStore((s) => s.accessToken);
-  const [hydrated, setHydrated] = useState(false);
+  const setAuth = useAuthStore((s) => s.setAuth);
+  const [ready, setReady] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true));
-    if (useAuthStore.persist.hasHydrated()) setHydrated(true);
-    return unsub;
+    // Si on a déjà un token en mémoire (navigation interne), pas besoin de refresh
+    if (accessToken) {
+      setReady(true);
+      return;
+    }
+
+    // Tentative de rehydratation via le cookie httpOnly (ex: après un reload)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          router.replace('/login');
+          return;
+        }
+        const { accessToken: token } = await res.json();
+
+        // Récupère les infos user depuis /profile avec le nouveau token
+        const profileRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
+        });
+        if (!profileRes.ok) {
+          router.replace('/login');
+          return;
+        }
+        const profile = await profileRes.json();
+        setAuth(token, profile.user, profile.transportModes ?? []);
+        setReady(true);
+      })
+      .catch(() => router.replace('/login'));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (hydrated && !accessToken) router.replace('/login');
-    // Vérifié uniquement à l'hydratation initiale — la déconnexion gère sa propre redirection
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated]);
-
-  if (!hydrated) return null;
-  if (!accessToken) return null;
+  if (!ready) return null;
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: 'var(--color-surface)' }}>
