@@ -10,6 +10,7 @@ import { Checkbox } from '../../../components/ui/Checkbox';
 import { Input } from '../../../components/ui/Input';
 import { ModeChip } from '../../../components/ui/ModeChip';
 import { TRANSPORT_MODES } from '@urbanflow/shared';
+import { TRANSPORT_MODE_ICONS } from '../../../lib/transport-icons';
 import {
   RegisterFormErrors,
   RegisterFormValues,
@@ -178,6 +179,7 @@ export default function RegisterPage() {
                 label={mode}
                 selected={selectedModes.includes(mode)}
                 onToggle={() => toggleMode(mode)}
+                icon={TRANSPORT_MODE_ICONS[mode]}
               />
             ))}
           </div>
