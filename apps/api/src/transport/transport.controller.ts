@@ -14,7 +14,7 @@ export class TransportController {
 
   @Get('journey')
   planJourney(@Query() dto: JourneyQueryDto) {
-    return this.otpAdapter.planJourney(
+    return this.otpAdapter.planAllModes(
       dto.fromLat,
       dto.fromLng,
       dto.toLat,
