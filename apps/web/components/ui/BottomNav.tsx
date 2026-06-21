@@ -16,6 +16,17 @@ const NAV_ITEMS = [
     ),
   },
   {
+    label: 'Itinéraire',
+    href: '/itineraire',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 16V9a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="4" cy="16" r="2" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="16" cy="15" r="2" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    ),
+  },
+  {
     label: 'Activité',
     href: '/activite',
     icon: (
