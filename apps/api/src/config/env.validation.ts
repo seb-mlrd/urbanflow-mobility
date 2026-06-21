@@ -7,4 +7,6 @@ export const envValidationSchema = Joi.object({
   JWT_SECRET: Joi.string().required(),
   JWT_REFRESH_SECRET: Joi.string().required(),
   REDIS_URL: Joi.string().uri().required(),
+  OTP_GRAPHQL_URL: Joi.string().uri().default('http://localhost:8888/otp/gtfs/v1'),
+  GBFS_VLILLE_URL: Joi.string().uri().default('https://transport.data.gouv.fr/gbfs/vlille'),
 });

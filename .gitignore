@@ -13,3 +13,8 @@ docs
 packages/shared/src/*.js
 packages/shared/src/*.js.map
 packages/shared/src/*.d.ts
+
+# OTP data (GTFS, OSM, graph binaires)
+otp-data/*.zip
+otp-data/*.pbf
+otp-data/*.obj

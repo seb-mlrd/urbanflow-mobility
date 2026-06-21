@@ -42,6 +42,24 @@ services:
       postgres:
         condition: service_healthy
 
+  otp:
+    image: opentripplanner/opentripplanner:2.6.0
+    # Premier démarrage : --build --save --serve (construit le graph depuis GTFS + OSM)
+    # Démarrages suivants : --load --serve (charge le graph.obj déjà construit)
+    command: ["--build", "--save", "--serve"]
+    ports:
+      - "8888:8080"
+    environment:
+      JAVA_OPTS: "-Xmx2G"
+    volumes:
+      - ./otp-data:/var/opentripplanner
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -X POST http://localhost:8080/otp/gtfs/v1 -H 'Content-Type: application/json' -d '{\"query\":\"{__typename}\"}' > /dev/null || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 15
+      start_period: 180s
+
 volumes:
   postgres-data:
   redis-data:
