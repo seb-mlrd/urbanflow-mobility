@@ -9,4 +9,6 @@ export const OTP_MODE_LABELS: Record<string, string> = {
   TRAM:    'Tram',
   RAIL:    'Train',
   BICYCLE: 'Vélo',
+  CAR:     'Voiture',
+  TRANSIT: 'Transports',
 };

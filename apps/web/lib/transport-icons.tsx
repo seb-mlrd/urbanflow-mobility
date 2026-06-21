@@ -1,5 +1,16 @@
 import { Bike, Bus, Car, Footprints, Train, TrainFront, Zap } from 'lucide-react';
 
+export const OTP_MODE_LABELS: Record<string, string> = {
+  WALK:    'Marche',
+  BUS:     'Bus',
+  SUBWAY:  'Métro',
+  TRAM:    'Tram',
+  RAIL:    'Train',
+  BICYCLE: 'Vélo',
+  CAR:     'Voiture',
+  TRANSIT: 'Transports',
+};
+
 export const OTP_MODE_ICONS: Record<string, React.ReactNode> = {
   WALK:    <Footprints size={14} aria-hidden="true" />,
   BUS:     <Bus        size={14} aria-hidden="true" />,
@@ -7,6 +18,8 @@ export const OTP_MODE_ICONS: Record<string, React.ReactNode> = {
   TRAM:    <TrainFront size={14} aria-hidden="true" />,
   RAIL:    <Train      size={14} aria-hidden="true" />,
   BICYCLE: <Bike       size={14} aria-hidden="true" />,
+  CAR:     <Car        size={14} aria-hidden="true" />,
+  TRANSIT: <Bus        size={14} aria-hidden="true" />,
 };
 
 export const TRANSPORT_MODE_ICONS: Record<string, React.ReactNode> = {

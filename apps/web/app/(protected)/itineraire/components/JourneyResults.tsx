@@ -1,16 +1,10 @@
 'use client';
 
-import { OTP_MODE_LABELS } from '@urbanflow/shared';
-import { OTP_MODE_ICONS } from '../../../../lib/transport-icons';
+import { OTP_MODE_ICONS, OTP_MODE_LABELS } from '../../../../lib/transport-icons';
+import { getActualDominantMode, formatDuration } from '../../../../lib/journey-utils';
 
 function formatTime(ms: number) {
   return new Date(ms).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-}
-
-function formatDuration(seconds: number) {
-  const m = Math.round(seconds / 60);
-  if (m < 60) return `${m} min`;
-  return `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
 }
 
 interface Leg {
@@ -27,27 +21,24 @@ interface Itinerary {
   duration: number;
   startTime: number;
   endTime: number;
+  dominantMode: string;
   legs: Leg[];
 }
 
-interface OtpResponse {
-  data?: {
-    plan?: {
-      itineraries: Itinerary[];
-    };
-  };
+interface JourneyResponse {
+  itineraries: Itinerary[];
 }
 
 interface Props {
-  result: OtpResponse | null;
+  result: JourneyResponse | null;
   fromLabel?: string;
   toLabel?: string;
 }
 
 export function JourneyResults({ result, fromLabel, toLabel }: Props) {
-  const itineraries = result?.data?.plan?.itineraries ?? [];
-
   if (!result) return null;
+
+  const itineraries = result.itineraries;
 
   if (itineraries.length === 0) {
     return (
@@ -63,28 +54,39 @@ export function JourneyResults({ result, fromLabel, toLabel }: Props) {
         {itineraries.length} itinéraire{itineraries.length > 1 ? 's' : ''} trouvé{itineraries.length > 1 ? 's' : ''}
       </h2>
 
-      {itineraries.map((itin, i) => (
+      {itineraries.map((itin, i) => {
+        const dominantMode = getActualDominantMode(itin.legs);
+        return (
         <article
-          key={i}
+          key={`${itin.startTime}-${itin.duration}-${i}`}
           className="rounded-xl p-4 flex flex-col gap-3"
           style={{ background: 'var(--color-surface-container)' }}
         >
-          {/* En-tête : horaires + durée totale */}
+          {/* En-tête : mode dominant + durée */}
           <div className="flex items-center justify-between">
-            <div>
-              <span className="text-lg font-bold" style={{ color: 'var(--color-on-surface)' }}>
-                {formatTime(itin.startTime)}
-              </span>
-              <span className="mx-2 text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>→</span>
-              <span className="text-lg font-bold" style={{ color: 'var(--color-on-surface)' }}>
-                {formatTime(itin.endTime)}
-              </span>
-            </div>
+            <span
+              className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
+              style={{ background: 'var(--color-secondary-container)', color: 'var(--color-on-secondary-container)' }}
+            >
+              {OTP_MODE_ICONS[dominantMode] ?? null}
+              {OTP_MODE_LABELS[dominantMode] ?? dominantMode}
+            </span>
             <span
               className="text-sm font-semibold px-3 py-1 rounded-full"
               style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
             >
               {formatDuration(itin.duration)}
+            </span>
+          </div>
+
+          {/* Horaires */}
+          <div>
+            <span className="text-lg font-bold" style={{ color: 'var(--color-on-surface)' }}>
+              {formatTime(itin.startTime)}
+            </span>
+            <span className="mx-2 text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>→</span>
+            <span className="text-lg font-bold" style={{ color: 'var(--color-on-surface)' }}>
+              {formatTime(itin.endTime)}
             </span>
           </div>
 
@@ -146,7 +148,8 @@ export function JourneyResults({ result, fromLabel, toLabel }: Props) {
             ))}
           </ol>
         </article>
-      ))}
+        );
+      })}
     </section>
   );
 }

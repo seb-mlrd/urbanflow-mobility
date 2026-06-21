@@ -45,7 +45,7 @@ function AddressField({
     debounce.current = setTimeout(async () => {
       try {
         const res = await fetch(
-          `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(v)}&limit=4&citycode=59350`,
+          `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(v)}&limit=5&lat=50.6292&lon=3.0573`,
         );
         const data = await res.json();
         setSuggestions(
