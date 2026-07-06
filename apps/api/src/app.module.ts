@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 import { Keyv } from 'keyv';
 import KeyvRedis from '@keyv/redis';
@@ -13,6 +14,7 @@ import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
 import { AddressModule } from './address/address.module';
 import { TransportModule } from './transport/transport.module';
+import { MobilityModule } from './mobility/mobility.module';
 
 @Module({
   imports: [
@@ -30,6 +32,7 @@ import { TransportModule } from './transport/transport.module';
       },
     }),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
+    ScheduleModule.forRoot(),
     CacheModule.registerAsync({
       isGlobal: true,
       useFactory: () => ({
@@ -41,6 +44,7 @@ import { TransportModule } from './transport/transport.module';
     ProfileModule,
     AddressModule,
     TransportModule,
+    MobilityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
