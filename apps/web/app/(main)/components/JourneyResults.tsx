@@ -1,7 +1,8 @@
 'use client';
 
-import { OTP_MODE_ICONS, OTP_MODE_LABELS } from '../../../../lib/transport-icons';
-import { getActualDominantMode, formatDuration } from '../../../../lib/journey-utils';
+import { OTP_MODE_ICONS, OTP_MODE_LABELS } from '../../../lib/transport-icons';
+import { getActualDominantMode, formatDuration } from '../../../lib/journey-utils';
+import { useAuthStore } from '../../../store/useAuthStore';
 
 function formatTime(ms: number) {
   return new Date(ms).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -29,16 +30,44 @@ interface JourneyResponse {
   itineraries: Itinerary[];
 }
 
+const PROFILE_TO_OTP: Record<string, string> = {
+  'Vélo':       'BICYCLE',
+  'Transports': 'TRANSIT',
+  'Marche':     'WALK',
+  'Voiture':    'CAR',
+};
+
 interface Props {
   result: JourneyResponse | null;
   fromLabel?: string;
   toLabel?: string;
+  selectedModes: string[];
 }
 
-export function JourneyResults({ result, fromLabel, toLabel }: Props) {
+export function JourneyResults({ result, fromLabel, toLabel, selectedModes }: Props) {
+  const profileModes = useAuthStore((s) => s.transportModes);
+
   if (!result) return null;
 
-  const itineraries = result.itineraries;
+  const allItineraries = result.itineraries.map((itin) => ({
+    ...itin,
+    dominantMode: getActualDominantMode(itin.legs),
+  }));
+
+  const profileOtpModes = new Set(
+    profileModes.map((m) => PROFILE_TO_OTP[m]).filter(Boolean),
+  );
+
+  const selectedOtpModes = new Set(
+    selectedModes.map((m) => PROFILE_TO_OTP[m]).filter(Boolean),
+  );
+
+  const itineraries = selectedOtpModes.size > 0
+    ? allItineraries.filter((itin) => selectedOtpModes.has(itin.dominantMode))
+    : [
+        ...allItineraries.filter((itin) => profileOtpModes.has(itin.dominantMode)),
+        ...allItineraries.filter((itin) => !profileOtpModes.has(itin.dominantMode)),
+      ];
 
   if (itineraries.length === 0) {
     return (
@@ -55,22 +84,36 @@ export function JourneyResults({ result, fromLabel, toLabel }: Props) {
       </h2>
 
       {itineraries.map((itin, i) => {
-        const dominantMode = getActualDominantMode(itin.legs);
+        const dominantMode = itin.dominantMode;
+        const isProfileMatch = selectedOtpModes.size === 0 && profileOtpModes.has(dominantMode);
         return (
         <article
           key={`${itin.startTime}-${itin.duration}-${i}`}
           className="rounded-xl p-4 flex flex-col gap-3"
-          style={{ background: 'var(--color-surface-container)' }}
+          style={{
+            background: 'var(--color-surface-container)',
+            border: isProfileMatch ? '1.5px solid var(--color-primary)' : '1.5px solid transparent',
+          }}
         >
           {/* En-tête : mode dominant + durée */}
           <div className="flex items-center justify-between">
-            <span
-              className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
-              style={{ background: 'var(--color-secondary-container)', color: 'var(--color-on-secondary-container)' }}
-            >
-              {OTP_MODE_ICONS[dominantMode] ?? null}
-              {OTP_MODE_LABELS[dominantMode] ?? dominantMode}
-            </span>
+            <div className="flex items-center gap-2">
+              <span
+                className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
+                style={{ background: 'var(--color-secondary-container)', color: 'var(--color-on-secondary-container)' }}
+              >
+                {OTP_MODE_ICONS[dominantMode] ?? null}
+                {OTP_MODE_LABELS[dominantMode] ?? dominantMode}
+              </span>
+              {isProfileMatch && (
+                <span
+                  className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                  style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+                >
+                  Profil
+                </span>
+              )}
+            </div>
             <span
               className="text-sm font-semibold px-3 py-1 rounded-full"
               style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}

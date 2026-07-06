@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { JourneySearch, type JourneySearchValues } from './components/JourneySearch';
 import { JourneyResults } from './components/JourneyResults';
 
-export default function ItinerairePage() {
+export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<unknown>(null);
   const [error, setError] = useState<string | null>(null);
-  const [lastSearch, setLastSearch] = useState<Pick<JourneySearchValues, 'fromLabel' | 'toLabel'> | null>(null);
+  const [lastSearch, setLastSearch] = useState<Pick<JourneySearchValues, 'fromLabel' | 'toLabel' | 'selectedModes'> | null>(null);
 
   async function handleSearch(values: JourneySearchValues) {
-    setLastSearch({ fromLabel: values.fromLabel, toLabel: values.toLabel });
+    setLastSearch({ fromLabel: values.fromLabel, toLabel: values.toLabel, selectedModes: values.selectedModes });
     setLoading(true);
     setError(null);
     setResult(null);
@@ -70,6 +70,7 @@ export default function ItinerairePage() {
         result={result as any}
         fromLabel={lastSearch?.fromLabel}
         toLabel={lastSearch?.toLabel}
+        selectedModes={lastSearch?.selectedModes ?? []}
       />
     </div>
   );

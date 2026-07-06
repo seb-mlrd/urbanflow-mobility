@@ -1,7 +1,9 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Input } from '../../../../components/ui/Input';
+import { Input } from '../../../components/ui/Input';
+import { TRANSPORT_MODES } from '@urbanflow/shared';
+import { TRANSPORT_MODE_ICONS } from '../../../lib/transport-icons';
 
 interface Suggestion {
   label: string;
@@ -17,6 +19,7 @@ export interface JourneySearchValues {
   toLat: number;
   toLng: number;
   datetime: string;
+  selectedModes: string[];
 }
 
 interface Props {
@@ -95,13 +98,20 @@ export function JourneySearch({ onSearch, loading }: Props) {
   const [toLat, setToLat] = useState<number | null>(null);
   const [toLng, setToLng] = useState<number | null>(null);
   const [datetime, setDatetime] = useState('');
+  const [selectedModes, setSelectedModes] = useState<string[]>([]);
 
   const canSearch = fromLat !== null && toLat !== null;
+
+  function toggleMode(mode: string) {
+    setSelectedModes((prev) =>
+      prev.includes(mode) ? prev.filter((m) => m !== mode) : [...prev, mode],
+    );
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!canSearch) return;
-    onSearch({ fromLabel, fromLat: fromLat!, fromLng: fromLng!, toLabel, toLat: toLat!, toLng: toLng!, datetime });
+    onSearch({ fromLabel, fromLat: fromLat!, fromLng: fromLng!, toLabel, toLat: toLat!, toLng: toLng!, datetime, selectedModes });
   }
 
   return (
@@ -134,6 +144,39 @@ export function JourneySearch({ onSearch, loading }: Props) {
           }}
         />
       </div>
+      <div className="flex flex-col gap-2">
+        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-on-surface-variant)' }}>
+          Modes de transport
+        </span>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrer par mode de transport">
+          {TRANSPORT_MODES.map((mode) => {
+            const active = selectedModes.includes(mode);
+            return (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => toggleMode(mode)}
+                aria-pressed={active}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors duration-150"
+                style={{
+                  background: active ? 'var(--color-primary)' : 'var(--color-surface-container-high)',
+                  color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
+                  border: active ? '1px solid transparent' : '1px solid var(--color-outline-variant)',
+                }}
+              >
+                {TRANSPORT_MODE_ICONS[mode]}
+                {mode}
+              </button>
+            );
+          })}
+        </div>
+        {selectedModes.length === 0 && (
+          <p className="text-xs" style={{ color: 'var(--color-on-surface-variant)' }}>
+            Aucun filtre — les modes de votre profil seront mis en avant
+          </p>
+        )}
+      </div>
+
       <button
         type="submit"
         disabled={!canSearch || loading}
