@@ -6,12 +6,13 @@ import { colors, borders, radius, typography } from '../../lib/tokens';
 
 const NAV_ITEMS = [
   {
-    label: 'Recherche',
+    label: 'Itinéraire',
     href: '/',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <circle cx="9" cy="9" r="5.5" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M14 14l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M4 16V9a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="4" cy="16" r="2" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="16" cy="15" r="2" stroke="currentColor" strokeWidth="1.5" />
       </svg>
     ),
   },

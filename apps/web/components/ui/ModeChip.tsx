@@ -6,9 +6,10 @@ interface ModeChipProps {
   label: string;
   selected: boolean;
   onToggle: () => void;
+  icon?: React.ReactNode;
 }
 
-export function ModeChip({ label, selected, onToggle }: ModeChipProps) {
+export function ModeChip({ label, selected, onToggle, icon }: ModeChipProps) {
   return (
     <button
       type="button"
@@ -23,15 +24,17 @@ export function ModeChip({ label, selected, onToggle }: ModeChipProps) {
           : { background: 'transparent', color: colors.onSurfaceVariant, border: borders.default }),
       }}
     >
-      <span
-        className="w-4 h-4 shrink-0"
-        style={{
-          borderRadius: radius.sm,
-          ...(selected
-            ? { background: colors.secondary, opacity: 0.8 }
-            : { background: colors.surfaceContainerHigh, border: borders.default }),
-        }}
-      />
+      {icon ?? (
+        <span
+          className="w-4 h-4 shrink-0"
+          style={{
+            borderRadius: radius.sm,
+            ...(selected
+              ? { background: colors.secondary, opacity: 0.8 }
+              : { background: colors.surfaceContainerHigh, border: borders.default }),
+          }}
+        />
+      )}
       {label}
     </button>
   );

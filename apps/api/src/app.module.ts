@@ -12,6 +12,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
 import { AddressModule } from './address/address.module';
+import { TransportModule } from './transport/transport.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AddressModule } from './address/address.module';
     AuthModule,
     ProfileModule,
     AddressModule,
+    TransportModule,
   ],
   controllers: [AppController],
   providers: [AppService],
