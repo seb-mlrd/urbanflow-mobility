@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Input } from '../../../components/ui/Input';
 import { Modal } from '../../../components/ui/Modal';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { useGeolocation } from '../../../lib/hooks/useGeolocation';
 
 const OTHER_SETTINGS = [
   {
@@ -90,6 +91,8 @@ export default function ProfilPage() {
   const [editingModes, setEditingModes] = useState(false);
   const [draftModes, setDraftModes] = useState<string[]>([]);
   const [savingModes, setSavingModes] = useState(false);
+
+  const geo = useGeolocation();
 
   const [addressOpen, setAddressOpen] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -613,6 +616,41 @@ export default function ProfilPage() {
               </button>
             </div>
           )}
+        </div>
+
+        {/* ── Géolocalisation — consentement ── */}
+        <div style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
+          <div className="flex items-center gap-4 px-4 py-4 min-h-[64px]">
+            <span
+              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: 'var(--color-surface-container-high)', color: 'var(--color-on-surface-variant)' }}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-sm font-medium" style={{ color: 'var(--color-on-surface)' }}>
+                Confidentialité et position
+              </span>
+              <span className="block text-xs mt-0.5" style={{ color: 'var(--color-on-surface-variant)' }}>
+                {geo.hasConsent
+                  ? "Vous avez autorisé l'utilisation de votre position pour la recherche d'itinéraire."
+                  : "Vous n'avez pas autorisé l'utilisation de votre position."}
+              </span>
+            </span>
+            {geo.hasConsent && (
+              <button
+                type="button"
+                onClick={geo.revokeConsent}
+                className="text-sm font-medium px-4 py-2 rounded-lg min-h-[36px] transition-colors duration-150 shrink-0"
+                style={{ color: 'var(--color-primary)', border: '1px solid var(--color-primary)' }}
+              >
+                Retirer
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ── Autres items ── */}

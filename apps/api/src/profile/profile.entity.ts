@@ -24,6 +24,12 @@ export class Profile {
   @Column('simple-array', { default: '' })
   transportModes!: string[];
 
+  @Column({ type: 'boolean', nullable: true })
+  geolocationConsent!: boolean | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  geolocationConsentAt!: Date | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 

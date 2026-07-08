@@ -35,6 +35,13 @@ export class ProfileService {
     return this.profileRepository.save(profile);
   }
 
+  async setGeolocationConsent(userId: string, granted: boolean): Promise<Profile> {
+    const profile = await this.findByUserId(userId);
+    profile.geolocationConsent = granted;
+    profile.geolocationConsentAt = new Date();
+    return this.profileRepository.save(profile);
+  }
+
   async updateUserInfo(
     userId: string,
     data: { firstName?: string; lastName?: string; email?: string },

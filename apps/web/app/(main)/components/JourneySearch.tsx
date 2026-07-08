@@ -1,9 +1,12 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from '../../../components/ui/Input';
 import { TRANSPORT_MODES } from '@urbanflow/shared';
 import { TRANSPORT_MODE_ICONS } from '../../../lib/transport-icons';
+import { GeolocationConsentModal } from '../../../components/GeolocationConsentModal';
+import { useGeolocation, GEO_ERROR_MESSAGES } from '../../../lib/hooks/useGeolocation';
+import { getStoredConsent } from '../../../lib/geolocationConsent';
 
 interface Suggestion {
   label: string;
@@ -32,11 +35,13 @@ function AddressField({
   value,
   onChange,
   onSelect,
+  rightElement,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   onSelect: (s: Suggestion) => void;
+  rightElement?: React.ReactNode;
 }) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -64,7 +69,13 @@ function AddressField({
 
   return (
     <div className="relative">
-      <Input label={label} value={value} onChange={(e) => handleChange(e.target.value)} autoComplete="off" />
+      <Input
+        label={label}
+        value={value}
+        onChange={(e) => handleChange(e.target.value)}
+        autoComplete="off"
+        rightElement={rightElement}
+      />
       {suggestions.length > 0 && (
         <ul
           className="absolute left-0 right-0 top-full mt-1 rounded-xl overflow-hidden z-20"
@@ -99,6 +110,33 @@ export function JourneySearch({ onSearch, loading }: Props) {
   const [toLng, setToLng] = useState<number | null>(null);
   const [datetime, setDatetime] = useState('');
   const [selectedModes, setSelectedModes] = useState<string[]>([]);
+  const geo = useGeolocation();
+
+  useEffect(() => {
+    if (getStoredConsent() === null) geo.requestLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (geo.status !== 'success' || !geo.position) return;
+    const { lat, lng } = geo.position;
+    setFromLat(lat);
+    setFromLng(lng);
+    setFromLabel('Position actuelle');
+
+    let cancelled = false;
+    fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${lng}&lat=${lat}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        const label = data?.features?.[0]?.properties?.label;
+        if (label) setFromLabel(label);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [geo.status, geo.position]);
 
   const canSearch = fromLat !== null && toLat !== null;
 
@@ -115,13 +153,51 @@ export function JourneySearch({ onSearch, loading }: Props) {
   }
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <AddressField
-        label="Départ"
-        value={fromLabel}
-        onChange={(v) => { setFromLabel(v); setFromLat(null); setFromLng(null); }}
-        onSelect={(s) => { setFromLabel(s.label); setFromLat(s.lat); setFromLng(s.lng); }}
-      />
+      <div className="flex flex-col gap-1">
+        <AddressField
+          label="Départ"
+          value={fromLabel}
+          onChange={(v) => { setFromLabel(v); setFromLat(null); setFromLng(null); }}
+          onSelect={(s) => { setFromLabel(s.label); setFromLat(s.lat); setFromLng(s.lng); }}
+          rightElement={
+            <button
+              type="button"
+              onClick={geo.requestLocation}
+              aria-label="Utiliser ma position"
+              title="Utiliser ma position"
+              className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-150"
+              style={{ color: 'var(--color-primary)' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
+                <path
+                  d="M12 2v3M12 19v3M2 12h3M19 12h3"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          }
+        />
+        {geo.status === 'error' && geo.error && (
+          <p className="text-xs" style={{ color: 'var(--color-error, #b3261e)' }}>
+            {GEO_ERROR_MESSAGES[geo.error]}
+          </p>
+        )}
+        {geo.hasConsent && (
+          <button
+            type="button"
+            onClick={geo.revokeConsent}
+            className="self-start text-xs underline"
+            style={{ color: 'var(--color-on-surface-variant)' }}
+          >
+            Oublier ma position
+          </button>
+        )}
+      </div>
       <AddressField
         label="Arrivée"
         value={toLabel}
@@ -187,5 +263,11 @@ export function JourneySearch({ onSearch, loading }: Props) {
         {loading ? 'Recherche en cours…' : 'Rechercher un itinéraire'}
       </button>
     </form>
+    <GeolocationConsentModal
+      open={geo.isConsentModalOpen}
+      onAllow={geo.confirmConsent}
+      onDecline={geo.declineConsent}
+    />
+    </>
   );
 }

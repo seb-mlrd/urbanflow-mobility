@@ -9,7 +9,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { IsArray, IsEmail, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { ProfileService } from './profile.service.js';
 
@@ -30,6 +30,10 @@ class UpdateProfileDto {
   @IsString({ each: true })
   @IsOptional()
   transportModes?: string[];
+
+  @IsBoolean()
+  @IsOptional()
+  geolocationConsent?: boolean;
 }
 
 const PG_UNIQUE_VIOLATION = '23505';
@@ -48,7 +52,7 @@ export class ProfileController {
   @Patch()
   @HttpCode(HttpStatus.OK)
   async updateProfile(@Request() req: any, @Body() dto: UpdateProfileDto) {
-    const { transportModes, ...userFields } = dto;
+    const { transportModes, geolocationConsent, ...userFields } = dto;
 
     try {
       if (Object.keys(userFields).length > 0) {
@@ -56,6 +60,9 @@ export class ProfileController {
       }
       if (transportModes !== undefined) {
         await this.profileService.updateTransportModes(req.user.sub, transportModes);
+      }
+      if (geolocationConsent !== undefined) {
+        await this.profileService.setGeolocationConsent(req.user.sub, geolocationConsent);
       }
     } catch (err: any) {
       if (err?.code === PG_UNIQUE_VIOLATION) {
