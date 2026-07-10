@@ -37,13 +37,17 @@ export class LimeService {
     private readonly config: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
-    this.feedUrl = this.config.getOrThrow<string>('GBFS_LIME_FREE_BIKE_STATUS_URL');
+    this.feedUrl = this.config.getOrThrow<string>(
+      'GBFS_LIME_FREE_BIKE_STATUS_URL',
+    );
   }
 
   async refresh(): Promise<void> {
     try {
       const res = await firstValueFrom(
-        this.httpService.get<LimeFreeBikeStatusResponse>(this.feedUrl).pipe(timeout(FETCH_TIMEOUT_MS)),
+        this.httpService
+          .get<LimeFreeBikeStatusResponse>(this.feedUrl)
+          .pipe(timeout(FETCH_TIMEOUT_MS)),
       );
 
       const scooters: Scooter[] = res.data.data.bikes
@@ -64,9 +68,13 @@ export class LimeService {
         fetchedAt: Date.now(),
       };
 
-      await this.cacheManager.set(LimeService.CACHE_KEY, snapshot, LimeService.TTL_MS);
+      await this.cacheManager.set(
+        LimeService.CACHE_KEY,
+        snapshot,
+        LimeService.TTL_MS,
+      );
     } catch (err) {
-      this.logger.warn(`Échec du rafraîchissement Lime: ${err}`);
+      this.logger.warn(`Échec du rafraîchissement Lime: ${String(err)}`);
     }
   }
 }

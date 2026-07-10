@@ -25,7 +25,11 @@ describe('Auth (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
     );
     await app.init();
 
@@ -45,27 +49,52 @@ describe('Auth (e2e)', () => {
 
       const res = await request(app.getHttpServer())
         .post('/auth/register')
-        .send({ email, password: 'motdepasse123', firstName: 'Jean', lastName: 'Dupont' })
+        .send({
+          email,
+          password: 'motdepasse123',
+          firstName: 'Jean',
+          lastName: 'Dupont',
+        })
         .expect(201);
 
-      expect(res.body).toMatchObject({ email, firstName: 'Jean', lastName: 'Dupont' });
+      expect(res.body).toMatchObject({
+        email,
+        firstName: 'Jean',
+        lastName: 'Dupont',
+      });
       expect(res.body).not.toHaveProperty('password');
       expect(res.body.id).toBeDefined();
     });
 
     it('refuse un second enregistrement avec le même email (409)', async () => {
       const email = uniqueEmail('duplicate');
-      const payload = { email, password: 'motdepasse123', firstName: 'Marie', lastName: 'Curie' };
+      const payload = {
+        email,
+        password: 'motdepasse123',
+        firstName: 'Marie',
+        lastName: 'Curie',
+      };
 
-      await request(app.getHttpServer()).post('/auth/register').send(payload).expect(201);
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send(payload)
+        .expect(201);
 
-      await request(app.getHttpServer()).post('/auth/register').send(payload).expect(409);
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send(payload)
+        .expect(409);
     });
 
     it('refuse un payload invalide : email mal formé et mot de passe trop court (400)', async () => {
       await request(app.getHttpServer())
         .post('/auth/register')
-        .send({ email: 'pas-un-email', password: 'court', firstName: 'A', lastName: 'B' })
+        .send({
+          email: 'pas-un-email',
+          password: 'court',
+          firstName: 'A',
+          lastName: 'B',
+        })
         .expect(400);
     });
 
@@ -74,7 +103,13 @@ describe('Auth (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/auth/register')
-        .send({ email, password: 'motdepasse123', firstName: 'Jean', lastName: 'Dupont', isAdmin: true })
+        .send({
+          email,
+          password: 'motdepasse123',
+          firstName: 'Jean',
+          lastName: 'Dupont',
+          isAdmin: true,
+        })
         .expect(400);
     });
   });
@@ -98,14 +133,20 @@ describe('Auth (e2e)', () => {
 
       expect(typeof res.body.accessToken).toBe('string');
       expect(res.body.accessToken.length).toBeGreaterThan(0);
-      expect(res.body.user).toMatchObject({ email, firstName: 'Ada', lastName: 'Lovelace' });
+      expect(res.body.user).toMatchObject({
+        email,
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+      });
       expect(res.body).not.toHaveProperty('password');
       expect(res.body).not.toHaveProperty('refreshToken');
 
       const setCookie = res.headers['set-cookie'];
       expect(setCookie).toBeDefined();
       const cookies = Array.isArray(setCookie) ? setCookie : [setCookie];
-      expect(cookies.some((c: string) => c.startsWith('refresh_token='))).toBe(true);
+      expect(cookies.some((c: string) => c.startsWith('refresh_token='))).toBe(
+        true,
+      );
       expect(cookies.some((c: string) => /HttpOnly/i.test(c))).toBe(true);
     });
 

@@ -11,15 +11,12 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const accessToken = useAuthStore((s) => s.accessToken);
   const setAuth = useAuthStore((s) => s.setAuth);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(() => Boolean(accessToken));
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     // Si on a déjà un token en mémoire (navigation interne), pas besoin de refresh
-    if (accessToken) {
-      setReady(true);
-      return;
-    }
+    if (accessToken) return;
 
     // Tentative de rehydratation via le cookie httpOnly (ex: après un reload)
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
@@ -47,7 +44,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         setReady(true);
       })
       .catch(() => router.replace('/login'));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!ready) return null;

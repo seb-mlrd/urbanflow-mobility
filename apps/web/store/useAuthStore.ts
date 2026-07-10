@@ -20,8 +20,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
   accessToken: null,
   user: null,
   transportModes: [],
-  setAuth: (token, user, transportModes = []) =>
-    set({ accessToken: token, user, transportModes }),
+  setAuth: (token, user, transportModes = []) => set({ accessToken: token, user, transportModes }),
   setTransportModes: (modes) => set({ transportModes: modes }),
   clearAuth: () => set({ accessToken: null, user: null, transportModes: [] }),
 }));

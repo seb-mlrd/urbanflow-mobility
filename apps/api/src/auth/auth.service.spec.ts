@@ -53,7 +53,10 @@ describe('AuthService', () => {
         { provide: UsersService, useValue: mockUsersService },
         { provide: ProfileService, useValue: mockProfileService },
         { provide: JwtService, useValue: mockJwtService },
-        { provide: getRepositoryToken(RefreshToken), useValue: mockRefreshTokenRepo },
+        {
+          provide: getRepositoryToken(RefreshToken),
+          useValue: mockRefreshTokenRepo,
+        },
       ],
     }).compile();
 

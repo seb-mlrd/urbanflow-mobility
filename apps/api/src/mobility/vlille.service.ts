@@ -48,18 +48,26 @@ export class VlilleService {
     private readonly config: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
-    this.infoUrl = this.config.getOrThrow<string>('GBFS_VLILLE_STATION_INFORMATION_URL');
-    this.statusUrl = this.config.getOrThrow<string>('GBFS_VLILLE_STATION_STATUS_URL');
+    this.infoUrl = this.config.getOrThrow<string>(
+      'GBFS_VLILLE_STATION_INFORMATION_URL',
+    );
+    this.statusUrl = this.config.getOrThrow<string>(
+      'GBFS_VLILLE_STATION_STATUS_URL',
+    );
   }
 
   async refresh(): Promise<void> {
     try {
       const [infoRes, statusRes] = await Promise.all([
         firstValueFrom(
-          this.httpService.get<VlilleStationInformationResponse>(this.infoUrl).pipe(timeout(FETCH_TIMEOUT_MS)),
+          this.httpService
+            .get<VlilleStationInformationResponse>(this.infoUrl)
+            .pipe(timeout(FETCH_TIMEOUT_MS)),
         ),
         firstValueFrom(
-          this.httpService.get<VlilleStationStatusResponse>(this.statusUrl).pipe(timeout(FETCH_TIMEOUT_MS)),
+          this.httpService
+            .get<VlilleStationStatusResponse>(this.statusUrl)
+            .pipe(timeout(FETCH_TIMEOUT_MS)),
         ),
       ]);
 
@@ -69,9 +77,13 @@ export class VlilleService {
         fetchedAt: Date.now(),
       };
 
-      await this.cacheManager.set(VlilleService.CACHE_KEY, snapshot, VlilleService.TTL_MS);
+      await this.cacheManager.set(
+        VlilleService.CACHE_KEY,
+        snapshot,
+        VlilleService.TTL_MS,
+      );
     } catch (err) {
-      this.logger.warn(`Échec du rafraîchissement V'Lille: ${err}`);
+      this.logger.warn(`Échec du rafraîchissement V'Lille: ${String(err)}`);
     }
   }
 
@@ -79,7 +91,9 @@ export class VlilleService {
     info: VlilleStationInformationResponse,
     status: VlilleStationStatusResponse,
   ): BikeStation[] {
-    const statusById = new Map(status.data.stations.map((s) => [s.station_id, s]));
+    const statusById = new Map(
+      status.data.stations.map((s) => [s.station_id, s]),
+    );
 
     const stations: BikeStation[] = [];
     for (const s of info.data.stations) {

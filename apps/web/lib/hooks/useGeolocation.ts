@@ -24,8 +24,10 @@ export interface GeoPosition {
 }
 
 export const GEO_ERROR_MESSAGES: Record<GeoErrorReason, string> = {
-  'consent-declined': "Vous avez refusé l'accès à votre position — vous pouvez saisir l'adresse manuellement.",
-  'permission-denied': 'Votre navigateur a bloqué l\'accès à la position. Vérifiez les autorisations du site.',
+  'consent-declined':
+    "Vous avez refusé l'accès à votre position — vous pouvez saisir l'adresse manuellement.",
+  'permission-denied':
+    "Votre navigateur a bloqué l'accès à la position. Vérifiez les autorisations du site.",
   timeout: 'La récupération de votre position a pris trop de temps. Réessayez.',
   unsupported: "La géolocalisation n'est pas disponible sur cet appareil.",
   'position-unavailable': "Votre position n'a pas pu être déterminée. Réessayez.",

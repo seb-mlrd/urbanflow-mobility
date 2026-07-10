@@ -7,7 +7,11 @@ import { AuthCard } from '../../../components/auth/AuthCard';
 import { AuthFeatureList } from '../../../components/auth/AuthFeatureList';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
-import { validateLoginForm, type LoginFormErrors, type LoginFormValues } from '../../../lib/auth.validation';
+import {
+  validateLoginForm,
+  type LoginFormErrors,
+  type LoginFormValues,
+} from '../../../lib/auth.validation';
 import { useAuthStore } from '../../../store/useAuthStore';
 
 const loginLeftContent = (
@@ -97,7 +101,9 @@ export default function LoginPage() {
     <AuthCard activeTab="login" leftContent={loginLeftContent}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full" noValidate>
         <div className="mb-1">
-          <h1 className="text-xl font-bold" style={{ color: 'var(--color-on-surface)' }}>Connexion à votre compte</h1>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--color-on-surface)' }}>
+            Connexion à votre compte
+          </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--color-on-surface-variant)' }}>
             Entrez vos identifiants pour accéder à votre espace mobilité.
           </p>
@@ -134,11 +140,23 @@ export default function LoginPage() {
         />
 
         {successMessage && (
-          <p role="status" className="text-sm rounded-lg px-4 py-3" style={{ color: 'var(--color-primary)', background: 'var(--color-surface-container-high)', border: '1px solid var(--color-primary)' }}>
+          <p
+            role="status"
+            className="text-sm rounded-lg px-4 py-3"
+            style={{
+              color: 'var(--color-primary)',
+              background: 'var(--color-surface-container-high)',
+              border: '1px solid var(--color-primary)',
+            }}
+          >
             {successMessage}
           </p>
         )}
-        {apiError && <p className="text-sm" style={{ color: 'var(--color-error)' }}>{apiError}</p>}
+        {apiError && (
+          <p className="text-sm" style={{ color: 'var(--color-error)' }}>
+            {apiError}
+          </p>
+        )}
 
         <Button type="submit" loading={loading} disabled={loading || !!successMessage}>
           Se connecter →
@@ -146,7 +164,11 @@ export default function LoginPage() {
 
         <p className="text-center text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
           Pas encore de compte ?{' '}
-          <Link href="/register" className="font-semibold" style={{ color: 'var(--color-primary)' }}>
+          <Link
+            href="/register"
+            className="font-semibold"
+            style={{ color: 'var(--color-primary)' }}
+          >
             S&apos;inscrire gratuitement
           </Link>
         </p>

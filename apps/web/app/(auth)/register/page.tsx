@@ -77,7 +77,13 @@ export default function RegisterPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName: form.firstName, lastName: form.lastName, email: form.email, password: form.password, transportModes: selectedModes }),
+        body: JSON.stringify({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          password: form.password,
+          transportModes: selectedModes,
+        }),
       });
 
       if (!res.ok) {
@@ -171,7 +177,9 @@ export default function RegisterPage() {
         />
 
         <div className="flex flex-col gap-3">
-          <span className="text-sm font-semibold" style={{ color: 'var(--color-on-surface)' }}>Modes de transport préférés</span>
+          <span className="text-sm font-semibold" style={{ color: 'var(--color-on-surface)' }}>
+            Modes de transport préférés
+          </span>
           <div className="flex flex-wrap gap-2">
             {TRANSPORT_MODES.map((mode) => (
               <ModeChip
@@ -194,7 +202,11 @@ export default function RegisterPage() {
                   Conditions Générales d&apos;Utilisation
                 </Link>{' '}
                 et la{' '}
-                <Link href="/confidentialite" className="underline" style={{ color: 'var(--color-primary)' }}>
+                <Link
+                  href="/confidentialite"
+                  className="underline"
+                  style={{ color: 'var(--color-primary)' }}
+                >
                   politique de confidentialité
                 </Link>{' '}
                 (RGPD)
@@ -206,15 +218,31 @@ export default function RegisterPage() {
               if (fieldErrors.cgu) setFieldErrors((prev) => ({ ...prev, cgu: undefined }));
             }}
           />
-          {fieldErrors.cgu && <p className="text-xs ml-8" style={{ color: 'var(--color-error)' }}>{fieldErrors.cgu}</p>}
+          {fieldErrors.cgu && (
+            <p className="text-xs ml-8" style={{ color: 'var(--color-error)' }}>
+              {fieldErrors.cgu}
+            </p>
+          )}
         </div>
 
         {successMessage && (
-          <p role="status" className="text-sm rounded-lg px-4 py-3" style={{ color: 'var(--color-primary)', background: 'var(--color-surface-container-high)', border: '1px solid var(--color-primary)' }}>
+          <p
+            role="status"
+            className="text-sm rounded-lg px-4 py-3"
+            style={{
+              color: 'var(--color-primary)',
+              background: 'var(--color-surface-container-high)',
+              border: '1px solid var(--color-primary)',
+            }}
+          >
             {successMessage}
           </p>
         )}
-        {apiError && <p className="text-sm" style={{ color: 'var(--color-error)' }}>{apiError}</p>}
+        {apiError && (
+          <p className="text-sm" style={{ color: 'var(--color-error)' }}>
+            {apiError}
+          </p>
+        )}
 
         <Button type="submit" loading={loading} disabled={loading || !!successMessage}>
           Créer mon compte et continuer →

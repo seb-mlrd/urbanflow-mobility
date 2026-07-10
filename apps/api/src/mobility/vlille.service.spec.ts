@@ -10,7 +10,9 @@ const STATUS_URL = 'https://media.ilevia.fr/opendata/station_status.json';
 
 const mockHttpService = { get: jest.fn() };
 const mockConfigService = {
-  getOrThrow: jest.fn((key: string) => (key === 'GBFS_VLILLE_STATION_INFORMATION_URL' ? INFO_URL : STATUS_URL)),
+  getOrThrow: jest.fn((key: string) =>
+    key === 'GBFS_VLILLE_STATION_INFORMATION_URL' ? INFO_URL : STATUS_URL,
+  ),
 };
 const mockCacheManager = { get: jest.fn(), set: jest.fn() };
 
@@ -44,7 +46,13 @@ describe('VlilleService', () => {
       .mockReturnValueOnce(
         of(
           infoResponse([
-            { station_id: '1', name: 'Gare Lille Flandres', lat: 50.6365, lon: 3.0708, capacity: 30 },
+            {
+              station_id: '1',
+              name: 'Gare Lille Flandres',
+              lat: 50.6365,
+              lon: 3.0708,
+              capacity: 30,
+            },
           ]),
         ),
       )
@@ -89,7 +97,7 @@ describe('VlilleService', () => {
     );
   });
 
-  it('ignore une station présente dans un flux mais absente de l\'autre', async () => {
+  it("ignore une station présente dans un flux mais absente de l'autre", async () => {
     mockHttpService.get
       .mockReturnValueOnce(
         of(
@@ -116,12 +124,16 @@ describe('VlilleService', () => {
 
     await service.refresh();
 
-    const snapshot = mockCacheManager.set.mock.calls[0][1] as { vehicles: unknown[] };
+    const snapshot = mockCacheManager.set.mock.calls[0][1] as {
+      vehicles: unknown[];
+    };
     expect(snapshot.vehicles).toHaveLength(1);
   });
 
   it('ne met pas à jour le cache si la requête HTTP échoue', async () => {
-    mockHttpService.get.mockReturnValue(throwError(() => new Error('network down')));
+    mockHttpService.get.mockReturnValue(
+      throwError(() => new Error('network down')),
+    );
 
     await service.refresh();
 

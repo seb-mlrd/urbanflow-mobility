@@ -29,13 +29,19 @@ export class ProfileService {
     return this.profileRepository.save(profile);
   }
 
-  async updateTransportModes(userId: string, transportModes: string[]): Promise<Profile> {
+  async updateTransportModes(
+    userId: string,
+    transportModes: string[],
+  ): Promise<Profile> {
     const profile = await this.findByUserId(userId);
     profile.transportModes = transportModes;
     return this.profileRepository.save(profile);
   }
 
-  async setGeolocationConsent(userId: string, granted: boolean): Promise<Profile> {
+  async setGeolocationConsent(
+    userId: string,
+    granted: boolean,
+  ): Promise<Profile> {
     const profile = await this.findByUserId(userId);
     profile.geolocationConsent = granted;
     profile.geolocationConsentAt = new Date();

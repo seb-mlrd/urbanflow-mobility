@@ -15,7 +15,11 @@ export function getModeLineColor(mode: string): string {
   return OTP_MODE_LINE_COLORS[mode] ?? DEFAULT_LINE_COLOR;
 }
 
-export function getModeLineStyle(mode: string): { color: string; dashArray?: string; weight: number } {
+export function getModeLineStyle(mode: string): {
+  color: string;
+  dashArray?: string;
+  weight: number;
+} {
   const color = getModeLineColor(mode);
   return mode === 'WALK' ? { color, dashArray: '4 8', weight: 4 } : { color, weight: 5 };
 }

@@ -9,13 +9,17 @@ interface GeolocationConsentModalProps {
   onDecline: () => void;
 }
 
-export function GeolocationConsentModal({ open, onAllow, onDecline }: GeolocationConsentModalProps) {
+export function GeolocationConsentModal({
+  open,
+  onAllow,
+  onDecline,
+}: GeolocationConsentModalProps) {
   return (
     <Modal open={open} onClose={onDecline} title="Utiliser votre position">
       <p className="text-sm" style={{ color: 'var(--color-on-surface)' }}>
         Nous souhaitons utiliser la position précise de votre appareil pour pré-remplir
-        automatiquement le champ « Départ » de votre recherche d&apos;itinéraire et vous
-        positionner sur la carte.
+        automatiquement le champ « Départ » de votre recherche d&apos;itinéraire et vous positionner
+        sur la carte.
       </p>
       <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
         Cette donnée de géolocalisation n&apos;est utilisée que pour ces fonctionnalités et

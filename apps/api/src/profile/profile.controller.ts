@@ -9,8 +9,15 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { IsArray, IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEmail,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import type { AuthenticatedRequest } from '../auth/jwt-payload.type.js';
 import { ProfileService } from './profile.service.js';
 
 class UpdateProfileDto {
@@ -45,13 +52,16 @@ export class ProfileController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getProfile(@Request() req: any) {
+  getProfile(@Request() req: AuthenticatedRequest) {
     return this.profileService.findByUserId(req.user.sub);
   }
 
   @Patch()
   @HttpCode(HttpStatus.OK)
-  async updateProfile(@Request() req: any, @Body() dto: UpdateProfileDto) {
+  async updateProfile(
+    @Request() req: AuthenticatedRequest,
+    @Body() dto: UpdateProfileDto,
+  ) {
     const { transportModes, geolocationConsent, ...userFields } = dto;
 
     try {
@@ -59,13 +69,23 @@ export class ProfileController {
         await this.profileService.updateUserInfo(req.user.sub, userFields);
       }
       if (transportModes !== undefined) {
-        await this.profileService.updateTransportModes(req.user.sub, transportModes);
+        await this.profileService.updateTransportModes(
+          req.user.sub,
+          transportModes,
+        );
       }
       if (geolocationConsent !== undefined) {
-        await this.profileService.setGeolocationConsent(req.user.sub, geolocationConsent);
+        await this.profileService.setGeolocationConsent(
+          req.user.sub,
+          geolocationConsent,
+        );
       }
-    } catch (err: any) {
-      if (err?.code === PG_UNIQUE_VIOLATION) {
+    } catch (err) {
+      const code =
+        err && typeof err === 'object'
+          ? (err as { code?: string }).code
+          : undefined;
+      if (code === PG_UNIQUE_VIOLATION) {
         throw new ConflictException('Cette adresse email est déjà utilisée.');
       }
       throw err;

@@ -24,14 +24,37 @@ export function TopBar({ onMenuToggle, sidebarOpen }: TopBarProps) {
           style={{ color: colors.onSurfaceVariant, borderRadius: radius.lg }}
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path
+              d="M3 5h14M3 10h14M3 15h14"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
           </svg>
         </button>
 
         <div className="flex items-center gap-2">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ color: colors.primary }}>
-            <path d="M13 4a1 1 0 1 0-2 0 1 1 0 0 0 2 0ZM6.5 8.5l2-3 1.5 2 1-1.5 3 4H5l1.5-2.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M10 12v5M8 17h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            aria-hidden="true"
+            style={{ color: colors.primary }}
+          >
+            <path
+              d="M13 4a1 1 0 1 0-2 0 1 1 0 0 0 2 0ZM6.5 8.5l2-3 1.5 2 1-1.5 3 4H5l1.5-2.5Z"
+              stroke="currentColor"
+              strokeWidth="1.3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M10 12v5M8 17h4"
+              stroke="currentColor"
+              strokeWidth="1.3"
+              strokeLinecap="round"
+            />
           </svg>
           <span style={{ ...typography.bodyMd, fontWeight: '700', color: colors.primary }}>
             UrbanFlow

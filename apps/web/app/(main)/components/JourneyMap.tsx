@@ -66,10 +66,7 @@ export function JourneyMap({ geo, selectedItinerary, children }: Props) {
       }));
   }, [selectedItinerary]);
 
-  const allPositions = useMemo(
-    () => decodedLegs.flatMap((l) => l.positions),
-    [decodedLegs],
-  );
+  const allPositions = useMemo(() => decodedLegs.flatMap((l) => l.positions), [decodedLegs]);
   const departurePosition = allPositions[0];
   const arrivalPosition = allPositions[allPositions.length - 1];
   const hasDistinctEndpoints =

@@ -6,7 +6,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'outline';
 }
 
-export function Button({ children, loading, disabled, variant = 'primary', style, ...props }: ButtonProps) {
+export function Button({
+  children,
+  loading,
+  disabled,
+  variant = 'primary',
+  style,
+  ...props
+}: ButtonProps) {
   const variantStyle =
     variant === 'outline'
       ? { border: `1px solid ${colors.primary}`, color: colors.primary, background: 'transparent' }
@@ -16,7 +23,13 @@ export function Button({ children, loading, disabled, variant = 'primary', style
     <button
       disabled={disabled || loading}
       className="w-full h-14 active:scale-[0.98] transition-transform disabled:opacity-50"
-      style={{ ...typography.bodyMd, fontWeight: '600', borderRadius: radius.xl, ...variantStyle, ...style }}
+      style={{
+        ...typography.bodyMd,
+        fontWeight: '600',
+        borderRadius: radius.xl,
+        ...variantStyle,
+        ...style,
+      }}
       {...props}
     >
       {loading ? 'Chargement…' : children}

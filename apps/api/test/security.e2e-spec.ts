@@ -22,7 +22,11 @@ describe('Security (e2e)', () => {
     app.enableCors({ origin: ALLOWED_ORIGIN, credentials: true });
     app.use(helmet());
     app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
     );
     await app.init();
   });
@@ -49,7 +53,7 @@ describe('Security (e2e)', () => {
     expect(res.headers['x-frame-options']).toBeDefined();
   });
 
-  it('une requête depuis une origine CORS non autorisée n\'est pas reflétée dans Access-Control-Allow-Origin', async () => {
+  it("une requête depuis une origine CORS non autorisée n'est pas reflétée dans Access-Control-Allow-Origin", async () => {
     const res = await request(app.getHttpServer())
       .get('/')
       .set('Origin', 'http://evil-site.example')
@@ -59,10 +63,12 @@ describe('Security (e2e)', () => {
     // l'en-tête Access-Control-Allow-Origin ne doit jamais refléter une
     // origine non autorisée : c'est ce qui empêche le navigateur du client
     // de lire la réponse depuis ce site.
-    expect(res.headers['access-control-allow-origin']).not.toBe('http://evil-site.example');
+    expect(res.headers['access-control-allow-origin']).not.toBe(
+      'http://evil-site.example',
+    );
   });
 
-  it('une requête depuis l\'origine autorisée reçoit bien Access-Control-Allow-Origin', async () => {
+  it("une requête depuis l'origine autorisée reçoit bien Access-Control-Allow-Origin", async () => {
     const res = await request(app.getHttpServer())
       .get('/')
       .set('Origin', ALLOWED_ORIGIN)
@@ -74,14 +80,25 @@ describe('Security (e2e)', () => {
   it('un payload malformé sur un DTO est rejeté avec 400 (validation class-validator)', async () => {
     await request(app.getHttpServer())
       .post('/auth/register')
-      .send({ email: 'pas-un-email', password: 123, firstName: '', lastName: '' })
+      .send({
+        email: 'pas-un-email',
+        password: 123,
+        firstName: '',
+        lastName: '',
+      })
       .expect(400);
   });
 
   it('un payload avec des champs non déclarés est rejeté avec 400 (whitelist/forbidNonWhitelisted)', async () => {
     await request(app.getHttpServer())
       .get('/transport/journey')
-      .query({ fromLat: 50.6, fromLng: 3.0, toLat: 50.6, toLng: 3.0, champInconnu: 'x' })
+      .query({
+        fromLat: 50.6,
+        fromLng: 3.0,
+        toLat: 50.6,
+        toLng: 3.0,
+        champInconnu: 'x',
+      })
       .expect(400);
   });
 });

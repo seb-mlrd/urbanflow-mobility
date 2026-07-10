@@ -19,10 +19,15 @@ export function AuthFeatureList({ badge, title, description, features }: AuthFea
         <p style={{ ...typography.labelMd, color: colors.primary, marginBottom: '16px' }}>
           {badge}
         </p>
-        <h2 style={{ ...typography.headlineLgMobile, color: colors.onSurface }}>
-          {title}
-        </h2>
-        <p style={{ ...typography.bodySm, color: colors.onSurfaceVariant, marginTop: '12px', lineHeight: '1.6' }}>
+        <h2 style={{ ...typography.headlineLgMobile, color: colors.onSurface }}>{title}</h2>
+        <p
+          style={{
+            ...typography.bodySm,
+            color: colors.onSurfaceVariant,
+            marginTop: '12px',
+            lineHeight: '1.6',
+          }}
+        >
           {description}
         </p>
       </div>
@@ -38,7 +43,14 @@ export function AuthFeatureList({ badge, title, description, features }: AuthFea
               <p style={{ ...typography.bodySm, fontWeight: '600', color: colors.onSurface }}>
                 {item.title}
               </p>
-              <p style={{ ...typography.labelMd, color: colors.onSurfaceVariant, textTransform: 'none', letterSpacing: 0 }}>
+              <p
+                style={{
+                  ...typography.labelMd,
+                  color: colors.onSurfaceVariant,
+                  textTransform: 'none',
+                  letterSpacing: 0,
+                }}
+              >
                 {item.desc}
               </p>
             </div>

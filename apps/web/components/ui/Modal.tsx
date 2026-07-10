@@ -42,7 +42,11 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         style={{ background: 'var(--color-surface-container)', zIndex: 1 }}
       >
         <div className="flex items-center justify-between">
-          <h2 id="modal-title" className="text-base font-semibold" style={{ color: 'var(--color-on-surface)' }}>
+          <h2
+            id="modal-title"
+            className="text-base font-semibold"
+            style={{ color: 'var(--color-on-surface)' }}
+          >
             {title}
           </h2>
           <button
@@ -50,12 +54,19 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors duration-150"
             style={{ color: 'var(--color-on-surface-variant)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-surface-container-high)')}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = 'var(--color-surface-container-high)')
+            }
             onMouseLeave={(e) => (e.currentTarget.style.background = '')}
             aria-label="Fermer"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <path
+                d="M4 4l8 8M12 4l-8 8"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
             </svg>
           </button>
         </div>

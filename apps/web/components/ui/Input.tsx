@@ -11,9 +11,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export function Input({ label, error, rightElement, wrapperClassName, ...props }: InputProps) {
   return (
     <div className={`flex flex-col gap-1.5 ${wrapperClassName ?? ''}`}>
-      <label style={{ ...typography.labelMd, color: colors.onSurfaceVariant }}>
-        {label}
-      </label>
+      <label style={{ ...typography.labelMd, color: colors.onSurfaceVariant }}>{label}</label>
       <div
         className="flex items-center px-4 h-12 transition-colors duration-150"
         style={{
@@ -30,7 +28,14 @@ export function Input({ label, error, rightElement, wrapperClassName, ...props }
         {rightElement}
       </div>
       {error && (
-        <p style={{ ...typography.labelMd, color: colors.error, textTransform: 'none', letterSpacing: 0 }}>
+        <p
+          style={{
+            ...typography.labelMd,
+            color: colors.error,
+            textTransform: 'none',
+            letterSpacing: 0,
+          }}
+        >
           {error}
         </p>
       )}

@@ -1,0 +1,121 @@
+name: CI — Qualité de code & Tests
+
+# S'exécute sur chaque push et chaque pull request, sur toutes les branches.
+# Ne dépend d'aucune infrastructure externe (pas de VPS requis).
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # @urbanflow/shared est consommé via son dist/ compilé (package.json "main": "dist/index.js"),
+      # il doit donc être build avant tout lint/test qui l'importe.
+      - name: Build shared package
+        run: pnpm --filter @urbanflow/shared build
+
+      - name: Lint — Frontend (ESLint)
+        run: pnpm --filter @urbanflow/web lint
+
+      - name: Lint — Backend (ESLint)
+        run: pnpm --filter @urbanflow/api lint
+
+      - name: Format check (Prettier)
+        run: pnpm format:check
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint-and-format
+
+    # Services éphémères : nécessaires car les tests e2e démarrent une vraie
+    # instance NestJS qui persiste réellement en base (register, planification...).
+    # Ils ne vivent que le temps du job, aucune donnée ne survit après le run.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: urbanflow_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared package
+        run: pnpm --filter @urbanflow/shared build
+
+      - name: Run backend unit tests
+        run: pnpm --filter @urbanflow/api test
+
+      # synchronize est désactivé côté TypeORM (apps/api/src/database/database.module.ts),
+      # les migrations doivent donc être appliquées explicitement avant les tests e2e.
+      - name: Run database migrations
+        run: pnpm --filter @urbanflow/api migration:run
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/urbanflow_test
+
+      # journey.e2e-spec.ts appelle un vrai serveur OpenTripPlanner (localhost:8888,
+      # aucun mock, cf. le commentaire du fichier) que cette CI ne provisionne pas.
+      # Il est donc exclu ici ; à lancer en local avec `docker compose up otp`.
+      - name: Run backend e2e tests
+        run: pnpm --filter @urbanflow/api test:e2e --testPathIgnorePatterns=journey.e2e-spec.ts
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/urbanflow_test
+          REDIS_URL: redis://localhost:6379
+          FRONTEND_URL: http://localhost:3000
+          JWT_SECRET: ci-test-secret-not-for-production
+          JWT_REFRESH_SECRET: ci-test-refresh-secret-not-for-production
+          NODE_ENV: test
+
+      - name: Run frontend tests
+        run: pnpm --filter @urbanflow/web test

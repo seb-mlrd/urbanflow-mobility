@@ -9,7 +9,18 @@ const itin = (mode: string, duration = 600) => ({
   startTime: 0,
   endTime: duration * 1000,
   dominantMode: mode,
-  legs: [{ mode, startTime: 0, endTime: duration * 1000, distance: 100, from: { name: 'Origin' }, to: { name: 'Destination' }, route: null, legGeometry: null }],
+  legs: [
+    {
+      mode,
+      startTime: 0,
+      endTime: duration * 1000,
+      distance: 100,
+      from: { name: 'Origin' },
+      to: { name: 'Destination' },
+      route: null,
+      legGeometry: null,
+    },
+  ],
 });
 
 describe('getActualDominantMode()', () => {
@@ -138,7 +149,18 @@ describe('filterAndSortItineraries()', () => {
           startTime: 0,
           endTime: 300000,
           dominantMode: 'CAR',
-          legs: [{ mode: 'CAR', startTime: 0, endTime: 300000, distance: 50, from: { name: 'Origin' }, to: { name: 'Destination' }, route: null, legGeometry: { points: 'abc123' } }],
+          legs: [
+            {
+              mode: 'CAR',
+              startTime: 0,
+              endTime: 300000,
+              distance: 50,
+              from: { name: 'Origin' },
+              to: { name: 'Destination' },
+              route: null,
+              legGeometry: { points: 'abc123' },
+            },
+          ],
         },
       ],
     };

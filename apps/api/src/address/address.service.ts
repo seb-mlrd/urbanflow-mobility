@@ -25,7 +25,9 @@ export class AddressService {
   }
 
   async delete(id: string, profileId: string): Promise<void> {
-    const address = await this.addressRepo.findOne({ where: { id, profileId } });
+    const address = await this.addressRepo.findOne({
+      where: { id, profileId },
+    });
     if (!address) throw new NotFoundException();
     await this.addressRepo.remove(address);
   }

@@ -42,7 +42,12 @@ describe('OtpAdapterService', () => {
       const cached = { itineraries: [] };
       mockCacheManager.get.mockResolvedValue(cached);
 
-      const result = await service.planAllModes(coords.fromLat, coords.fromLng, coords.toLat, coords.toLng);
+      const result = await service.planAllModes(
+        coords.fromLat,
+        coords.fromLng,
+        coords.toLat,
+        coords.toLng,
+      );
 
       expect(result).toBe(cached);
       expect(mockHttpService.post).not.toHaveBeenCalled();
@@ -50,12 +55,35 @@ describe('OtpAdapterService', () => {
 
     it('lance 4 requêtes OTP en parallèle et trie les itinéraires par durée croissante', async () => {
       mockHttpService.post
-        .mockReturnValueOnce(of(makeOtpResponse([{ duration: 1800, startTime: 0, endTime: 0, legs: [] }])))
-        .mockReturnValueOnce(of(makeOtpResponse([{ duration: 900, startTime: 0, endTime: 0, legs: [] }])))
-        .mockReturnValueOnce(of(makeOtpResponse([{ duration: 2400, startTime: 0, endTime: 0, legs: [] }])))
+        .mockReturnValueOnce(
+          of(
+            makeOtpResponse([
+              { duration: 1800, startTime: 0, endTime: 0, legs: [] },
+            ]),
+          ),
+        )
+        .mockReturnValueOnce(
+          of(
+            makeOtpResponse([
+              { duration: 900, startTime: 0, endTime: 0, legs: [] },
+            ]),
+          ),
+        )
+        .mockReturnValueOnce(
+          of(
+            makeOtpResponse([
+              { duration: 2400, startTime: 0, endTime: 0, legs: [] },
+            ]),
+          ),
+        )
         .mockReturnValueOnce(of(makeOtpResponse([])));
 
-      const result = await service.planAllModes(coords.fromLat, coords.fromLng, coords.toLat, coords.toLng) as any;
+      const result = (await service.planAllModes(
+        coords.fromLat,
+        coords.fromLng,
+        coords.toLat,
+        coords.toLng,
+      )) as any;
 
       expect(mockHttpService.post).toHaveBeenCalledTimes(4);
       expect(result.itineraries).toHaveLength(3);
@@ -66,12 +94,29 @@ describe('OtpAdapterService', () => {
 
     it('tag chaque itinéraire avec dominantMode correct', async () => {
       mockHttpService.post
-        .mockReturnValueOnce(of(makeOtpResponse([{ duration: 600, startTime: 0, endTime: 0, legs: [] }])))
-        .mockReturnValueOnce(of(makeOtpResponse([{ duration: 500, startTime: 0, endTime: 0, legs: [] }])))
+        .mockReturnValueOnce(
+          of(
+            makeOtpResponse([
+              { duration: 600, startTime: 0, endTime: 0, legs: [] },
+            ]),
+          ),
+        )
+        .mockReturnValueOnce(
+          of(
+            makeOtpResponse([
+              { duration: 500, startTime: 0, endTime: 0, legs: [] },
+            ]),
+          ),
+        )
         .mockReturnValueOnce(of(makeOtpResponse([])))
         .mockReturnValueOnce(of(makeOtpResponse([])));
 
-      const result = await service.planAllModes(coords.fromLat, coords.fromLng, coords.toLat, coords.toLng) as any;
+      const result = (await service.planAllModes(
+        coords.fromLat,
+        coords.fromLng,
+        coords.toLat,
+        coords.toLng,
+      )) as any;
 
       const modes = result.itineraries.map((i: any) => i.dominantMode);
       expect(modes).toContain('TRANSIT');
@@ -81,11 +126,22 @@ describe('OtpAdapterService', () => {
     it('retourne les modes restants si une query OTP échoue', async () => {
       mockHttpService.post
         .mockReturnValueOnce(throwError(() => new Error('timeout')))
-        .mockReturnValueOnce(of(makeOtpResponse([{ duration: 900, startTime: 0, endTime: 0, legs: [] }])))
+        .mockReturnValueOnce(
+          of(
+            makeOtpResponse([
+              { duration: 900, startTime: 0, endTime: 0, legs: [] },
+            ]),
+          ),
+        )
         .mockReturnValueOnce(of(makeOtpResponse([])))
         .mockReturnValueOnce(of(makeOtpResponse([])));
 
-      const result = await service.planAllModes(coords.fromLat, coords.fromLng, coords.toLat, coords.toLng) as any;
+      const result = (await service.planAllModes(
+        coords.fromLat,
+        coords.fromLng,
+        coords.toLat,
+        coords.toLng,
+      )) as any;
 
       expect(result.itineraries).toHaveLength(1);
       expect(result.itineraries[0].dominantMode).toBe('CAR');
@@ -94,7 +150,12 @@ describe('OtpAdapterService', () => {
     it('inclut legGeometry { points } dans la requête GraphQL envoyée à OTP', async () => {
       mockHttpService.post.mockReturnValue(of(makeOtpResponse([])));
 
-      await service.planAllModes(coords.fromLat, coords.fromLng, coords.toLat, coords.toLng);
+      await service.planAllModes(
+        coords.fromLat,
+        coords.fromLng,
+        coords.toLat,
+        coords.toLng,
+      );
 
       const [, body] = mockHttpService.post.mock.calls[0];
       expect(body.query).toContain('legGeometry { points }');
@@ -104,18 +165,38 @@ describe('OtpAdapterService', () => {
       const legGeometry = { points: 'wz`tHeduQoBpB' };
       mockHttpService.post
         .mockReturnValueOnce(of(makeOtpResponse([])))
-        .mockReturnValueOnce(of(makeOtpResponse([
-          {
-            duration: 600,
-            startTime: 0,
-            endTime: 600000,
-            legs: [{ mode: 'CAR', startTime: 0, endTime: 600000, distance: 100, from: { name: 'Origin', lat: 0, lon: 0 }, to: { name: 'Destination', lat: 0, lon: 0 }, route: null, legGeometry }],
-          },
-        ])))
+        .mockReturnValueOnce(
+          of(
+            makeOtpResponse([
+              {
+                duration: 600,
+                startTime: 0,
+                endTime: 600000,
+                legs: [
+                  {
+                    mode: 'CAR',
+                    startTime: 0,
+                    endTime: 600000,
+                    distance: 100,
+                    from: { name: 'Origin', lat: 0, lon: 0 },
+                    to: { name: 'Destination', lat: 0, lon: 0 },
+                    route: null,
+                    legGeometry,
+                  },
+                ],
+              },
+            ]),
+          ),
+        )
         .mockReturnValueOnce(of(makeOtpResponse([])))
         .mockReturnValueOnce(of(makeOtpResponse([])));
 
-      const result = await service.planAllModes(coords.fromLat, coords.fromLng, coords.toLat, coords.toLng) as any;
+      const result = (await service.planAllModes(
+        coords.fromLat,
+        coords.fromLng,
+        coords.toLat,
+        coords.toLng,
+      )) as any;
 
       expect(result.itineraries[0].legs[0].legGeometry).toEqual(legGeometry);
     });
@@ -123,7 +204,12 @@ describe('OtpAdapterService', () => {
     it('utilise une clé de cache avec coordonnées arrondies à 4 décimales', async () => {
       mockHttpService.post.mockReturnValue(of(makeOtpResponse([])));
 
-      await service.planAllModes(50.629200001, 3.057300001, 50.636000001, 3.063000001);
+      await service.planAllModes(
+        50.629200001,
+        3.057300001,
+        50.636000001,
+        3.063000001,
+      );
 
       const cacheKey = mockCacheManager.set.mock.calls[0][0] as string;
       expect(cacheKey).toContain('50.6292');
@@ -133,10 +219,17 @@ describe('OtpAdapterService', () => {
     });
 
     it('lève ServiceUnavailableException si toutes les queries échouent', async () => {
-      mockHttpService.post.mockReturnValue(throwError(() => new Error('OTP down')));
+      mockHttpService.post.mockReturnValue(
+        throwError(() => new Error('OTP down')),
+      );
 
       await expect(
-        service.planAllModes(coords.fromLat, coords.fromLng, coords.toLat, coords.toLng),
+        service.planAllModes(
+          coords.fromLat,
+          coords.fromLng,
+          coords.toLat,
+          coords.toLng,
+        ),
       ).resolves.toMatchObject({ itineraries: [] });
     });
   });
@@ -179,9 +272,13 @@ describe('OtpAdapterService', () => {
     });
 
     it('lève ServiceUnavailableException si OTP est inaccessible', async () => {
-      mockHttpService.post.mockReturnValue(throwError(() => new Error('connexion refusée')));
+      mockHttpService.post.mockReturnValue(
+        throwError(() => new Error('connexion refusée')),
+      );
 
-      await expect(service.getDepartures('ilevia:1234')).rejects.toThrow(ServiceUnavailableException);
+      await expect(service.getDepartures('ilevia:1234')).rejects.toThrow(
+        ServiceUnavailableException,
+      );
     });
   });
 });

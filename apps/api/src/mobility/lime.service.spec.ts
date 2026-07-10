@@ -5,7 +5,8 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { of, throwError } from 'rxjs';
 import { LimeService } from './lime.service.js';
 
-const FEED_URL = 'https://data.lime.bike/api/partners/v2/gbfs/lille/free_bike_status';
+const FEED_URL =
+  'https://data.lime.bike/api/partners/v2/gbfs/lille/free_bike_status';
 
 const mockHttpService = { get: jest.fn() };
 const mockConfigService = { getOrThrow: jest.fn().mockReturnValue(FEED_URL) };
@@ -84,7 +85,9 @@ describe('LimeService', () => {
   });
 
   it('ne met pas à jour le cache si la requête HTTP échoue', async () => {
-    mockHttpService.get.mockReturnValue(throwError(() => new Error('network down')));
+    mockHttpService.get.mockReturnValue(
+      throwError(() => new Error('network down')),
+    );
 
     await service.refresh();
 

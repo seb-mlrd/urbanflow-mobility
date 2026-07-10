@@ -7,7 +7,13 @@
     "dev": "pnpm --parallel --filter \"@urbanflow/*\" dev",
     "build": "pnpm --recursive --filter \"@urbanflow/*\" build",
     "lint": "pnpm --recursive lint",
-    "test": "pnpm --recursive test"
+    "test": "pnpm --recursive test",
+    "format:check": "prettier --check .",
+    "format": "prettier --write ."
   },
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.5.2",
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  }
 }

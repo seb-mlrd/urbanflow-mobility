@@ -22,7 +22,13 @@ const AUTHENTICATED_ITEMS = [
     href: '/activite',
     icon: (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-        <path d="M2 12l4-5 3 3 3-4 4 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M2 12l4-5 3 3 3-4 4 5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     ),
   },
@@ -32,7 +38,12 @@ const AUTHENTICATED_ITEMS = [
     icon: (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
         <circle cx="9" cy="6" r="3" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M3 15c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path
+          d="M3 15c0-3.314 2.686-6 6-6s6 2.686 6 6"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
       </svg>
     ),
   },
@@ -44,8 +55,19 @@ const GUEST_ITEMS = [
     href: '/login',
     icon: (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-        <path d="M7 3.5H4.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        <path d="M10 6l3 3-3 3M13 9H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M7 3.5H4.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H7"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M10 6l3 3-3 3M13 9H6"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     ),
   },
@@ -55,8 +77,18 @@ const GUEST_ITEMS = [
     icon: (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
         <circle cx="7" cy="6" r="2.7" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M2.2 15.3c0-2.7 2.2-4.9 4.9-4.9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        <path d="M13.5 7v4.5M11.25 9.25h4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path
+          d="M2.2 15.3c0-2.7 2.2-4.9 4.9-4.9"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M13.5 7v4.5M11.25 9.25h4.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
       </svg>
     ),
   },
