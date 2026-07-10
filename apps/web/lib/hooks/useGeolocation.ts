@@ -31,7 +31,7 @@ export const GEO_ERROR_MESSAGES: Record<GeoErrorReason, string> = {
   'position-unavailable': "Votre position n'a pas pu être déterminée. Réessayez.",
 };
 
-interface UseGeolocationResult {
+export interface UseGeolocationResult {
   status: GeoStatus;
   position: GeoPosition | null;
   error: GeoErrorReason | null;
