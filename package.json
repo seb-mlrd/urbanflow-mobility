@@ -12,6 +12,7 @@
     "format": "prettier --write ."
   },
   "license": "UNLICENSED",
+  "packageManager": "pnpm@11.5.2",
   "devDependencies": {
     "prettier": "^3.4.2"
   }
