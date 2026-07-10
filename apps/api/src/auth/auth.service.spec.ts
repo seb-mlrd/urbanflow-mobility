@@ -1,7 +1,11 @@
 import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { JwtService } from '@nestjs/jwt';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
+import { ProfileService } from '../profile/profile.service';
+import { RefreshToken } from './refresh-token.entity';
 import { User } from '../users/user.entity';
 
 jest.mock('bcrypt', () => ({
@@ -16,12 +20,27 @@ const mockUser: User = {
   password: 'hashed-password',
   firstName: 'Jean',
   lastName: 'Dupont',
+  profile: undefined as unknown as User['profile'],
   createdAt: new Date(),
   updatedAt: new Date(),
 };
 
 const mockUsersService = {
   create: jest.fn(),
+};
+
+const mockProfileService = {
+  create: jest.fn(),
+};
+
+const mockJwtService = {
+  signAsync: jest.fn(),
+};
+
+const mockRefreshTokenRepo = {
+  findOne: jest.fn(),
+  delete: jest.fn(),
+  save: jest.fn(),
 };
 
 describe('AuthService', () => {
@@ -32,6 +51,9 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         { provide: UsersService, useValue: mockUsersService },
+        { provide: ProfileService, useValue: mockProfileService },
+        { provide: JwtService, useValue: mockJwtService },
+        { provide: getRepositoryToken(RefreshToken), useValue: mockRefreshTokenRepo },
       ],
     }).compile();
 

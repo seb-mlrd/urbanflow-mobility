@@ -91,6 +91,35 @@ describe('OtpAdapterService', () => {
       expect(result.itineraries[0].dominantMode).toBe('CAR');
     });
 
+    it('inclut legGeometry { points } dans la requête GraphQL envoyée à OTP', async () => {
+      mockHttpService.post.mockReturnValue(of(makeOtpResponse([])));
+
+      await service.planAllModes(coords.fromLat, coords.fromLng, coords.toLat, coords.toLng);
+
+      const [, body] = mockHttpService.post.mock.calls[0];
+      expect(body.query).toContain('legGeometry { points }');
+    });
+
+    it('propage legGeometry sans le modifier dans la réponse fusionnée', async () => {
+      const legGeometry = { points: 'wz`tHeduQoBpB' };
+      mockHttpService.post
+        .mockReturnValueOnce(of(makeOtpResponse([])))
+        .mockReturnValueOnce(of(makeOtpResponse([
+          {
+            duration: 600,
+            startTime: 0,
+            endTime: 600000,
+            legs: [{ mode: 'CAR', startTime: 0, endTime: 600000, distance: 100, from: { name: 'Origin', lat: 0, lon: 0 }, to: { name: 'Destination', lat: 0, lon: 0 }, route: null, legGeometry }],
+          },
+        ])))
+        .mockReturnValueOnce(of(makeOtpResponse([])))
+        .mockReturnValueOnce(of(makeOtpResponse([])));
+
+      const result = await service.planAllModes(coords.fromLat, coords.fromLng, coords.toLat, coords.toLng) as any;
+
+      expect(result.itineraries[0].legs[0].legGeometry).toEqual(legGeometry);
+    });
+
     it('utilise une clé de cache avec coordonnées arrondies à 4 décimales', async () => {
       mockHttpService.post.mockReturnValue(of(makeOtpResponse([])));
 

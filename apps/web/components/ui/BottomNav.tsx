@@ -3,19 +3,21 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { colors, borders, radius, typography } from '../../lib/tokens';
+import { useAuthStore } from '../../store/useAuthStore';
 
-const NAV_ITEMS = [
-  {
-    label: 'Itinéraire',
-    href: '/',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <path d="M4 16V9a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        <circle cx="4" cy="16" r="2" stroke="currentColor" strokeWidth="1.5" />
-        <circle cx="16" cy="15" r="2" stroke="currentColor" strokeWidth="1.5" />
-      </svg>
-    ),
-  },
+const HOME_ITEM = {
+  label: 'Itinéraire',
+  href: '/',
+  icon: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M4 16V9a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="4" cy="16" r="2" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="16" cy="15" r="2" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  ),
+};
+
+const AUTHENTICATED_ITEMS = [
   {
     label: 'Activité',
     href: '/activite',
@@ -37,8 +39,34 @@ const NAV_ITEMS = [
   },
 ];
 
+const GUEST_ITEMS = [
+  {
+    label: 'Connexion',
+    href: '/login',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M8 4H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M11 7l3 3-3 3M14 10H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Inscription',
+    href: '/register',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M2.5 17c0-3.038 2.462-5.5 5.5-5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M15 8v5M12.5 10.5h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+];
+
 export function BottomNav() {
   const pathname = usePathname();
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const navItems = [HOME_ITEM, ...(accessToken ? AUTHENTICATED_ITEMS : GUEST_ITEMS)];
 
   return (
     <nav
@@ -46,7 +74,7 @@ export function BottomNav() {
       className="md:hidden fixed bottom-0 inset-x-0 flex items-center justify-around px-4 h-16 z-10"
       style={{ background: colors.surfaceContainerLowest, borderTop: borders.default }}
     >
-      {NAV_ITEMS.map(({ label, href, icon }) => {
+      {navItems.map(({ label, href, icon }) => {
         const active = href === '/' ? pathname === href : pathname.startsWith(href);
         return (
           <Link

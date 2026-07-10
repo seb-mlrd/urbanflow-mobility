@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from '../../../components/ui/Input';
 import { TRANSPORT_MODES } from '@urbanflow/shared';
 import { TRANSPORT_MODE_ICONS } from '../../../lib/transport-icons';
+import { GEO_ERROR_MESSAGES, type UseGeolocationResult } from '../../../lib/hooks/useGeolocation';
 
 interface Suggestion {
   label: string;
@@ -25,6 +26,7 @@ export interface JourneySearchValues {
 interface Props {
   onSearch: (values: JourneySearchValues) => void;
   loading: boolean;
+  geo: UseGeolocationResult;
 }
 
 function AddressField({
@@ -32,11 +34,13 @@ function AddressField({
   value,
   onChange,
   onSelect,
+  rightElement,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   onSelect: (s: Suggestion) => void;
+  rightElement?: React.ReactNode;
 }) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -64,7 +68,13 @@ function AddressField({
 
   return (
     <div className="relative">
-      <Input label={label} value={value} onChange={(e) => handleChange(e.target.value)} autoComplete="off" />
+      <Input
+        label={label}
+        value={value}
+        onChange={(e) => handleChange(e.target.value)}
+        autoComplete="off"
+        rightElement={rightElement}
+      />
       {suggestions.length > 0 && (
         <ul
           className="absolute left-0 right-0 top-full mt-1 rounded-xl overflow-hidden z-20"
@@ -90,7 +100,7 @@ function AddressField({
   );
 }
 
-export function JourneySearch({ onSearch, loading }: Props) {
+export function JourneySearch({ onSearch, loading, geo }: Props) {
   const [fromLabel, setFromLabel] = useState('');
   const [fromLat, setFromLat] = useState<number | null>(null);
   const [fromLng, setFromLng] = useState<number | null>(null);
@@ -100,7 +110,37 @@ export function JourneySearch({ onSearch, loading }: Props) {
   const [datetime, setDatetime] = useState('');
   const [selectedModes, setSelectedModes] = useState<string[]>([]);
 
+  useEffect(() => {
+    if (geo.status !== 'success' || !geo.position) return;
+    const { lat, lng } = geo.position;
+    setFromLat(lat);
+    setFromLng(lng);
+    setFromLabel('Position actuelle');
+
+    let cancelled = false;
+    fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${lng}&lat=${lat}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        const label = data?.features?.[0]?.properties?.label;
+        if (label) setFromLabel(label);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [geo.status, geo.position]);
+
   const canSearch = fromLat !== null && toLat !== null;
+
+  function handleSwap() {
+    setFromLabel(toLabel);
+    setFromLat(toLat);
+    setFromLng(toLng);
+    setToLabel(fromLabel);
+    setToLat(fromLat);
+    setToLng(fromLng);
+  }
 
   function toggleMode(mode: string) {
     setSelectedModes((prev) =>
@@ -116,18 +156,70 @@ export function JourneySearch({ onSearch, loading }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <AddressField
-        label="Départ"
-        value={fromLabel}
-        onChange={(v) => { setFromLabel(v); setFromLat(null); setFromLng(null); }}
-        onSelect={(s) => { setFromLabel(s.label); setFromLat(s.lat); setFromLng(s.lng); }}
-      />
-      <AddressField
-        label="Arrivée"
-        value={toLabel}
-        onChange={(v) => { setToLabel(v); setToLat(null); setToLng(null); }}
-        onSelect={(s) => { setToLabel(s.label); setToLat(s.lat); setToLng(s.lng); }}
-      />
+      <div className="flex items-center gap-3">
+        <div className="flex-1 min-w-0 flex flex-col gap-2">
+          <AddressField
+            label="Départ"
+            value={fromLabel}
+            onChange={(v) => { setFromLabel(v); setFromLat(null); setFromLng(null); }}
+            onSelect={(s) => { setFromLabel(s.label); setFromLat(s.lat); setFromLng(s.lng); }}
+            rightElement={
+              <button
+                type="button"
+                onClick={geo.requestLocation}
+                aria-label="Utiliser ma position"
+                title="Utiliser ma position"
+                className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-150"
+                style={{ color: 'var(--color-primary)' }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
+                  <path
+                    d="M12 2v3M12 19v3M2 12h3M19 12h3"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            }
+          />
+          <AddressField
+            label="Arrivée"
+            value={toLabel}
+            onChange={(v) => { setToLabel(v); setToLat(null); setToLng(null); }}
+            onSelect={(s) => { setToLabel(s.label); setToLat(s.lat); setToLng(s.lng); }}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={handleSwap}
+          aria-label="Intervertir départ et arrivée"
+          title="Intervertir départ et arrivée"
+          className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full transition-colors duration-150"
+          style={{ background: 'var(--color-surface-container-high)', border: '1px solid var(--color-outline-variant)' }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M5 2v10M5 12 2.5 9.5M5 12l2.5-2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-on-surface-variant)' }} />
+            <path d="M11 14V4M11 4 8.5 6.5M11 4l2.5 2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-on-surface-variant)' }} />
+          </svg>
+        </button>
+      </div>
+      {geo.status === 'error' && geo.error && (
+        <p className="text-xs" style={{ color: 'var(--color-error, #b3261e)' }}>
+          {GEO_ERROR_MESSAGES[geo.error]}
+        </p>
+      )}
+      {geo.hasConsent && (
+        <button
+          type="button"
+          onClick={geo.revokeConsent}
+          className="self-start text-xs underline"
+          style={{ color: 'var(--color-on-surface-variant)' }}
+        >
+          Oublier ma position
+        </button>
+      )}
       <div className="flex flex-col gap-1">
         <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-on-surface-variant)' }}>
           Date et heure (facultatif)

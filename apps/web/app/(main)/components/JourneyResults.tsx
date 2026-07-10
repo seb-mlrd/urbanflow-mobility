@@ -1,73 +1,34 @@
 'use client';
 
 import { OTP_MODE_ICONS, OTP_MODE_LABELS } from '../../../lib/transport-icons';
-import { getActualDominantMode, formatDuration } from '../../../lib/journey-utils';
-import { useAuthStore } from '../../../store/useAuthStore';
+import { formatDuration } from '../../../lib/journey-utils';
+import type { Itinerary } from '../../../lib/journey-types';
 
 function formatTime(ms: number) {
   return new Date(ms).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-interface Leg {
-  mode: string;
-  startTime: number;
-  endTime: number;
-  distance: number;
-  from: { name: string };
-  to: { name: string };
-  route: { shortName: string; longName: string } | null;
-}
-
-interface Itinerary {
-  duration: number;
-  startTime: number;
-  endTime: number;
-  dominantMode: string;
-  legs: Leg[];
-}
-
-interface JourneyResponse {
-  itineraries: Itinerary[];
-}
-
-const PROFILE_TO_OTP: Record<string, string> = {
-  'Vélo':       'BICYCLE',
-  'Transports': 'TRANSIT',
-  'Marche':     'WALK',
-  'Voiture':    'CAR',
-};
-
 interface Props {
-  result: JourneyResponse | null;
+  itineraries: (Itinerary & { dominantMode: string; isProfileMatch: boolean })[];
+  selectedIndex: number | null;
+  onSelect: (index: number) => void;
   fromLabel?: string;
   toLabel?: string;
-  selectedModes: string[];
+  loading?: boolean;
 }
 
-export function JourneyResults({ result, fromLabel, toLabel, selectedModes }: Props) {
-  const profileModes = useAuthStore((s) => s.transportModes);
-
-  if (!result) return null;
-
-  const allItineraries = result.itineraries.map((itin) => ({
-    ...itin,
-    dominantMode: getActualDominantMode(itin.legs),
-  }));
-
-  const profileOtpModes = new Set(
-    profileModes.map((m) => PROFILE_TO_OTP[m]).filter(Boolean),
-  );
-
-  const selectedOtpModes = new Set(
-    selectedModes.map((m) => PROFILE_TO_OTP[m]).filter(Boolean),
-  );
-
-  const itineraries = selectedOtpModes.size > 0
-    ? allItineraries.filter((itin) => selectedOtpModes.has(itin.dominantMode))
-    : [
-        ...allItineraries.filter((itin) => profileOtpModes.has(itin.dominantMode)),
-        ...allItineraries.filter((itin) => !profileOtpModes.has(itin.dominantMode)),
-      ];
+export function JourneyResults({ itineraries, selectedIndex, onSelect, fromLabel, toLabel, loading }: Props) {
+  if (loading) {
+    return (
+      <p className="text-sm flex items-center justify-center gap-2 py-8" style={{ color: 'var(--color-on-surface-variant)' }}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="animate-spin">
+          <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.6" strokeOpacity="0.25" />
+          <path d="M14.5 8a6.5 6.5 0 0 0-6.5-6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+        Recherche des meilleurs itinéraires…
+      </p>
+    );
+  }
 
   if (itineraries.length === 0) {
     return (
@@ -85,14 +46,26 @@ export function JourneyResults({ result, fromLabel, toLabel, selectedModes }: Pr
 
       {itineraries.map((itin, i) => {
         const dominantMode = itin.dominantMode;
-        const isProfileMatch = selectedOtpModes.size === 0 && profileOtpModes.has(dominantMode);
+        const isSelected = i === selectedIndex;
         return (
         <article
           key={`${itin.startTime}-${itin.duration}-${i}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => onSelect(i)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onSelect(i);
+            }
+          }}
           className="rounded-xl p-4 flex flex-col gap-3"
           style={{
-            background: 'var(--color-surface-container)',
-            border: isProfileMatch ? '1.5px solid var(--color-primary)' : '1.5px solid transparent',
+            background: isSelected ? 'var(--color-surface-container-high)' : 'var(--color-surface-container)',
+            border: itin.isProfileMatch ? '1.5px solid var(--color-primary)' : '1.5px solid transparent',
+            outline: isSelected ? '2px solid var(--color-secondary)' : 'none',
+            outlineOffset: '2px',
+            cursor: 'pointer',
           }}
         >
           {/* En-tête : mode dominant + durée */}
@@ -105,7 +78,7 @@ export function JourneyResults({ result, fromLabel, toLabel, selectedModes }: Pr
                 {OTP_MODE_ICONS[dominantMode] ?? null}
                 {OTP_MODE_LABELS[dominantMode] ?? dominantMode}
               </span>
-              {isProfileMatch && (
+              {itin.isProfileMatch && (
                 <span
                   className="text-xs font-semibold px-2 py-0.5 rounded-full"
                   style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}

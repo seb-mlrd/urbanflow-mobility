@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { getActualDominantMode, formatDuration } from './journey-utils';
+import { getActualDominantMode, formatDuration, filterAndSortItineraries } from './journey-utils';
+import type { JourneyResponse } from './journey-types';
 
 const leg = (mode: string) => ({ mode });
+
+const itin = (mode: string, duration = 600) => ({
+  duration,
+  startTime: 0,
+  endTime: duration * 1000,
+  dominantMode: mode,
+  legs: [{ mode, startTime: 0, endTime: duration * 1000, distance: 100, from: { name: 'Origin' }, to: { name: 'Destination' }, route: null, legGeometry: null }],
+});
 
 describe('getActualDominantMode()', () => {
   describe('modes TC (TRANSIT)', () => {
@@ -82,5 +91,58 @@ describe('formatDuration()', () => {
 
   it('arrondit 90 secondes à "2 min"', () => {
     expect(formatDuration(90)).toBe('2 min');
+  });
+});
+
+describe('filterAndSortItineraries()', () => {
+  it('retourne un tableau vide si result est null', () => {
+    expect(filterAndSortItineraries(null, [], [])).toEqual([]);
+  });
+
+  it('tag chaque itinéraire avec son dominantMode réel', () => {
+    const result: JourneyResponse = { itineraries: [itin('BUS'), itin('CAR')] };
+    const out = filterAndSortItineraries(result, [], []);
+    expect(out.map((i) => i.dominantMode)).toEqual(['TRANSIT', 'CAR']);
+  });
+
+  it('sans filtre sélectionné : met en avant les modes du profil utilisateur', () => {
+    const result: JourneyResponse = { itineraries: [itin('CAR'), itin('BICYCLE')] };
+    const out = filterAndSortItineraries(result, ['Vélo'], []);
+    expect(out.map((i) => i.dominantMode)).toEqual(['BICYCLE', 'CAR']);
+  });
+
+  it('marque isProfileMatch=true pour les itinéraires qui matchent le profil, sans filtre actif', () => {
+    const result: JourneyResponse = { itineraries: [itin('BICYCLE'), itin('CAR')] };
+    const out = filterAndSortItineraries(result, ['Vélo'], []);
+    expect(out.find((i) => i.dominantMode === 'BICYCLE')?.isProfileMatch).toBe(true);
+    expect(out.find((i) => i.dominantMode === 'CAR')?.isProfileMatch).toBe(false);
+  });
+
+  it('avec un filtre sélectionné : ne garde que les itinéraires du mode sélectionné', () => {
+    const result: JourneyResponse = { itineraries: [itin('CAR'), itin('BICYCLE'), itin('WALK')] };
+    const out = filterAndSortItineraries(result, [], ['Vélo']);
+    expect(out.map((i) => i.dominantMode)).toEqual(['BICYCLE']);
+  });
+
+  it('isProfileMatch=false pour tous les itinéraires quand un filtre est actif', () => {
+    const result: JourneyResponse = { itineraries: [itin('BICYCLE')] };
+    const out = filterAndSortItineraries(result, ['Vélo'], ['Vélo']);
+    expect(out[0].isProfileMatch).toBe(false);
+  });
+
+  it('conserve les legGeometry des legs sans les altérer', () => {
+    const result: JourneyResponse = {
+      itineraries: [
+        {
+          duration: 300,
+          startTime: 0,
+          endTime: 300000,
+          dominantMode: 'CAR',
+          legs: [{ mode: 'CAR', startTime: 0, endTime: 300000, distance: 50, from: { name: 'Origin' }, to: { name: 'Destination' }, route: null, legGeometry: { points: 'abc123' } }],
+        },
+      ],
+    };
+    const out = filterAndSortItineraries(result, [], []);
+    expect(out[0].legs[0].legGeometry).toEqual({ points: 'abc123' });
   });
 });
