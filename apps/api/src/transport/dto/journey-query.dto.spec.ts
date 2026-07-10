@@ -21,7 +21,10 @@ describe('JourneyQueryDto', () => {
   });
 
   it('valide avec datetime ISO 8601 optionnel', async () => {
-    const errors = await validateDto({ ...valid, datetime: '2026-06-21T14:00:00.000Z' });
+    const errors = await validateDto({
+      ...valid,
+      datetime: '2026-06-21T14:00:00.000Z',
+    });
     expect(errors).toHaveLength(0);
   });
 
@@ -44,7 +47,12 @@ describe('JourneyQueryDto', () => {
 
   describe('types des coordonnées', () => {
     it('accepte des strings numériques (transformées en number par @Type)', async () => {
-      const errors = await validateDto({ fromLat: '50.6292', fromLng: '3.0573', toLat: '50.636', toLng: '3.063' });
+      const errors = await validateDto({
+        fromLat: '50.6292',
+        fromLng: '3.0573',
+        toLat: '50.636',
+        toLng: '3.063',
+      });
       expect(errors).toHaveLength(0);
     });
 
@@ -56,7 +64,10 @@ describe('JourneyQueryDto', () => {
 
   describe('datetime', () => {
     it('lève une erreur si datetime est un format non ISO 8601', async () => {
-      const errors = await validateDto({ ...valid, datetime: '21/06/2026 14:00' });
+      const errors = await validateDto({
+        ...valid,
+        datetime: '21/06/2026 14:00',
+      });
       expect(errors.some((e) => e.property === 'datetime')).toBe(true);
     });
 

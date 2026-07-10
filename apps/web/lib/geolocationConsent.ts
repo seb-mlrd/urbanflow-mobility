@@ -14,7 +14,8 @@ function isStoredConsent(value: unknown): value is StoredConsent {
   return (
     typeof value === 'object' &&
     value !== null &&
-    ((value as StoredConsent).status === 'granted' || (value as StoredConsent).status === 'denied') &&
+    ((value as StoredConsent).status === 'granted' ||
+      (value as StoredConsent).status === 'denied') &&
     typeof (value as StoredConsent).timestamp === 'string' &&
     typeof (value as StoredConsent).policyVersion === 'number'
   );
@@ -26,7 +27,8 @@ export function getStoredConsent(): StoredConsent | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (!isStoredConsent(parsed) || parsed.policyVersion !== GEO_CONSENT_POLICY_VERSION) return null;
+    if (!isStoredConsent(parsed) || parsed.policyVersion !== GEO_CONSENT_POLICY_VERSION)
+      return null;
     return parsed;
   } catch {
     return null;

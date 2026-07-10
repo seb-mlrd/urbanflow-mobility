@@ -1,5 +1,9 @@
 import { createHash, randomBytes } from 'crypto';
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -38,10 +42,15 @@ export class AuthService {
 
       await this.profileService.create(user.id, dto.transportModes ?? []);
 
-      const { password: _, ...result } = user;
+      const { password: omittedPassword, ...result } = user;
+      void omittedPassword;
       return result;
-    } catch (err: any) {
-      if (err?.code === PG_UNIQUE_VIOLATION) {
+    } catch (err) {
+      const code =
+        err && typeof err === 'object'
+          ? (err as { code?: string }).code
+          : undefined;
+      if (code === PG_UNIQUE_VIOLATION) {
         throw new ConflictException('Cette adresse email est déjà utilisée.');
       }
       throw err;
@@ -69,11 +78,18 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      user: { id: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email },
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
     };
   }
 
-  async refresh(incomingToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async refresh(
+    incomingToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const tokenHash = this.hashToken(incomingToken);
     const stored = await this.refreshTokenRepo.findOne({
       where: { tokenHash },
@@ -89,7 +105,10 @@ export class AuthService {
     await this.refreshTokenRepo.delete(stored.id);
 
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync({ sub: stored.userId, email: stored.user.email }),
+      this.jwtService.signAsync({
+        sub: stored.userId,
+        email: stored.user.email,
+      }),
       this.issueRefreshToken(stored.userId),
     ]);
 
@@ -98,7 +117,9 @@ export class AuthService {
 
   async logout(incomingToken: string | undefined): Promise<void> {
     if (!incomingToken) return;
-    await this.refreshTokenRepo.delete({ tokenHash: this.hashToken(incomingToken) });
+    await this.refreshTokenRepo.delete({
+      tokenHash: this.hashToken(incomingToken),
+    });
   }
 
   private async issueRefreshToken(userId: string): Promise<string> {

@@ -20,7 +20,11 @@ export function ModeChip({ label, selected, onToggle, icon }: ModeChipProps) {
         fontWeight: '500',
         borderRadius: radius.full,
         ...(selected
-          ? { background: colors.secondaryContainer, color: colors.onSecondaryContainer, border: borders.none }
+          ? {
+              background: colors.secondaryContainer,
+              color: colors.onSecondaryContainer,
+              border: borders.none,
+            }
           : { background: 'transparent', color: colors.onSurfaceVariant, border: borders.default }),
       }}
     >

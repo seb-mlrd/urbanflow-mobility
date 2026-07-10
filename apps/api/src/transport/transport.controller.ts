@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { OtpAdapterService } from './otp-adapter.service.js';
 import { JourneyQueryDto } from './dto/journey-query.dto.js';
 import { NearbyStopsQueryDto } from './dto/nearby-stops-query.dto.js';

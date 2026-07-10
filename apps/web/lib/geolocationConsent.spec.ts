@@ -21,7 +21,7 @@ function createMemoryStorage(): Storage {
 }
 
 beforeEach(() => {
-  (globalThis as any).localStorage = createMemoryStorage();
+  (globalThis as unknown as { localStorage: Storage }).localStorage = createMemoryStorage();
 });
 
 describe('getStoredConsent()', () => {
@@ -45,7 +45,11 @@ describe('getStoredConsent()', () => {
   it('retourne null si la version de politique stockée ne correspond pas', () => {
     localStorage.setItem(
       'geoConsent:v1',
-      JSON.stringify({ status: 'granted', timestamp: new Date().toISOString(), policyVersion: 999 }),
+      JSON.stringify({
+        status: 'granted',
+        timestamp: new Date().toISOString(),
+        policyVersion: 999,
+      }),
     );
     expect(getStoredConsent()).toBeNull();
   });

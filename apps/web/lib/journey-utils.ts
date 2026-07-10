@@ -3,10 +3,10 @@ import type { Itinerary, JourneyResponse } from './journey-types';
 export const TRANSIT_MODES = new Set(['SUBWAY', 'TRAM', 'RAIL', 'BUS']);
 
 export const PROFILE_TO_OTP: Record<string, string> = {
-  'Vélo': 'BICYCLE',
-  'Transports': 'TRANSIT',
-  'Marche': 'WALK',
-  'Voiture': 'CAR',
+  Vélo: 'BICYCLE',
+  Transports: 'TRANSIT',
+  Marche: 'WALK',
+  Voiture: 'CAR',
 };
 
 export function getActualDominantMode(legs: { mode: string }[]): string {
@@ -23,13 +23,9 @@ export function filterAndSortItineraries(
 ): (Itinerary & { dominantMode: string; isProfileMatch: boolean })[] {
   if (!result) return [];
 
-  const profileOtpModes = new Set(
-    profileModes.map((m) => PROFILE_TO_OTP[m]).filter(Boolean),
-  );
+  const profileOtpModes = new Set(profileModes.map((m) => PROFILE_TO_OTP[m]).filter(Boolean));
 
-  const selectedOtpModes = new Set(
-    selectedModes.map((m) => PROFILE_TO_OTP[m]).filter(Boolean),
-  );
+  const selectedOtpModes = new Set(selectedModes.map((m) => PROFILE_TO_OTP[m]).filter(Boolean));
 
   const allItineraries = result.itineraries.map((itin) => {
     const dominantMode = getActualDominantMode(itin.legs);

@@ -1,4 +1,9 @@
-import { Injectable, ServiceUnavailableException, Inject, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  ServiceUnavailableException,
+  Inject,
+  Logger,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -61,10 +66,13 @@ function makePlanQuery(transportModes: string, numItineraries: number): string {
 }
 
 const MODE_QUERIES = [
-  { dominantMode: 'TRANSIT', query: makePlanQuery('[{mode: TRANSIT}, {mode: WALK}]', 3) },
-  { dominantMode: 'CAR',     query: makePlanQuery('[{mode: CAR}]', 1) },
+  {
+    dominantMode: 'TRANSIT',
+    query: makePlanQuery('[{mode: TRANSIT}, {mode: WALK}]', 3),
+  },
+  { dominantMode: 'CAR', query: makePlanQuery('[{mode: CAR}]', 1) },
   { dominantMode: 'BICYCLE', query: makePlanQuery('[{mode: BICYCLE}]', 1) },
-  { dominantMode: 'WALK',    query: makePlanQuery('[{mode: WALK}]', 1) },
+  { dominantMode: 'WALK', query: makePlanQuery('[{mode: WALK}]', 1) },
 ];
 
 const QUERIES = {
@@ -118,7 +126,13 @@ export class OtpAdapterService {
     this.otpUrl = this.config.getOrThrow<string>('OTP_GRAPHQL_URL');
   }
 
-  async planAllModes(fromLat: number, fromLng: number, toLat: number, toLng: number, datetime?: string) {
+  async planAllModes(
+    fromLat: number,
+    fromLng: number,
+    toLat: number,
+    toLng: number,
+    datetime?: string,
+  ) {
     const dt = datetime ? new Date(datetime) : new Date();
     const date = dt.toISOString().slice(0, 10);
     const time = dt.toTimeString().slice(0, 8);
@@ -137,12 +151,18 @@ export class OtpAdapterService {
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
       if (result.status === 'rejected') {
-        this.logger.warn(`OTP query [${MODE_QUERIES[i].dominantMode}] failed: ${result.reason}`);
+        this.logger.warn(
+          `OTP query [${MODE_QUERIES[i].dominantMode}] failed: ${result.reason}`,
+        );
         continue;
       }
-      const list = (result.value as OtpPlanResponse)?.data?.plan?.itineraries ?? [];
+      const list =
+        (result.value as OtpPlanResponse)?.data?.plan?.itineraries ?? [];
       for (const itin of list) {
-        itineraries.push({ ...itin, dominantMode: MODE_QUERIES[i].dominantMode });
+        itineraries.push({
+          ...itin,
+          dominantMode: MODE_QUERIES[i].dominantMode,
+        });
       }
     }
 
@@ -158,7 +178,11 @@ export class OtpAdapterService {
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) return cached;
 
-    const data = await this.query(QUERIES.stopsNearby, { lat, lon: lng, radius });
+    const data = await this.query(QUERIES.stopsNearby, {
+      lat,
+      lon: lng,
+      radius,
+    });
 
     await this.cacheManager.set(cacheKey, data, 3_600_000);
     return data;
@@ -175,14 +199,17 @@ export class OtpAdapterService {
     return data;
   }
 
-  private async query(query: string, variables: Record<string, unknown>) {
+  private async query(
+    query: string,
+    variables: Record<string, unknown>,
+  ): Promise<unknown> {
     try {
       const response = await firstValueFrom(
         this.httpService
           .post(this.otpUrl, { query, variables })
           .pipe(timeout(OTP_TIMEOUT_MS)),
       );
-      return response.data;
+      return response.data as unknown;
     } catch {
       throw new ServiceUnavailableException('OpenTripPlanner est inaccessible');
     }

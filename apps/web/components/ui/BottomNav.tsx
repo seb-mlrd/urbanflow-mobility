@@ -10,7 +10,12 @@ const HOME_ITEM = {
   href: '/',
   icon: (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="M4 16V9a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M4 16V9a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
       <circle cx="4" cy="16" r="2" stroke="currentColor" strokeWidth="1.5" />
       <circle cx="16" cy="15" r="2" stroke="currentColor" strokeWidth="1.5" />
     </svg>
@@ -23,7 +28,13 @@ const AUTHENTICATED_ITEMS = [
     href: '/activite',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <path d="M2 13l4-5.5 3.5 3.5 3.5-5 4 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M2 13l4-5.5 3.5 3.5 3.5-5 4 6"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     ),
   },
@@ -33,7 +44,12 @@ const AUTHENTICATED_ITEMS = [
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
         <circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M3.5 17c0-3.59 2.91-6.5 6.5-6.5s6.5 2.91 6.5 6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path
+          d="M3.5 17c0-3.59 2.91-6.5 6.5-6.5s6.5 2.91 6.5 6.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
       </svg>
     ),
   },
@@ -45,8 +61,19 @@ const GUEST_ITEMS = [
     href: '/login',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <path d="M8 4H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        <path d="M11 7l3 3-3 3M14 10H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M8 4H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M11 7l3 3-3 3M14 10H7"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     ),
   },
@@ -56,8 +83,18 @@ const GUEST_ITEMS = [
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
         <circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M2.5 17c0-3.038 2.462-5.5 5.5-5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        <path d="M15 8v5M12.5 10.5h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path
+          d="M2.5 17c0-3.038 2.462-5.5 5.5-5.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M15 8v5M12.5 10.5h5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
       </svg>
     ),
   },

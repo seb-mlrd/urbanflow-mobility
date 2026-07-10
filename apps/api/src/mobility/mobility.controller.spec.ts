@@ -28,13 +28,17 @@ describe('MobilityController', () => {
       const result = await controller.getBikes();
 
       expect(result).toBe(snapshot);
-      expect(mockCacheManager.get).toHaveBeenCalledWith(VlilleService.CACHE_KEY);
+      expect(mockCacheManager.get).toHaveBeenCalledWith(
+        VlilleService.CACHE_KEY,
+      );
     });
 
-    it("lève ServiceUnavailableException si le cache est vide", async () => {
+    it('lève ServiceUnavailableException si le cache est vide', async () => {
       mockCacheManager.get.mockResolvedValue(undefined);
 
-      await expect(controller.getBikes()).rejects.toThrow(ServiceUnavailableException);
+      await expect(controller.getBikes()).rejects.toThrow(
+        ServiceUnavailableException,
+      );
     });
   });
 
@@ -49,10 +53,12 @@ describe('MobilityController', () => {
       expect(mockCacheManager.get).toHaveBeenCalledWith(LimeService.CACHE_KEY);
     });
 
-    it("lève ServiceUnavailableException si le cache est vide", async () => {
+    it('lève ServiceUnavailableException si le cache est vide', async () => {
       mockCacheManager.get.mockResolvedValue(undefined);
 
-      await expect(controller.getScooters()).rejects.toThrow(ServiceUnavailableException);
+      await expect(controller.getScooters()).rejects.toThrow(
+        ServiceUnavailableException,
+      );
     });
   });
 });

@@ -1,4 +1,12 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
@@ -35,17 +43,16 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const incoming = req.cookies?.[REFRESH_COOKIE] as string | undefined;
-    const { accessToken, refreshToken } = await this.authService.refresh(incoming ?? '');
+    const { accessToken, refreshToken } = await this.authService.refresh(
+      incoming ?? '',
+    );
     this.setRefreshCookie(res, refreshToken);
     return { accessToken };
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const incoming = req.cookies?.[REFRESH_COOKIE] as string | undefined;
     await this.authService.logout(incoming);
     res.clearCookie(REFRESH_COOKIE, this.cookieOptions(0));

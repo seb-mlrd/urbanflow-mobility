@@ -33,7 +33,7 @@ describe('NearbyStopsQueryDto', () => {
   });
 
   describe('radius', () => {
-    it('est optionnel — pas d\'erreur si absent', async () => {
+    it("est optionnel — pas d'erreur si absent", async () => {
       const errors = await validateDto(valid);
       expect(errors).toHaveLength(0);
     });

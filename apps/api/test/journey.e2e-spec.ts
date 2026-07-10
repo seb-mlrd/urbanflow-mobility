@@ -28,7 +28,11 @@ describe('Transport journey (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
     );
     await app.init();
 
@@ -111,7 +115,12 @@ describe('Transport journey (e2e)', () => {
     beforeAll(async () => {
       await request(app.getHttpServer())
         .post('/auth/register')
-        .send({ email, password: 'motdepasse123', firstName: 'Test', lastName: 'Journey' })
+        .send({
+          email,
+          password: 'motdepasse123',
+          firstName: 'Test',
+          lastName: 'Journey',
+        })
         .expect(201);
 
       const login = await request(app.getHttpServer())

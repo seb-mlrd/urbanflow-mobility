@@ -9,14 +9,11 @@ import { BottomNav } from '../../components/ui/BottomNav';
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const accessToken = useAuthStore((s) => s.accessToken);
   const setAuth = useAuthStore((s) => s.setAuth);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(() => Boolean(accessToken));
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (accessToken) {
-      setReady(true);
-      return;
-    }
+    if (accessToken) return;
 
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
       method: 'POST',
@@ -39,7 +36,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         setReady(true);
       })
       .catch(() => setReady(true));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!ready) return null;

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { getModeLineColor, getModeLineStyle, DEFAULT_LINE_COLOR, OTP_MODE_LINE_COLORS } from './transport-colors';
+import {
+  getModeLineColor,
+  getModeLineStyle,
+  DEFAULT_LINE_COLOR,
+  OTP_MODE_LINE_COLORS,
+} from './transport-colors';
 
 describe('getModeLineColor()', () => {
   it('retourne la couleur définie pour un mode connu', () => {

@@ -24,42 +24,42 @@
 /* Basic page settings */
 html,
 body {
-    background-color: #1e1f22;
-    color: #b5b5b5;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
+  background-color: #1e1f22;
+  color: #b5b5b5;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
 }
 
 body {
-    background-color: #1e1f22 !important;
+  background-color: #1e1f22 !important;
 }
 
 /* Headings */
 h1 {
-    background: transparent;
-    border-bottom: 1px solid #999;
-    color: #777;
-    font-size: 150%;
-    font-weight: normal;
-    margin: 0;
-    padding: 0.8em 0.667em;
+  background: transparent;
+  border-bottom: 1px solid #999;
+  color: #777;
+  font-size: 150%;
+  font-weight: normal;
+  margin: 0;
+  padding: 0.8em 0.667em;
 }
 
 h2 {
-    background: #2b2d30;
-    font-size: 150%;
-    font-weight: normal;
-    margin: 0 0 20px -18px;
-    padding: 0.8em 1em;
-    color: #fff;
+  background: #2b2d30;
+  font-size: 150%;
+  font-weight: normal;
+  margin: 0 0 20px -18px;
+  padding: 0.8em 1em;
+  color: #fff;
 }
 
 h3 {
-    color: #af8d57;
-    font-size: 130%;
-    font-weight: normal;
-    margin: 1em 0 0;
+  color: #af8d57;
+  font-size: 130%;
+  font-weight: normal;
+  margin: 1em 0 0;
 }
 
 /* ==========================================================================
@@ -68,29 +68,29 @@ h3 {
 
 /* Basic link styling */
 a {
-    color: #b5b5b5;
+  color: #b5b5b5;
 }
 
 a:visited {
-    color: #b5b5b5;
+  color: #b5b5b5;
 }
 
 /* Active elements */
 .active {
-    color: #af8d57 !important;
-    font-weight: bold;
+  color: #af8d57 !important;
+  font-weight: bold;
 }
 
 /* Navigation elements */
 #logins a,
 #tables a,
 #tables span {
-    background: transparent;
+  background: transparent;
 }
 
 /* JUSH syntax highlighting links */
 .jush a {
-    color: #448dd0;
+  color: #448dd0;
 }
 
 /* ==========================================================================
@@ -99,22 +99,22 @@ a:visited {
 
 /* Button styling */
 button,
-input[type="submit"],
-input[type="button"],
-input[type="reset"] {
-    background-color: #3574f0 !important;
-    color: white !important;
-    border: none !important;
-    padding: 3px 16px;
-    cursor: pointer;
-    border-radius: 4px;
+input[type='submit'],
+input[type='button'],
+input[type='reset'] {
+  background-color: #3574f0 !important;
+  color: white !important;
+  border: none !important;
+  padding: 3px 16px;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
 button:hover,
-input[type="submit"]:hover,
-input[type="button"]:hover,
-input[type="reset"]:hover {
-    background-color: #2559cc !important;
+input[type='submit']:hover,
+input[type='button']:hover,
+input[type='reset']:hover {
+  background-color: #2559cc !important;
 }
 
 /* ==========================================================================
@@ -123,30 +123,30 @@ input[type="reset"]:hover {
 
 /* Main menu */
 #menu {
-    background-color: #2b2d30;
+  background-color: #2b2d30;
 }
 
 /* Breadcrumb navigation */
 #breadcrumb {
-    background: #2b2d30;
-    height: 2em;
-    left: 21em;
-    line-height: 1.8em;
-    margin: 0 0 0 -18px;
-    padding: 0 1em;
-    position: absolute;
-    top: 0;
-    white-space: nowrap;
+  background: #2b2d30;
+  height: 2em;
+  left: 21em;
+  line-height: 1.8em;
+  margin: 0 0 0 -18px;
+  padding: 0 1em;
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
 }
 
 /* Logout button */
 .logout {
-    background-color: transparent;
-    box-shadow: 0 0 5px 5px transparent;
-    margin-top: 0.5em;
-    position: absolute;
-    right: 0;
-    top: 0;
+  background-color: transparent;
+  box-shadow: 0 0 5px 5px transparent;
+  margin-top: 0.5em;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 /* ==========================================================================
@@ -158,41 +158,41 @@ table,
 td,
 th,
 .js .column {
-    border-color: #313438;
-    border-style: solid;
-    background: transparent;
+  border-color: #313438;
+  border-style: solid;
+  background: transparent;
 }
 
 /* Table headers */
 thead td,
 thead th {
-    background: #2b2d30;
+  background: #2b2d30;
 }
 
 /* Row alternating background - odd rows (darker) */
 tbody tr:nth-child(odd),
 table tr:nth-child(odd) {
-    background-color: #1e1f22 !important;
+  background-color: #1e1f22 !important;
 }
 
 /* Row alternating background - even rows (lighter) */
 .odds tbody tr:nth-child(2n),
 tbody tr:nth-child(even),
 table tr:nth-child(even) {
-    background-color: #26282e !important;
+  background-color: #26282e !important;
 }
 
 /* Hover effect for table rows */
 table tr:hover {
-    background-color: #3a3d40 !important;
+  background-color: #3a3d40 !important;
 }
 
 /* Basic styling for rows */
 tr {
-    border-color: inherit;
-    display: table-row;
-    unicode-bidi: isolate;
-    vertical-align: inherit;
+  border-color: inherit;
+  display: table-row;
+  unicode-bidi: isolate;
+  vertical-align: inherit;
 }
 
 /* ==========================================================================
@@ -200,9 +200,9 @@ tr {
    ========================================================================== */
 
 code {
-    background: transparent;
-    font-size: 110%;
-    padding: 1px 2px;
+  background: transparent;
+  font-size: 110%;
+  padding: 1px 2px;
 }
 
 /* ==========================================================================
@@ -210,13 +210,13 @@ code {
    ========================================================================== */
 
 .footer {
-    bottom: 0;
-    box-shadow: 0 -5px 10px 10px #2b2d30;
-    margin: 23px -20px 0.5em 0;
-    position: sticky;
+  bottom: 0;
+  box-shadow: 0 -5px 10px 10px #2b2d30;
+  margin: 23px -20px 0.5em 0;
+  position: sticky;
 }
 
 .footer > div {
-    background: #2b2d30;
-    padding: 0 0 0.5em;
+  background: #2b2d30;
+  padding: 0 0 0.5em;
 }
