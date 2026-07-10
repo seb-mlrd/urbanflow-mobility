@@ -15,6 +15,7 @@ interface OtpLeg {
   from: { name: string; lat: number; lon: number };
   to: { name: string; lat: number; lon: number };
   route: { shortName: string; longName: string } | null;
+  legGeometry: { points: string } | null;
 }
 
 interface OtpItinerary {
@@ -51,6 +52,7 @@ function makePlanQuery(transportModes: string, numItineraries: number): string {
             from { name lat lon }
             to { name lat lon }
             route { shortName longName }
+            legGeometry { points }
           }
         }
       }
