@@ -16,10 +16,21 @@ export function getActualDominantMode(legs: { mode: string }[]): string {
   return 'WALK';
 }
 
+export type SortBy = 'duration' | 'co2' | 'price';
+
+function sortItineraries<T extends { duration: number; co2Grams: number }>(
+  itineraries: T[],
+  sortBy: SortBy,
+): T[] {
+  if (sortBy === 'co2') return [...itineraries].sort((a, b) => a.co2Grams - b.co2Grams);
+  return [...itineraries].sort((a, b) => a.duration - b.duration);
+}
+
 export function filterAndSortItineraries(
   result: JourneyResponse | null,
   profileModes: string[],
   selectedModes: string[],
+  sortBy: SortBy = 'duration',
 ): (Itinerary & { dominantMode: string; isProfileMatch: boolean })[] {
   if (!result) return [];
 
@@ -37,12 +48,21 @@ export function filterAndSortItineraries(
   });
 
   if (selectedOtpModes.size > 0) {
-    return allItineraries.filter((itin) => selectedOtpModes.has(itin.dominantMode));
+    return sortItineraries(
+      allItineraries.filter((itin) => selectedOtpModes.has(itin.dominantMode)),
+      sortBy,
+    );
   }
 
   return [
-    ...allItineraries.filter((itin) => profileOtpModes.has(itin.dominantMode)),
-    ...allItineraries.filter((itin) => !profileOtpModes.has(itin.dominantMode)),
+    ...sortItineraries(
+      allItineraries.filter((itin) => profileOtpModes.has(itin.dominantMode)),
+      sortBy,
+    ),
+    ...sortItineraries(
+      allItineraries.filter((itin) => !profileOtpModes.has(itin.dominantMode)),
+      sortBy,
+    ),
   ];
 }
 
@@ -50,4 +70,9 @@ export function formatDuration(seconds: number): string {
   const m = Math.round(seconds / 60);
   if (m < 60) return `${m} min`;
   return `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
+}
+
+export function formatCo2(grams: number): string {
+  if (grams < 1000) return `${Math.round(grams)} g CO2`;
+  return `${(grams / 1000).toFixed(1)} kg CO2`;
 }

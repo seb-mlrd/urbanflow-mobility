@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { firstValueFrom, timeout } from 'rxjs';
+import { CarbonService } from './carbon.service.js';
 
 const OTP_TIMEOUT_MS = 5_000;
 
@@ -122,6 +123,7 @@ export class OtpAdapterService {
     private readonly httpService: HttpService,
     private readonly config: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly carbonService: CarbonService,
   ) {
     this.otpUrl = this.config.getOrThrow<string>('OTP_GRAPHQL_URL');
   }
@@ -147,7 +149,10 @@ export class OtpAdapterService {
       MODE_QUERIES.map(({ query }) => this.query(query, vars)),
     );
 
-    const itineraries: (OtpItinerary & { dominantMode: string })[] = [];
+    const itineraries: (OtpItinerary & {
+      dominantMode: string;
+      co2Grams: number;
+    })[] = [];
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
       if (result.status === 'rejected') {
@@ -162,6 +167,7 @@ export class OtpAdapterService {
         itineraries.push({
           ...itin,
           dominantMode: MODE_QUERIES[i].dominantMode,
+          co2Grams: this.carbonService.computeItineraryCo2Grams(itin.legs),
         });
       }
     }

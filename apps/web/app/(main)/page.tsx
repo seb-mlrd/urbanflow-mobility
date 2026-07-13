@@ -7,7 +7,7 @@ import { JourneyResults } from './components/JourneyResults';
 import { GeolocationConsentModal } from '../../components/GeolocationConsentModal';
 import { useGeolocation } from '../../lib/hooks/useGeolocation';
 import { getStoredConsent } from '../../lib/geolocationConsent';
-import { filterAndSortItineraries } from '../../lib/journey-utils';
+import { filterAndSortItineraries, type SortBy } from '../../lib/journey-utils';
 import { useAuthStore } from '../../store/useAuthStore';
 import type { JourneyResponse } from '../../lib/journey-types';
 
@@ -21,7 +21,7 @@ const JourneyMap = dynamic(() => import('./components/JourneyMap').then((m) => m
   ),
 });
 
-const SORT_TABS: { key: 'duration' | 'co2' | 'price'; label: string }[] = [
+const SORT_TABS: { key: SortBy; label: string }[] = [
   { key: 'duration', label: 'Durée' },
   { key: 'co2', label: 'CO2' },
   { key: 'price', label: 'Prix' },
@@ -37,6 +37,7 @@ export default function HomePage() {
   > | null>(null);
   const [selectedItineraryIndex, setSelectedItineraryIndex] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(true);
+  const [sortBy, setSortBy] = useState<SortBy>('duration');
   const geo = useGeolocation();
   const profileModes = useAuthStore((s) => s.transportModes);
 
@@ -46,8 +47,8 @@ export default function HomePage() {
   }, []);
 
   const filteredItineraries = useMemo(
-    () => filterAndSortItineraries(result, profileModes, lastSearch?.selectedModes ?? []),
-    [result, profileModes, lastSearch],
+    () => filterAndSortItineraries(result, profileModes, lastSearch?.selectedModes ?? [], sortBy),
+    [result, profileModes, lastSearch, sortBy],
   );
 
   const [appliedItineraries, setAppliedItineraries] = useState(filteredItineraries);
@@ -226,17 +227,18 @@ export default function HomePage() {
                     <button
                       key={tab.key}
                       type="button"
-                      disabled={tab.key !== 'duration'}
-                      aria-pressed={tab.key === 'duration'}
-                      title={tab.key !== 'duration' ? 'Bientôt disponible' : undefined}
+                      disabled={tab.key === 'price'}
+                      aria-pressed={tab.key === sortBy}
+                      title={tab.key === 'price' ? 'Bientôt disponible' : undefined}
+                      onClick={() => setSortBy(tab.key)}
                       className="text-sm font-medium px-3 py-1.5 rounded-full transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{
                         background:
-                          tab.key === 'duration'
+                          tab.key === sortBy
                             ? 'var(--color-primary)'
                             : 'var(--color-surface-container-high)',
                         color:
-                          tab.key === 'duration'
+                          tab.key === sortBy
                             ? 'var(--color-on-primary)'
                             : 'var(--color-on-surface-variant)',
                       }}

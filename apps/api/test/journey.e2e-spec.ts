@@ -56,6 +56,8 @@ describe('Transport journey (e2e)', () => {
       const itinerary = res.body.itineraries[0];
       expect(typeof itinerary.duration).toBe('number');
       expect(typeof itinerary.dominantMode).toBe('string');
+      expect(typeof itinerary.co2Grams).toBe('number');
+      expect(itinerary.co2Grams).toBeGreaterThanOrEqual(0);
       expect(Array.isArray(itinerary.legs)).toBe(true);
       expect(itinerary.legs.length).toBeGreaterThan(0);
 

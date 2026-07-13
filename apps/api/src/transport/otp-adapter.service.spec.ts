@@ -5,6 +5,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ServiceUnavailableException } from '@nestjs/common';
 import { of, throwError } from 'rxjs';
 import { OtpAdapterService } from './otp-adapter.service.js';
+import { CarbonService } from './carbon.service.js';
 
 const OTP_URL = 'http://localhost:8888/otp/gtfs/v1';
 
@@ -25,6 +26,7 @@ describe('OtpAdapterService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OtpAdapterService,
+        CarbonService,
         { provide: HttpService, useValue: mockHttpService },
         { provide: ConfigService, useValue: mockConfigService },
         { provide: CACHE_MANAGER, useValue: mockCacheManager },
@@ -199,6 +201,34 @@ describe('OtpAdapterService', () => {
       )) as any;
 
       expect(result.itineraries[0].legs[0].legGeometry).toEqual(legGeometry);
+    });
+
+    it('attache un champ co2Grams calculé à chaque itinéraire', async () => {
+      mockHttpService.post
+        .mockReturnValueOnce(of(makeOtpResponse([])))
+        .mockReturnValueOnce(
+          of(
+            makeOtpResponse([
+              {
+                duration: 600,
+                startTime: 0,
+                endTime: 600000,
+                legs: [{ mode: 'CAR', distance: 10_000 }],
+              },
+            ]),
+          ),
+        )
+        .mockReturnValueOnce(of(makeOtpResponse([])))
+        .mockReturnValueOnce(of(makeOtpResponse([])));
+
+      const result = (await service.planAllModes(
+        coords.fromLat,
+        coords.fromLng,
+        coords.toLat,
+        coords.toLng,
+      )) as any;
+
+      expect(result.itineraries[0].co2Grams).toBe(1930);
     });
 
     it('utilise une clé de cache avec coordonnées arrondies à 4 décimales', async () => {
