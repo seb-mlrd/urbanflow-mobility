@@ -27,4 +27,9 @@ export class TransportController {
   getDepartures(@Param('stopId') stopId: string) {
     return this.otpAdapter.getDepartures(stopId);
   }
+
+  @Get('routes')
+  getAllRoutes() {
+    return this.otpAdapter.getAllRoutes();
+  }
 }

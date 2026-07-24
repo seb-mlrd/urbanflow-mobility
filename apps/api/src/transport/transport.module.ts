@@ -9,5 +9,6 @@ import { CarbonService } from './carbon.service.js';
   imports: [HttpModule, ConfigModule],
   controllers: [TransportController],
   providers: [OtpAdapterService, CarbonService],
+  exports: [OtpAdapterService],
 })
 export class TransportModule {}

@@ -2,6 +2,14 @@ export const TRANSPORT_MODES = ['Vélo', 'Trottinette', 'Transports', 'Marche', 
 
 export type TransportMode = (typeof TRANSPORT_MODES)[number];
 
+export interface RouteDto {
+  gtfsId: string;
+  shortName: string;
+  longName: string | null;
+  mode: string | null;
+  color: string | null;
+}
+
 export const OTP_MODE_LABELS: Record<string, string> = {
   WALK: 'Marche',
   BUS: 'Bus',
