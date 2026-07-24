@@ -1,6 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { colors, borders, radius, typography } from '../../lib/tokens';
+import { useNotificationsStore } from '../../store/useNotificationsStore';
 
 interface TopBarProps {
   onMenuToggle: () => void;
@@ -8,6 +10,8 @@ interface TopBarProps {
 }
 
 export function TopBar({ onMenuToggle, sidebarOpen }: TopBarProps) {
+  const router = useRouter();
+  const unreadCount = useNotificationsStore((s) => s.unreadCount);
   return (
     <header
       className="flex items-center justify-between px-4 h-14 shrink-0"
@@ -20,7 +24,7 @@ export function TopBar({ onMenuToggle, sidebarOpen }: TopBarProps) {
           onClick={onMenuToggle}
           aria-label={sidebarOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
           aria-expanded={sidebarOpen}
-          className="hidden md:flex w-10 h-10 items-center justify-center transition-colors duration-150"
+          className="hidden md:flex w-10 h-10 items-center justify-center cursor-pointer transition-colors duration-150"
           style={{ color: colors.onSurfaceVariant, borderRadius: radius.lg }}
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -64,8 +68,13 @@ export function TopBar({ onMenuToggle, sidebarOpen }: TopBarProps) {
 
       <button
         type="button"
-        aria-label="Notifications"
-        className="w-10 h-10 flex items-center justify-center transition-colors duration-150"
+        onClick={() => router.push('/notifications')}
+        aria-label={
+          unreadCount > 0
+            ? `Notifications, ${unreadCount} non lue${unreadCount > 1 ? 's' : ''}`
+            : 'Notifications'
+        }
+        className="relative w-10 h-10 flex items-center justify-center cursor-pointer transition-colors duration-150"
         style={{ color: colors.onSurfaceVariant, borderRadius: radius.lg }}
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -77,6 +86,15 @@ export function TopBar({ onMenuToggle, sidebarOpen }: TopBarProps) {
             strokeLinejoin="round"
           />
         </svg>
+        {unreadCount > 0 && (
+          <span
+            aria-hidden="true"
+            className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full text-[10px] font-semibold leading-none"
+            style={{ background: colors.error, color: colors.onError }}
+          >
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
       </button>
     </header>
   );

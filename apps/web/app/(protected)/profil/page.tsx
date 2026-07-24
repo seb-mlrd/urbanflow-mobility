@@ -1,6 +1,7 @@
 'use client';
 
 import { TRANSPORT_MODES } from '@urbanflow/shared';
+import type { LineSubscriptionDto, RouteDto } from '@urbanflow/shared';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Input } from '../../../components/ui/Input';
@@ -147,6 +148,15 @@ export default function ProfilPage() {
   const [savingAddress, setSavingAddress] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [lineSubsOpen, setLineSubsOpen] = useState(false);
+  const [lineSubs, setLineSubs] = useState<LineSubscriptionDto[]>([]);
+  const [lineSubsLoaded, setLineSubsLoaded] = useState(false);
+  const [lineSubModalOpen, setLineSubModalOpen] = useState(false);
+  const [routes, setRoutes] = useState<RouteDto[]>([]);
+  const [routesLoaded, setRoutesLoaded] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState<RouteDto | null>(null);
+  const [savingLineSub, setSavingLineSub] = useState(false);
+
   useEffect(() => {
     if (!accessToken) return;
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/addresses`, {
@@ -268,6 +278,72 @@ export default function ProfilPage() {
         credentials: 'include',
       });
       setAddresses((prev) => prev.filter((a) => a.id !== id));
+    } catch {}
+  }
+
+  async function loadLineSubs() {
+    if (lineSubsLoaded) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/line-subscriptions`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: 'include',
+      });
+      if (res.ok) setLineSubs(await res.json());
+    } catch {}
+    setLineSubsLoaded(true);
+  }
+
+  function toggleLineSubsSection() {
+    if (!lineSubsOpen) loadLineSubs();
+    setLineSubsOpen((v) => !v);
+  }
+
+  async function openLineSubModal() {
+    setLineSubModalOpen(true);
+    if (!routesLoaded) {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transport/routes`);
+        if (res.ok) setRoutes(await res.json());
+      } catch {}
+      setRoutesLoaded(true);
+    }
+  }
+
+  function closeLineSubModal() {
+    setLineSubModalOpen(false);
+    setSelectedRoute(null);
+  }
+
+  async function saveLineSub() {
+    if (!selectedRoute) return;
+    setSavingLineSub(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/line-subscriptions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        credentials: 'include',
+        body: JSON.stringify({
+          routeGtfsId: selectedRoute.gtfsId,
+          routeShortName: selectedRoute.shortName,
+        }),
+      });
+      if (res.ok) {
+        const newSub = await res.json();
+        setLineSubs((prev) => [newSub, ...prev]);
+        closeLineSubModal();
+      }
+    } catch {}
+    setSavingLineSub(false);
+  }
+
+  async function deleteLineSub(id: string) {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/line-subscriptions/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: 'include',
+      });
+      setLineSubs((prev) => prev.filter((s) => s.id !== id));
     } catch {}
   }
 
@@ -900,6 +976,138 @@ export default function ProfilPage() {
           )}
         </div>
 
+        {/* ── Lignes favorites — item expandable ── */}
+        <div style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
+          <button
+            type="button"
+            onClick={toggleLineSubsSection}
+            aria-expanded={lineSubsOpen}
+            className="w-full flex items-center gap-4 px-4 py-4 min-h-[64px] text-left transition-colors duration-150"
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = 'var(--color-surface-container-high)')
+            }
+            onMouseLeave={(e) => (e.currentTarget.style.background = '')}
+          >
+            <span
+              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+              style={{
+                background: 'var(--color-surface-container-high)',
+                color: 'var(--color-on-surface-variant)',
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path
+                  d="M10 2a6 6 0 0 0-6 6v3l-1.5 2.5h15L16 11V8a6 6 0 0 0-6-6ZM8.5 16.5a1.5 1.5 0 0 0 3 0"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <span className="flex-1 min-w-0">
+              <span
+                className="block text-sm font-medium"
+                style={{ color: 'var(--color-on-surface)' }}
+              >
+                Lignes favorites
+              </span>
+              <span
+                className="block text-xs mt-0.5 truncate"
+                style={{ color: 'var(--color-on-surface-variant)' }}
+              >
+                {lineSubs.length > 0
+                  ? lineSubs.map((s) => s.routeShortName).join(', ')
+                  : "Recevez une alerte en cas de perturbation d'une ligne"}
+              </span>
+            </span>
+            <ChevronDown open={lineSubsOpen} />
+          </button>
+
+          {lineSubsOpen && (
+            <div
+              className="px-4 pb-4"
+              style={{ borderTop: '1px solid var(--color-outline-variant)' }}
+            >
+              {lineSubs.length > 0 ? (
+                <ul className="flex flex-col gap-2 pt-4">
+                  {lineSubs.map((sub) => (
+                    <li
+                      key={sub.id}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg"
+                      style={{ background: 'var(--color-surface-container-high)' }}
+                    >
+                      <span className="flex-1 min-w-0">
+                        <span
+                          className="block text-sm font-medium"
+                          style={{ color: 'var(--color-on-surface)' }}
+                        >
+                          Ligne {sub.routeShortName}
+                        </span>
+                        <span
+                          className="block text-xs mt-0.5 truncate"
+                          style={{ color: 'var(--color-on-surface-variant)' }}
+                        >
+                          {sub.fromLabel && sub.toLabel
+                            ? `${sub.fromLabel} → ${sub.toLabel}`
+                            : 'Aucun trajet habituel — pas d’alternative calculée'}
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => deleteLineSub(sub.id)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg shrink-0 transition-colors duration-150"
+                        style={{ color: 'var(--color-error)' }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background = 'var(--color-error-container)')
+                        }
+                        onMouseLeave={(e) => (e.currentTarget.style.background = '')}
+                        aria-label={`Retirer la ligne ${sub.routeShortName}`}
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 14 14"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M2 4h10M5 4V2h4v2M12 4l-.8 8H2.8L2 4"
+                            stroke="currentColor"
+                            strokeWidth="1.3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="pt-4 text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
+                  Aucune ligne favorite pour le moment.
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={openLineSubModal}
+                className="mt-4 flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg min-h-[36px] transition-colors duration-150"
+                style={{ color: 'var(--color-primary)', border: '1px solid var(--color-primary)' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path
+                    d="M7 2v10M2 7h10"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                Ajouter une ligne favorite
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* ── Géolocalisation — consentement ── */}
         <div style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
           <div className="flex items-center gap-4 px-4 py-4 min-h-[64px]">
@@ -1053,6 +1261,72 @@ export default function ProfilPage() {
               type="button"
               onClick={closeAddressModal}
               disabled={savingAddress}
+              className="px-4 py-2.5 rounded-lg text-sm font-medium min-h-[44px] transition-colors duration-150"
+              style={{
+                color: 'var(--color-on-surface-variant)',
+                border: '1px solid var(--color-outline-variant)',
+              }}
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ── Modal ajout ligne favorite ── */}
+      <Modal open={lineSubModalOpen} onClose={closeLineSubModal} title="Ajouter une ligne favorite">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label
+              className="text-sm font-medium"
+              style={{ color: 'var(--color-on-surface-variant)' }}
+              htmlFor="line-sub-route"
+            >
+              Ligne
+            </label>
+            <select
+              id="line-sub-route"
+              value={selectedRoute?.gtfsId ?? ''}
+              onChange={(e) => {
+                const route = routes.find((r) => r.gtfsId === e.target.value) ?? null;
+                setSelectedRoute(route);
+              }}
+              className="h-12 px-4 rounded-lg text-sm"
+              style={{
+                background: 'var(--color-surface-container-high)',
+                color: 'var(--color-on-surface)',
+                border: '1px solid var(--color-outline-variant)',
+              }}
+            >
+              <option value="">Sélectionner une ligne</option>
+              {routes.map((route) => (
+                <option key={route.gtfsId} value={route.gtfsId}>
+                  {route.shortName}
+                  {route.longName ? ` — ${route.longName}` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+          {routesLoaded && routes.length === 0 && (
+            <p className="text-xs" style={{ color: 'var(--color-on-surface-variant)' }}>
+              Impossible de charger la liste des lignes pour le moment.
+            </p>
+          )}
+
+          <div className="flex gap-3 mt-1">
+            <button
+              type="button"
+              onClick={saveLineSub}
+              disabled={savingLineSub || !selectedRoute}
+              className="flex-1 flex items-center justify-center text-sm font-semibold px-4 py-2.5 rounded-lg min-h-[44px] transition-colors duration-150 disabled:opacity-50"
+              style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+            >
+              {savingLineSub ? 'Enregistrement…' : 'Enregistrer'}
+            </button>
+            <button
+              type="button"
+              onClick={closeLineSubModal}
+              disabled={savingLineSub}
               className="px-4 py-2.5 rounded-lg text-sm font-medium min-h-[44px] transition-colors duration-150"
               style={{
                 color: 'var(--color-on-surface-variant)',
