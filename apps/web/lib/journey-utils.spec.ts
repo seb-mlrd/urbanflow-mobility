@@ -175,11 +175,7 @@ describe('filterAndSortItineraries()', () => {
 
   it('sortBy=co2 : trie par CO2 croissant à l’intérieur de chaque groupe (profil d’abord)', () => {
     const result: JourneyResponse = {
-      itineraries: [
-        itin('CAR', 600, 500),
-        itin('BICYCLE', 900, 20),
-        itin('BICYCLE', 300, 5),
-      ],
+      itineraries: [itin('CAR', 600, 500), itin('BICYCLE', 900, 20), itin('BICYCLE', 300, 5)],
     };
     const out = filterAndSortItineraries(result, ['Vélo'], [], 'co2');
     // Groupe profil (BICYCLE) trié par co2 d'abord, puis le reste (CAR).
