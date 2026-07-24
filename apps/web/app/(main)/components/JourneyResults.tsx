@@ -1,7 +1,8 @@
 'use client';
 
+import { Leaf } from 'lucide-react';
 import { OTP_MODE_ICONS, OTP_MODE_LABELS } from '../../../lib/transport-icons';
-import { formatDuration } from '../../../lib/journey-utils';
+import { formatDuration, formatCo2 } from '../../../lib/journey-utils';
 import type { Itinerary } from '../../../lib/journey-types';
 
 function formatTime(ms: number) {
@@ -127,12 +128,24 @@ export function JourneyResults({
                   </span>
                 )}
               </div>
-              <span
-                className="text-sm font-semibold px-3 py-1 rounded-full"
-                style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
-              >
-                {formatDuration(itin.duration)}
-              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-sm font-semibold px-3 py-1 rounded-full"
+                  style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+                >
+                  {formatDuration(itin.duration)}
+                </span>
+                <span
+                  className="flex items-center gap-1 text-sm font-semibold px-3 py-1 rounded-full"
+                  style={{
+                    background: 'var(--color-surface-container-high)',
+                    color: 'var(--color-on-surface-variant)',
+                  }}
+                >
+                  <Leaf size={14} aria-hidden="true" />
+                  {formatCo2(itin.co2Grams)}
+                </span>
+              </div>
             </div>
 
             {/* Horaires */}

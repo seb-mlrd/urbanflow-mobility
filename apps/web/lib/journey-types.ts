@@ -14,6 +14,7 @@ export interface Itinerary {
   startTime: number;
   endTime: number;
   dominantMode: string;
+  co2Grams: number;
   legs: Leg[];
 }
 

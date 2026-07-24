@@ -1,14 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { getActualDominantMode, formatDuration, filterAndSortItineraries } from './journey-utils';
+import {
+  getActualDominantMode,
+  formatDuration,
+  formatCo2,
+  filterAndSortItineraries,
+} from './journey-utils';
 import type { JourneyResponse } from './journey-types';
 
 const leg = (mode: string) => ({ mode });
 
-const itin = (mode: string, duration = 600) => ({
+const itin = (mode: string, duration = 600, co2Grams = 0) => ({
   duration,
   startTime: 0,
   endTime: duration * 1000,
   dominantMode: mode,
+  co2Grams,
   legs: [
     {
       mode,
@@ -105,6 +111,24 @@ describe('formatDuration()', () => {
   });
 });
 
+describe('formatCo2()', () => {
+  it('formate 0 gramme en "0 g CO2"', () => {
+    expect(formatCo2(0)).toBe('0 g CO2');
+  });
+
+  it('formate 42 grammes en "42 g CO2"', () => {
+    expect(formatCo2(42)).toBe('42 g CO2');
+  });
+
+  it('formate 1000 grammes en "1.0 kg CO2"', () => {
+    expect(formatCo2(1000)).toBe('1.0 kg CO2');
+  });
+
+  it('formate 2530 grammes en "2.5 kg CO2"', () => {
+    expect(formatCo2(2530)).toBe('2.5 kg CO2');
+  });
+});
+
 describe('filterAndSortItineraries()', () => {
   it('retourne un tableau vide si result est null', () => {
     expect(filterAndSortItineraries(null, [], [])).toEqual([]);
@@ -141,6 +165,35 @@ describe('filterAndSortItineraries()', () => {
     expect(out[0].isProfileMatch).toBe(false);
   });
 
+  it('sans sortBy explicite : trie par durée croissante (comportement par défaut)', () => {
+    const result: JourneyResponse = {
+      itineraries: [itin('CAR', 1200), itin('BICYCLE', 300)],
+    };
+    const out = filterAndSortItineraries(result, [], []);
+    expect(out.map((i) => i.duration)).toEqual([300, 1200]);
+  });
+
+  it('sortBy=co2 : trie par CO2 croissant à l’intérieur de chaque groupe (profil d’abord)', () => {
+    const result: JourneyResponse = {
+      itineraries: [itin('CAR', 600, 500), itin('BICYCLE', 900, 20), itin('BICYCLE', 300, 5)],
+    };
+    const out = filterAndSortItineraries(result, ['Vélo'], [], 'co2');
+    // Groupe profil (BICYCLE) trié par co2 d'abord, puis le reste (CAR).
+    expect(out.map((i) => [i.dominantMode, i.co2Grams])).toEqual([
+      ['BICYCLE', 5],
+      ['BICYCLE', 20],
+      ['CAR', 500],
+    ]);
+  });
+
+  it('sortBy=co2 avec un filtre actif : trie l’ensemble filtré par CO2 croissant', () => {
+    const result: JourneyResponse = {
+      itineraries: [itin('BICYCLE', 600, 50), itin('BICYCLE', 300, 10)],
+    };
+    const out = filterAndSortItineraries(result, [], ['Vélo'], 'co2');
+    expect(out.map((i) => i.co2Grams)).toEqual([10, 50]);
+  });
+
   it('conserve les legGeometry des legs sans les altérer', () => {
     const result: JourneyResponse = {
       itineraries: [
@@ -149,6 +202,7 @@ describe('filterAndSortItineraries()', () => {
           startTime: 0,
           endTime: 300000,
           dominantMode: 'CAR',
+          co2Grams: 0,
           legs: [
             {
               mode: 'CAR',
