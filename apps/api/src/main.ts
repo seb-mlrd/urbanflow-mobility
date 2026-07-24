@@ -1,3 +1,9 @@
+try {
+  process.loadEnvFile?.();
+} catch {
+  // Pas de fichier .env (ex. prod/CI où les variables sont injectées directement).
+}
+
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
