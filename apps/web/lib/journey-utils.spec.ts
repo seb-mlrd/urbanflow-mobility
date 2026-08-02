@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import polyline from '@mapbox/polyline';
 import {
   getActualDominantMode,
   formatDuration,
   formatCo2,
   filterAndSortItineraries,
+  getItineraryEndpoints,
+  getItineraryRouteCoordinates,
+  buildJourneyHistoryPayload,
 } from './journey-utils';
-import type { JourneyResponse } from './journey-types';
+import type { Itinerary, JourneyResponse } from './journey-types';
 
 const leg = (mode: string) => ({ mode });
 
@@ -220,5 +224,142 @@ describe('filterAndSortItineraries()', () => {
     };
     const out = filterAndSortItineraries(result, [], []);
     expect(out[0].legs[0].legGeometry).toEqual({ points: 'abc123' });
+  });
+});
+
+function makeItinerary(overrides: Partial<Itinerary> & { legs: Itinerary['legs'] }): Itinerary {
+  return {
+    duration: 600,
+    startTime: 1000,
+    endTime: 601000,
+    dominantMode: 'WALK',
+    co2Grams: 120,
+    ...overrides,
+  };
+}
+
+describe('getItineraryEndpoints()', () => {
+  it('retourne null/null si aucun leg n’a de geometry', () => {
+    const itinerary = makeItinerary({
+      legs: [
+        { mode: 'WALK', startTime: 0, endTime: 100, distance: 10, from: { name: 'Origin' }, to: { name: 'Destination' }, route: null, legGeometry: null },
+      ],
+    });
+    expect(getItineraryEndpoints(itinerary)).toEqual({ departure: null, arrival: null });
+  });
+
+  it('retourne null/null pour un itinéraire null', () => {
+    expect(getItineraryEndpoints(null)).toEqual({ departure: null, arrival: null });
+  });
+
+  it('décode la polyline et retourne le premier et dernier point', () => {
+    const coords: [number, number][] = [
+      [50.6365, 3.0635],
+      [50.64, 3.07],
+      [50.645, 3.08],
+    ];
+    const encoded = polyline.encode(coords);
+    const itinerary = makeItinerary({
+      legs: [
+        {
+          mode: 'WALK',
+          startTime: 0,
+          endTime: 100,
+          distance: 10,
+          from: { name: 'Origin' },
+          to: { name: 'Destination' },
+          route: null,
+          legGeometry: { points: encoded },
+        },
+      ],
+    });
+    const { departure, arrival } = getItineraryEndpoints(itinerary);
+    expect(departure?.lat).toBeCloseTo(coords[0][0], 4);
+    expect(departure?.lng).toBeCloseTo(coords[0][1], 4);
+    expect(arrival?.lat).toBeCloseTo(coords[2][0], 4);
+    expect(arrival?.lng).toBeCloseTo(coords[2][1], 4);
+  });
+
+  it('combine plusieurs legs pour trouver départ/arrivée globaux', () => {
+    const leg1 = polyline.encode([[50.6, 3.0], [50.61, 3.01]]);
+    const leg2 = polyline.encode([[50.61, 3.01], [50.65, 3.09]]);
+    const itinerary = makeItinerary({
+      legs: [
+        { mode: 'WALK', startTime: 0, endTime: 100, distance: 10, from: { name: 'Origin' }, to: { name: 'A' }, route: null, legGeometry: { points: leg1 } },
+        { mode: 'BUS', startTime: 100, endTime: 200, distance: 500, from: { name: 'A' }, to: { name: 'Destination' }, route: null, legGeometry: { points: leg2 } },
+      ],
+    });
+    const { departure, arrival } = getItineraryEndpoints(itinerary);
+    expect(departure?.lat).toBeCloseTo(50.6, 4);
+    expect(arrival?.lat).toBeCloseTo(50.65, 4);
+  });
+});
+
+describe('getItineraryRouteCoordinates()', () => {
+  it('retourne un tableau vide sans itinéraire ni legGeometry', () => {
+    expect(getItineraryRouteCoordinates(null)).toEqual([]);
+
+    const itinerary = makeItinerary({
+      legs: [
+        { mode: 'WALK', startTime: 0, endTime: 100, distance: 10, from: { name: 'Origin' }, to: { name: 'Destination' }, route: null, legGeometry: null },
+      ],
+    });
+    expect(getItineraryRouteCoordinates(itinerary)).toEqual([]);
+  });
+
+  it('décode et concatène les legGeometry de tous les legs dans l’ordre', () => {
+    const leg1 = polyline.encode([[50.6, 3.0], [50.61, 3.01]]);
+    const leg2 = polyline.encode([[50.61, 3.01], [50.65, 3.09]]);
+    const itinerary = makeItinerary({
+      legs: [
+        { mode: 'WALK', startTime: 0, endTime: 100, distance: 10, from: { name: 'Origin' }, to: { name: 'A' }, route: null, legGeometry: { points: leg1 } },
+        { mode: 'BUS', startTime: 100, endTime: 200, distance: 500, from: { name: 'A' }, to: { name: 'Destination' }, route: null, legGeometry: { points: leg2 } },
+      ],
+    });
+
+    const coords = getItineraryRouteCoordinates(itinerary);
+    expect(coords).toHaveLength(4);
+    expect(coords[0].lat).toBeCloseTo(50.6, 4);
+    expect(coords[3].lat).toBeCloseTo(50.65, 4);
+  });
+});
+
+describe('buildJourneyHistoryPayload()', () => {
+  it('mappe correctement les champs vers le DTO backend', () => {
+    const itinerary = makeItinerary({
+      duration: 723.4,
+      co2Grams: 250,
+      legs: [
+        { mode: 'WALK', startTime: 0, endTime: 100, distance: 200, from: { name: 'Origin' }, to: { name: 'A' }, route: null, legGeometry: null },
+        { mode: 'BUS', startTime: 100, endTime: 700, distance: 3000, from: { name: 'A' }, to: { name: 'Destination' }, route: null, legGeometry: null },
+      ],
+    });
+
+    const payload = buildJourneyHistoryPayload({
+      itinerary,
+      fromLabel: 'Gare de Lille',
+      toLabel: 'Grand Place',
+      fromLat: 50.6365,
+      fromLng: 3.0635,
+      toLat: 50.64,
+      toLng: 3.07,
+      departureAt: 1700000000000,
+      arrivalAt: 1700000900000,
+    });
+
+    expect(payload).toEqual({
+      dominantMode: 'TRANSIT',
+      distanceMeters: 3200,
+      durationSeconds: 723,
+      co2Grams: 250,
+      fromLabel: 'Gare de Lille',
+      toLabel: 'Grand Place',
+      fromLat: 50.6365,
+      fromLng: 3.0635,
+      toLat: 50.64,
+      toLng: 3.07,
+      departureAt: 1700000000000,
+      arrivalAt: 1700000900000,
+    });
   });
 });

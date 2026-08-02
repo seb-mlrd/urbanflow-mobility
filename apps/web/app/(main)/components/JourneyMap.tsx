@@ -8,6 +8,7 @@ import { MapContainer, Marker, Polyline, Popup, TileLayer, Tooltip, useMap } fro
 import type { UseGeolocationResult } from '../../../lib/hooks/useGeolocation';
 import type { Itinerary } from '../../../lib/journey-types';
 import { getModeLineStyle } from '../../../lib/transport-colors';
+import { getItineraryEndpoints } from '../../../lib/journey-utils';
 
 L.Icon.Default.mergeOptions({
   iconUrl: '/leaflet/marker-icon.png',
@@ -66,9 +67,12 @@ export function JourneyMap({ geo, selectedItinerary, children }: Props) {
       }));
   }, [selectedItinerary]);
 
-  const allPositions = useMemo(() => decodedLegs.flatMap((l) => l.positions), [decodedLegs]);
-  const departurePosition = allPositions[0];
-  const arrivalPosition = allPositions[allPositions.length - 1];
+  const { departure, arrival } = useMemo(
+    () => getItineraryEndpoints(selectedItinerary),
+    [selectedItinerary],
+  );
+  const departurePosition = departure ? ([departure.lat, departure.lng] as [number, number]) : undefined;
+  const arrivalPosition = arrival ? ([arrival.lat, arrival.lng] as [number, number]) : undefined;
   const hasDistinctEndpoints =
     departurePosition &&
     arrivalPosition &&
