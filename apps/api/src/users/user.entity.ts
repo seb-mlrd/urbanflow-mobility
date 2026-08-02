@@ -8,6 +8,8 @@ import {
 } from 'typeorm';
 import type { Profile } from '../profile/profile.entity.js';
 
+export type UserRole = 'user' | 'admin';
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -24,6 +26,9 @@ export class User {
 
   @Column()
   lastName!: string;
+
+  @Column({ type: 'enum', enum: ['user', 'admin'], default: 'user' })
+  role!: UserRole;
 
   @OneToOne('Profile', (profile: Profile) => profile.user)
   profile!: Profile;
