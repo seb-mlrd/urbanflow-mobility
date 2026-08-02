@@ -12,8 +12,7 @@ export function haversineDistanceMeters(a: GeoPosition, b: GeoPosition): number 
   const lat1 = toRad(a.lat);
   const lat2 = toRad(b.lat);
 
-  const h =
-    Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 
   return EARTH_RADIUS_METERS * c;
@@ -42,7 +41,10 @@ export function routeTotalDistanceMeters(route: GeoPosition[]): number {
  * d'un tracé (segments consécutifs). Fige sur le dernier point au-delà de la
  * distance totale, et sur le premier point si `distanceMeters` <= 0.
  */
-export function positionAlongRoute(route: GeoPosition[], distanceMeters: number): GeoPosition | null {
+export function positionAlongRoute(
+  route: GeoPosition[],
+  distanceMeters: number,
+): GeoPosition | null {
   if (route.length === 0) return null;
   if (route.length === 1 || distanceMeters <= 0) return route[0];
 

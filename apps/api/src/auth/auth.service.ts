@@ -77,7 +77,11 @@ export class AuthService {
     if (!isValid) throw invalid;
 
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync({ sub: user.id, email: user.email, role: user.role }),
+      this.jwtService.signAsync({
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+      }),
       this.issueRefreshToken(user.id),
     ]);
 

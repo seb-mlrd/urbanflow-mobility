@@ -113,7 +113,13 @@ export function useJourneyTracking({
   }, [enabled, route]);
 
   useEffect(() => {
-    if (!enabled || route || blockedReason || typeof navigator === 'undefined' || !navigator.geolocation) {
+    if (
+      !enabled ||
+      route ||
+      blockedReason ||
+      typeof navigator === 'undefined' ||
+      !navigator.geolocation
+    ) {
       return;
     }
 

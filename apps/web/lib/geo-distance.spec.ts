@@ -9,7 +9,9 @@ import {
 
 describe('haversineDistanceMeters()', () => {
   it('retourne 0 pour deux points identiques', () => {
-    expect(haversineDistanceMeters({ lat: 50.6365, lng: 3.0635 }, { lat: 50.6365, lng: 3.0635 })).toBe(0);
+    expect(
+      haversineDistanceMeters({ lat: 50.6365, lng: 3.0635 }, { lat: 50.6365, lng: 3.0635 }),
+    ).toBe(0);
   });
 
   it('retourne ~111.2km pour 1 degré de latitude (rayon terrestre 6371km)', () => {
@@ -63,7 +65,11 @@ describe('routeTotalDistanceMeters()', () => {
   });
 
   it('somme les distances de chaque segment', () => {
-    const route = [{ lat: 0, lng: 0 }, { lat: 0, lng: 1 }, { lat: 1, lng: 1 }];
+    const route = [
+      { lat: 0, lng: 0 },
+      { lat: 0, lng: 1 },
+      { lat: 1, lng: 1 },
+    ];
     const expected =
       haversineDistanceMeters(route[0], route[1]) + haversineDistanceMeters(route[1], route[2]);
     expect(routeTotalDistanceMeters(route)).toBeCloseTo(expected, 6);
@@ -71,7 +77,11 @@ describe('routeTotalDistanceMeters()', () => {
 });
 
 describe('positionAlongRoute()', () => {
-  const route = [{ lat: 0, lng: 0 }, { lat: 0, lng: 1 }, { lat: 0, lng: 2 }];
+  const route = [
+    { lat: 0, lng: 0 },
+    { lat: 0, lng: 1 },
+    { lat: 0, lng: 2 },
+  ];
 
   it('retourne null pour un tracé vide', () => {
     expect(positionAlongRoute([], 100)).toBeNull();

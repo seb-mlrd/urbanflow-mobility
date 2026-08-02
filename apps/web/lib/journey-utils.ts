@@ -79,11 +79,15 @@ export function formatCo2(grams: number): string {
   return `${(grams / 1000).toFixed(1)} kg CO2`;
 }
 
-export function getItineraryRouteCoordinates(itinerary: Itinerary | null | undefined): GeoPosition[] {
+export function getItineraryRouteCoordinates(
+  itinerary: Itinerary | null | undefined,
+): GeoPosition[] {
   if (!itinerary) return [];
 
   return itinerary.legs
-    .filter((leg): leg is Leg & { legGeometry: { points: string } } => Boolean(leg.legGeometry?.points))
+    .filter((leg): leg is Leg & { legGeometry: { points: string } } =>
+      Boolean(leg.legGeometry?.points),
+    )
     .flatMap((leg) => polyline.decode(leg.legGeometry.points) as [number, number][])
     .map(([lat, lng]) => ({ lat, lng }));
 }
@@ -97,7 +101,9 @@ export function getItineraryEndpoints(itinerary: Itinerary | null | undefined): 
   if (!itinerary) return { departure: null, arrival: null };
 
   const positions = itinerary.legs
-    .filter((leg): leg is Leg & { legGeometry: { points: string } } => Boolean(leg.legGeometry?.points))
+    .filter((leg): leg is Leg & { legGeometry: { points: string } } =>
+      Boolean(leg.legGeometry?.points),
+    )
     .flatMap((leg) => polyline.decode(leg.legGeometry.points) as [number, number][]);
 
   if (positions.length === 0) return { departure: null, arrival: null };

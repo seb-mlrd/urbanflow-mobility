@@ -17,7 +17,13 @@ export class ProfileService {
       where: { user: { id: userId } },
       relations: { user: true },
       select: {
-        user: { id: true, email: true, firstName: true, lastName: true, role: true },
+        user: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+        },
       },
     });
     if (!profile) throw new NotFoundException('Profil introuvable.');

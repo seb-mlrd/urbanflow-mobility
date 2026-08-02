@@ -218,14 +218,20 @@ export function ActiveJourneyOverlay() {
               style={
                 demoMode
                   ? { background: 'var(--color-primary)', color: 'var(--color-on-primary)' }
-                  : { background: 'var(--color-surface-container-high)', color: 'var(--color-on-surface)' }
+                  : {
+                      background: 'var(--color-surface-container-high)',
+                      color: 'var(--color-on-surface)',
+                    }
               }
             >
               {demoMode ? 'Mode démo actif' : 'Activer le mode démo'}
             </button>
 
             {demoMode && (
-              <label className="flex flex-col gap-1 text-xs" style={{ color: 'var(--color-on-surface-variant)' }}>
+              <label
+                className="flex flex-col gap-1 text-xs"
+                style={{ color: 'var(--color-on-surface-variant)' }}
+              >
                 Vitesse simulée : {demoSpeedKmh} km/h
                 <input
                   type="range"

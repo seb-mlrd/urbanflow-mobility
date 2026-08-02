@@ -71,7 +71,9 @@ export function JourneyMap({ geo, selectedItinerary, children }: Props) {
     () => getItineraryEndpoints(selectedItinerary),
     [selectedItinerary],
   );
-  const departurePosition = departure ? ([departure.lat, departure.lng] as [number, number]) : undefined;
+  const departurePosition = departure
+    ? ([departure.lat, departure.lng] as [number, number])
+    : undefined;
   const arrivalPosition = arrival ? ([arrival.lat, arrival.lng] as [number, number]) : undefined;
   const hasDistinctEndpoints =
     departurePosition &&

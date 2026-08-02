@@ -39,7 +39,14 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [lastSearch, setLastSearch] = useState<Pick<
     JourneySearchValues,
-    'fromLabel' | 'toLabel' | 'selectedModes' | 'datetime' | 'fromLat' | 'fromLng' | 'toLat' | 'toLng'
+    | 'fromLabel'
+    | 'toLabel'
+    | 'selectedModes'
+    | 'datetime'
+    | 'fromLat'
+    | 'fromLng'
+    | 'toLat'
+    | 'toLng'
   > | null>(null);
   const [selectedItineraryIndex, setSelectedItineraryIndex] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(true);
