@@ -1,6 +1,6 @@
 'use client';
 
-import { Leaf } from 'lucide-react';
+import { Leaf, Navigation } from 'lucide-react';
 import { OTP_MODE_ICONS, OTP_MODE_LABELS } from '../../../lib/transport-icons';
 import { formatDuration, formatCo2 } from '../../../lib/journey-utils';
 import type { Itinerary } from '../../../lib/journey-types';
@@ -16,6 +16,7 @@ interface Props {
   fromLabel?: string;
   toLabel?: string;
   loading?: boolean;
+  onStartJourney?: () => void;
 }
 
 export function JourneyResults({
@@ -25,6 +26,7 @@ export function JourneyResults({
   fromLabel,
   toLabel,
   loading,
+  onStartJourney,
 }: Props) {
   if (loading) {
     return (
@@ -250,6 +252,21 @@ export function JourneyResults({
                 </li>
               ))}
             </ol>
+
+            {isSelected && onStartJourney && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStartJourney();
+                }}
+                className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-3 rounded-xl transition-colors duration-150"
+                style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+              >
+                <Navigation size={16} aria-hidden="true" />
+                Démarrer le suivi en temps réel
+              </button>
+            )}
           </article>
         );
       })}

@@ -421,6 +421,7 @@ export default function ProfilPage() {
           firstName: profile.user.firstName,
           lastName: profile.user.lastName,
           email: profile.user.email,
+          role: profile.user.role,
         },
         transportModes,
       );

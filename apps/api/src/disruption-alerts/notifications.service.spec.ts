@@ -32,7 +32,10 @@ describe('NotificationsService', () => {
           provide: getRepositoryToken(LineSubscription),
           useValue: mockLineSubscriptionRepo,
         },
-        { provide: getRepositoryToken(DisruptionAlert), useValue: mockAlertRepo },
+        {
+          provide: getRepositoryToken(DisruptionAlert),
+          useValue: mockAlertRepo,
+        },
       ],
     }).compile();
 

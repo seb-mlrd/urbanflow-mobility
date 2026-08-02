@@ -16,6 +16,15 @@ export class ProfileService {
     const profile = await this.profileRepository.findOne({
       where: { user: { id: userId } },
       relations: { user: true },
+      select: {
+        user: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+        },
+      },
     });
     if (!profile) throw new NotFoundException('Profil introuvable.');
     return profile;

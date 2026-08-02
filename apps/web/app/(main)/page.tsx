@@ -9,6 +9,7 @@ import { useGeolocation } from '../../lib/hooks/useGeolocation';
 import { getStoredConsent } from '../../lib/geolocationConsent';
 import { filterAndSortItineraries, type SortBy } from '../../lib/journey-utils';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useActiveJourneyStore } from '../../store/useActiveJourneyStore';
 import type { JourneyResponse } from '../../lib/journey-types';
 
 const JourneyMap = dynamic(() => import('./components/JourneyMap').then((m) => m.JourneyMap), {
@@ -20,6 +21,11 @@ const JourneyMap = dynamic(() => import('./components/JourneyMap').then((m) => m
     />
   ),
 });
+
+const ActiveJourneyOverlay = dynamic(
+  () => import('./components/ActiveJourneyOverlay').then((m) => m.ActiveJourneyOverlay),
+  { ssr: false },
+);
 
 const SORT_TABS: { key: SortBy; label: string }[] = [
   { key: 'duration', label: 'Durée' },
@@ -33,13 +39,22 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [lastSearch, setLastSearch] = useState<Pick<
     JourneySearchValues,
-    'fromLabel' | 'toLabel' | 'selectedModes' | 'datetime'
+    | 'fromLabel'
+    | 'toLabel'
+    | 'selectedModes'
+    | 'datetime'
+    | 'fromLat'
+    | 'fromLng'
+    | 'toLat'
+    | 'toLng'
   > | null>(null);
   const [selectedItineraryIndex, setSelectedItineraryIndex] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(true);
   const [sortBy, setSortBy] = useState<SortBy>('duration');
   const geo = useGeolocation();
   const profileModes = useAuthStore((s) => s.transportModes);
+  const isJourneyActive = useActiveJourneyStore((s) => s.isActive);
+  const startActiveJourney = useActiveJourneyStore((s) => s.start);
 
   useEffect(() => {
     if (getStoredConsent() === null) geo.requestLocation();
@@ -65,6 +80,10 @@ export default function HomePage() {
       toLabel: values.toLabel,
       selectedModes: values.selectedModes,
       datetime: values.datetime,
+      fromLat: values.fromLat,
+      fromLng: values.fromLng,
+      toLat: values.toLat,
+      toLng: values.toLng,
     });
     setShowForm(false);
     setLoading(true);
@@ -88,6 +107,25 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleStartJourney() {
+    if (selectedItineraryIndex === null || !lastSearch) return;
+    const itinerary = filteredItineraries[selectedItineraryIndex];
+    if (!itinerary) return;
+
+    if (!geo.hasConsent) {
+      geo.requestLocation();
+      return;
+    }
+
+    startActiveJourney({
+      itinerary,
+      originLabel: lastSearch.fromLabel,
+      destinationLabel: lastSearch.toLabel,
+      originCoords: { lat: lastSearch.fromLat, lng: lastSearch.fromLng },
+      destinationCoords: { lat: lastSearch.toLat, lng: lastSearch.toLng },
+    });
   }
 
   return (
@@ -162,120 +200,125 @@ export default function HomePage() {
         </div>
       )}
 
-      <div
-        className={`px-4 py-4 md:px-0 md:py-0 max-w-6xl md:max-w-none mx-auto w-full flex flex-col md:flex-row gap-6 md:gap-0 md:overflow-hidden ${hasResultsTopBar ? 'md:h-[calc(100vh-120px)]' : 'md:h-[calc(100vh-56px)]'}`}
-      >
+      {!isJourneyActive && (
         <div
-          className="flex flex-col gap-6 md:w-[420px] md:flex-shrink-0 md:h-full md:overflow-y-auto md:px-6 md:py-6 md:gap-4"
-          style={{ borderRight: '1px solid var(--color-outline-variant)' }}
+          className={`px-4 py-4 md:px-0 md:py-0 max-w-6xl md:max-w-none mx-auto w-full flex flex-col md:flex-row gap-6 md:gap-0 md:overflow-hidden ${hasResultsTopBar ? 'md:h-[calc(100vh-120px)]' : 'md:h-[calc(100vh-56px)]'}`}
         >
-          <header className="md:hidden">
-            <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--color-on-surface)' }}>
-              Itinéraire
-            </h1>
-            <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
-              Transports en temps réel
-            </p>
-          </header>
-          {showForm && (
-            <h1
-              className="hidden md:block text-xl font-bold"
-              style={{ color: 'var(--color-on-surface)' }}
-            >
-              Planifier un trajet
-            </h1>
-          )}
-
-          <section
-            aria-label="Recherche d'itinéraire"
-            className={`${showForm ? '' : 'hidden'} rounded-xl p-4 md:rounded-none md:p-0 bg-[var(--color-surface-container)] md:bg-transparent`}
+          <div
+            className="flex flex-col gap-6 md:w-[420px] md:flex-shrink-0 md:h-full md:overflow-y-auto md:px-6 md:py-6 md:gap-4"
+            style={{ borderRight: '1px solid var(--color-outline-variant)' }}
           >
-            <JourneySearch onSearch={handleSearch} loading={loading} geo={geo} />
-          </section>
+            <header className="md:hidden">
+              <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--color-on-surface)' }}>
+                Itinéraire
+              </h1>
+              <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
+                Transports en temps réel
+              </p>
+            </header>
+            {showForm && (
+              <h1
+                className="hidden md:block text-xl font-bold"
+                style={{ color: 'var(--color-on-surface)' }}
+              >
+                Planifier un trajet
+              </h1>
+            )}
 
-          {!showForm && (
-            <>
-              {error && (
-                <p
-                  role="alert"
-                  className="text-sm flex items-center gap-2 px-4 py-3 rounded-xl"
-                  style={{
-                    color: 'var(--color-error)',
-                    background: 'var(--color-error-container)',
-                  }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4" />
-                    <path
-                      d="M8 5v3.5M8 10.5v.5"
-                      stroke="currentColor"
-                      strokeWidth="1.4"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  {error}
-                </p>
-              )}
+            <section
+              aria-label="Recherche d'itinéraire"
+              className={`${showForm ? '' : 'hidden'} rounded-xl p-4 md:rounded-none md:p-0 bg-[var(--color-surface-container)] md:bg-transparent`}
+            >
+              <JourneySearch onSearch={handleSearch} loading={loading} geo={geo} />
+            </section>
 
-              {filteredItineraries.length > 0 && (
-                <div
-                  className="flex items-center gap-2"
-                  role="group"
-                  aria-label="Trier les itinéraires"
-                >
-                  {SORT_TABS.map((tab) => (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      disabled={tab.key === 'price'}
-                      aria-pressed={tab.key === sortBy}
-                      title={tab.key === 'price' ? 'Bientôt disponible' : undefined}
-                      onClick={() => setSortBy(tab.key)}
-                      className="text-sm font-medium px-3 py-1.5 rounded-full transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{
-                        background:
-                          tab.key === sortBy
-                            ? 'var(--color-primary)'
-                            : 'var(--color-surface-container-high)',
-                        color:
-                          tab.key === sortBy
-                            ? 'var(--color-on-primary)'
-                            : 'var(--color-on-surface-variant)',
-                      }}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+            {!showForm && (
+              <>
+                {error && (
+                  <p
+                    role="alert"
+                    className="text-sm flex items-center gap-2 px-4 py-3 rounded-xl"
+                    style={{
+                      color: 'var(--color-error)',
+                      background: 'var(--color-error-container)',
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4" />
+                      <path
+                        d="M8 5v3.5M8 10.5v.5"
+                        stroke="currentColor"
+                        strokeWidth="1.4"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    {error}
+                  </p>
+                )}
 
-              <JourneyResults
-                itineraries={filteredItineraries}
-                selectedIndex={selectedItineraryIndex}
-                onSelect={setSelectedItineraryIndex}
-                fromLabel={lastSearch?.fromLabel}
-                toLabel={lastSearch?.toLabel}
-                loading={loading}
-              />
-            </>
-          )}
+                {filteredItineraries.length > 0 && (
+                  <div
+                    className="flex items-center gap-2"
+                    role="group"
+                    aria-label="Trier les itinéraires"
+                  >
+                    {SORT_TABS.map((tab) => (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        disabled={tab.key === 'price'}
+                        aria-pressed={tab.key === sortBy}
+                        title={tab.key === 'price' ? 'Bientôt disponible' : undefined}
+                        onClick={() => setSortBy(tab.key)}
+                        className="text-sm font-medium px-3 py-1.5 rounded-full transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{
+                          background:
+                            tab.key === sortBy
+                              ? 'var(--color-primary)'
+                              : 'var(--color-surface-container-high)',
+                          color:
+                            tab.key === sortBy
+                              ? 'var(--color-on-primary)'
+                              : 'var(--color-on-surface-variant)',
+                        }}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <JourneyResults
+                  itineraries={filteredItineraries}
+                  selectedIndex={selectedItineraryIndex}
+                  onSelect={setSelectedItineraryIndex}
+                  fromLabel={lastSearch?.fromLabel}
+                  toLabel={lastSearch?.toLabel}
+                  loading={loading}
+                  onStartJourney={handleStartJourney}
+                />
+              </>
+            )}
+          </div>
+
+          <div className="order-first md:order-none h-80 md:flex-1 md:h-full">
+            <JourneyMap
+              geo={geo}
+              selectedItinerary={
+                selectedItineraryIndex !== null ? filteredItineraries[selectedItineraryIndex] : null
+              }
+            />
+          </div>
         </div>
-
-        <div className="order-first md:order-none h-80 md:flex-1 md:h-full">
-          <JourneyMap
-            geo={geo}
-            selectedItinerary={
-              selectedItineraryIndex !== null ? filteredItineraries[selectedItineraryIndex] : null
-            }
-          />
-        </div>
-      </div>
+      )}
 
       <GeolocationConsentModal
         open={geo.isConsentModalOpen}
         onAllow={geo.confirmConsent}
         onDecline={geo.declineConsent}
       />
+
+      {isJourneyActive && <ActiveJourneyOverlay />}
     </div>
   );
 }

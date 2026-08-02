@@ -60,7 +60,13 @@ export class AuthService {
   async login(dto: LoginDto): Promise<{
     accessToken: string;
     refreshToken: string;
-    user: { id: string; firstName: string; lastName: string; email: string };
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      role: User['role'];
+    };
   }> {
     const user = await this.usersService.findByEmail(dto.email);
 
@@ -71,7 +77,11 @@ export class AuthService {
     if (!isValid) throw invalid;
 
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync({ sub: user.id, email: user.email }),
+      this.jwtService.signAsync({
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+      }),
       this.issueRefreshToken(user.id),
     ]);
 
@@ -83,6 +93,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        role: user.role,
       },
     };
   }
@@ -108,6 +119,7 @@ export class AuthService {
       this.jwtService.signAsync({
         sub: stored.userId,
         email: stored.user.email,
+        role: stored.user.role,
       }),
       this.issueRefreshToken(stored.userId),
     ]);
