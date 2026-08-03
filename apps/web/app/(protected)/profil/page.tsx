@@ -8,6 +8,7 @@ import { Input } from '../../../components/ui/Input';
 import { Modal } from '../../../components/ui/Modal';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useGeolocation } from '../../../lib/hooks/useGeolocation';
+import { useInstallPrompt } from '../../../lib/hooks/useInstallPrompt';
 
 const OTHER_SETTINGS = [
   {
@@ -135,6 +136,7 @@ export default function ProfilPage() {
   const [savingModes, setSavingModes] = useState(false);
 
   const geo = useGeolocation();
+  const installPrompt = useInstallPrompt();
 
   const [addressOpen, setAddressOpen] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -1153,6 +1155,62 @@ export default function ProfilPage() {
                 style={{ color: 'var(--color-primary)', border: '1px solid var(--color-primary)' }}
               >
                 Retirer
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* ── Installation de l'application ── */}
+        <div style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
+          <div className="flex items-center gap-4 px-4 py-4 min-h-[64px]">
+            <span
+              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+              style={{
+                background: 'var(--color-surface-container-high)',
+                color: 'var(--color-on-surface-variant)',
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <rect
+                  x="4"
+                  y="2"
+                  width="12"
+                  height="16"
+                  rx="2"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                />
+                <path d="M8 15h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+            </span>
+            <span className="flex-1 min-w-0">
+              <span
+                className="block text-sm font-medium"
+                style={{ color: 'var(--color-on-surface)' }}
+              >
+                Installer l&apos;application
+              </span>
+              <span
+                className="block text-xs mt-0.5"
+                style={{ color: 'var(--color-on-surface-variant)' }}
+              >
+                {installPrompt.isInstalled
+                  ? 'Application installée sur cet appareil.'
+                  : installPrompt.canInstall
+                    ? 'Accédez plus rapidement à UrbanFlow depuis votre écran d\'accueil.'
+                    : installPrompt.isIOS
+                      ? "Appuyez sur Partager puis « Sur l'écran d'accueil » pour l'installer."
+                      : "Installation non disponible sur ce navigateur."}
+              </span>
+            </span>
+            {installPrompt.canInstall && (
+              <button
+                type="button"
+                onClick={installPrompt.promptInstall}
+                className="text-sm font-medium px-4 py-2 rounded-lg min-h-[36px] transition-colors duration-150 shrink-0"
+                style={{ color: 'var(--color-primary)', border: '1px solid var(--color-primary)' }}
+              >
+                Installer
               </button>
             )}
           </div>

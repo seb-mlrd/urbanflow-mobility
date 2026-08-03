@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { JourneySearch, type JourneySearchValues } from './components/JourneySearch';
 import { JourneyResults } from './components/JourneyResults';
 import { GeolocationConsentModal } from '../../components/GeolocationConsentModal';
 import { useGeolocation } from '../../lib/hooks/useGeolocation';
-import { getStoredConsent } from '../../lib/geolocationConsent';
 import { filterAndSortItineraries, type SortBy } from '../../lib/journey-utils';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useActiveJourneyStore } from '../../store/useActiveJourneyStore';
@@ -55,11 +54,6 @@ export default function HomePage() {
   const profileModes = useAuthStore((s) => s.transportModes);
   const isJourneyActive = useActiveJourneyStore((s) => s.isActive);
   const startActiveJourney = useActiveJourneyStore((s) => s.start);
-
-  useEffect(() => {
-    if (getStoredConsent() === null) geo.requestLocation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const filteredItineraries = useMemo(
     () => filterAndSortItineraries(result, profileModes, lastSearch?.selectedModes ?? [], sortBy),

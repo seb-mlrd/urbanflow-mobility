@@ -1,6 +1,7 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Hanken_Grotesk } from 'next/font/google';
 import { Providers } from './providers';
+import { InstallPwaPrompt } from '../components/InstallPwaPrompt';
 import './globals.css';
 
 const hankenGrotesk = Hanken_Grotesk({
@@ -12,6 +13,18 @@ const hankenGrotesk = Hanken_Grotesk({
 export const metadata: Metadata = {
   title: 'UrbanFlow',
   description: 'Mobilité urbaine intelligente',
+  manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: '/icons/icon-192.png',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0f172a',
 };
 
 export default function RootLayout({
@@ -22,7 +35,10 @@ export default function RootLayout({
   return (
     <html lang="fr" className={hankenGrotesk.variable}>
       <body suppressHydrationWarning>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <InstallPwaPrompt />
+        </Providers>
       </body>
     </html>
   );

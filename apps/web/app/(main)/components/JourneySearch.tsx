@@ -171,6 +171,10 @@ export function JourneySearch({ onSearch, loading, geo }: Props) {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (fromLat === null) {
+      geo.requestLocation();
+      return;
+    }
     if (!canSearch) return;
     onSearch({
       fromLabel,
@@ -348,7 +352,7 @@ export function JourneySearch({ onSearch, loading, geo }: Props) {
 
       <button
         type="submit"
-        disabled={!canSearch || loading}
+        disabled={loading || (fromLat !== null && toLat === null)}
         aria-busy={loading}
         className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-3 rounded-xl min-h-[48px] transition-colors duration-150 disabled:opacity-50"
         style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
