@@ -32,10 +32,21 @@ export function InstallPwaPrompt() {
       >
         <span
           className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-          style={{ background: 'var(--color-surface-container-high)', color: 'var(--color-primary)' }}
+          style={{
+            background: 'var(--color-surface-container-high)',
+            color: 'var(--color-primary)',
+          }}
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <rect x="4" y="2" width="12" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
+            <rect
+              x="4"
+              y="2"
+              width="12"
+              height="16"
+              rx="2"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
             <path d="M8 15h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </span>

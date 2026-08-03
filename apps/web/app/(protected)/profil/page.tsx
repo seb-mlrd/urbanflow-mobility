@@ -1197,10 +1197,10 @@ export default function ProfilPage() {
                 {installPrompt.isInstalled
                   ? 'Application installée sur cet appareil.'
                   : installPrompt.canInstall
-                    ? 'Accédez plus rapidement à UrbanFlow depuis votre écran d\'accueil.'
+                    ? "Accédez plus rapidement à UrbanFlow depuis votre écran d'accueil."
                     : installPrompt.isIOS
                       ? "Appuyez sur Partager puis « Sur l'écran d'accueil » pour l'installer."
-                      : "Installation non disponible sur ce navigateur."}
+                      : 'Installation non disponible sur ce navigateur.'}
               </span>
             </span>
             {installPrompt.canInstall && (
