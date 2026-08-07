@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -38,9 +39,27 @@ export class JourneyHistoryController {
     return this.journeyHistoryService.getMonthlyStats(profile.id);
   }
 
-  @Get()
-  async findAll(@Request() req: AuthenticatedRequest) {
+  @Get('monthly-breakdown')
+  async getMonthlyBreakdown(
+    @Request() req: AuthenticatedRequest,
+    @Query('months') months?: string,
+  ) {
     const profile = await this.profileService.findByUserId(req.user.sub);
-    return this.journeyHistoryService.findRecentForProfile(profile.id);
+    return this.journeyHistoryService.getMonthlyCo2Breakdown(
+      profile.id,
+      months ? Number(months) : undefined,
+    );
+  }
+
+  @Get()
+  async findAll(
+    @Request() req: AuthenticatedRequest,
+    @Query('limit') limit?: string,
+  ) {
+    const profile = await this.profileService.findByUserId(req.user.sub);
+    return this.journeyHistoryService.findRecentForProfile(
+      profile.id,
+      limit ? Number(limit) : undefined,
+    );
   }
 }

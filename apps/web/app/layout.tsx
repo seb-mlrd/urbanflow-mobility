@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Hanken_Grotesk } from 'next/font/google';
 import { Providers } from './providers';
 import { InstallPwaPrompt } from '../components/InstallPwaPrompt';
+import { AccessibilityEffects } from '../components/AccessibilityEffects';
 import './globals.css';
 
 const hankenGrotesk = Hanken_Grotesk({
@@ -33,11 +34,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={hankenGrotesk.variable}>
+    <html lang="fr" className={hankenGrotesk.variable} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <Providers>
           {children}
           <InstallPwaPrompt />
+          <AccessibilityEffects />
         </Providers>
       </body>
     </html>

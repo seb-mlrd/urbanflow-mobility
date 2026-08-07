@@ -66,11 +66,15 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: 'var(--color-surface)' }}>
+      <a href="#main-content" className="skip-link">
+        Aller au contenu principal
+      </a>
       <TopBar onMenuToggle={() => setSidebarOpen((v) => !v)} sidebarOpen={sidebarOpen} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar isOpen={sidebarOpen} />
         <main
           id="main-content"
+          tabIndex={-1}
           className="flex-1 overflow-y-auto pb-20 md:pb-0"
           style={{ background: 'var(--color-surface)' }}
         >

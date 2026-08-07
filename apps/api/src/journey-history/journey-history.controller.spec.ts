@@ -9,6 +9,7 @@ const mockJourneyHistoryService = {
   create: jest.fn(),
   getMonthlyStats: jest.fn(),
   findRecentForProfile: jest.fn(),
+  getMonthlyCo2Breakdown: jest.fn(),
 };
 const mockProfileService = { findByUserId: jest.fn() };
 
@@ -103,8 +104,46 @@ describe('JourneyHistoryController', () => {
       expect(mockProfileService.findByUserId).toHaveBeenCalledWith('user-123');
       expect(
         mockJourneyHistoryService.findRecentForProfile,
-      ).toHaveBeenCalledWith('profile-abc');
+      ).toHaveBeenCalledWith('profile-abc', undefined);
       expect(result).toEqual([{ id: 'history-1', ...dto }]);
+    });
+
+    it('transmet le paramètre limit en nombre quand fourni', async () => {
+      mockProfileService.findByUserId.mockResolvedValue({ id: 'profile-abc' });
+      mockJourneyHistoryService.findRecentForProfile.mockResolvedValue([]);
+
+      const req = {
+        user: { sub: 'user-123', email: 'a@b.c' },
+      } as AuthenticatedRequest;
+      await controller.findAll(req, '25');
+
+      expect(
+        mockJourneyHistoryService.findRecentForProfile,
+      ).toHaveBeenCalledWith('profile-abc', 25);
+    });
+  });
+
+  describe('getMonthlyBreakdown()', () => {
+    it('résout le profil via le JWT et retourne la répartition mensuelle de CO2', async () => {
+      mockProfileService.findByUserId.mockResolvedValue({ id: 'profile-abc' });
+      mockJourneyHistoryService.getMonthlyCo2Breakdown.mockResolvedValue([
+        { month: '2026-02', co2Grams: 0 },
+        { month: '2026-03', co2Grams: 1200 },
+      ]);
+
+      const req = {
+        user: { sub: 'user-123', email: 'a@b.c' },
+      } as AuthenticatedRequest;
+      const result = await controller.getMonthlyBreakdown(req, '6');
+
+      expect(mockProfileService.findByUserId).toHaveBeenCalledWith('user-123');
+      expect(
+        mockJourneyHistoryService.getMonthlyCo2Breakdown,
+      ).toHaveBeenCalledWith('profile-abc', 6);
+      expect(result).toEqual([
+        { month: '2026-02', co2Grams: 0 },
+        { month: '2026-03', co2Grams: 1200 },
+      ]);
     });
   });
 });
