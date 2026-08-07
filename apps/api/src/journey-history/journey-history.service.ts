@@ -81,11 +81,18 @@ export class JourneyHistoryService {
   ): Promise<MonthlyCo2Point[]> {
     const monthCount = Math.min(Math.max(months, 1), 24);
     const now = new Date();
-    const startMonth = new Date(now.getFullYear(), now.getMonth() - (monthCount - 1), 1);
+    const startMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() - (monthCount - 1),
+      1,
+    );
 
     const rows = await this.journeyHistoryRepo
       .createQueryBuilder('journey')
-      .select("to_char(date_trunc('month', journey.departureAt), 'YYYY-MM')", 'month')
+      .select(
+        "to_char(date_trunc('month', journey.departureAt), 'YYYY-MM')",
+        'month',
+      )
       .addSelect('COALESCE(SUM(journey.co2Grams), 0)', 'co2Grams')
       .where('journey.profileId = :profileId', { profileId })
       .andWhere('journey.departureAt >= :startMonth', { startMonth })
@@ -96,7 +103,11 @@ export class JourneyHistoryService {
     const byMonth = new Map(rows.map((r) => [r.month, Number(r.co2Grams)]));
 
     return Array.from({ length: monthCount }, (_, i) => {
-      const d = new Date(now.getFullYear(), now.getMonth() - (monthCount - 1 - i), 1);
+      const d = new Date(
+        now.getFullYear(),
+        now.getMonth() - (monthCount - 1 - i),
+        1,
+      );
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       return { month: key, co2Grams: byMonth.get(key) ?? 0 };
     });

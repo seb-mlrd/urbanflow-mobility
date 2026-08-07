@@ -8,24 +8,14 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   wrapperClassName?: string;
 }
 
-export function Input({
-  label,
-  error,
-  rightElement,
-  wrapperClassName,
-  id,
-  ...props
-}: InputProps) {
+export function Input({ label, error, rightElement, wrapperClassName, id, ...props }: InputProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const errorId = error ? `${inputId}-error` : undefined;
 
   return (
     <div className={`flex flex-col gap-1.5 ${wrapperClassName ?? ''}`}>
-      <label
-        htmlFor={inputId}
-        style={{ ...typography.labelMd, color: colors.onSurfaceVariant }}
-      >
+      <label htmlFor={inputId} style={{ ...typography.labelMd, color: colors.onSurfaceVariant }}>
         {label}
       </label>
       <div

@@ -15,7 +15,9 @@ export function StatCard({ icon, label, value, unit, subtitle, accent }: StatCar
       style={{ background: 'var(--color-surface-container)' }}
     >
       <div className="flex items-center gap-2 mb-3">
-        <span style={{ color: accent ? 'var(--color-primary)' : 'var(--color-on-surface-variant)' }}>
+        <span
+          style={{ color: accent ? 'var(--color-primary)' : 'var(--color-on-surface-variant)' }}
+        >
           {icon}
         </span>
         <h2

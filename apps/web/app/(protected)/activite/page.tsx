@@ -48,10 +48,7 @@ function TripRow({ trip }: { trip: JourneyHistoryRecord }) {
           · {formatDistance(trip.distanceMeters)} · {formatDuration(trip.durationSeconds)}
         </span>
       </span>
-      <span
-        className="text-sm font-semibold shrink-0"
-        style={{ color: 'var(--color-primary)' }}
-      >
+      <span className="text-sm font-semibold shrink-0" style={{ color: 'var(--color-primary)' }}>
         {formatCo2(trip.co2Grams)}
       </span>
     </li>
@@ -120,11 +117,16 @@ export default function ActivitePage() {
                 strokeWidth="1.3"
                 strokeLinejoin="round"
               />
-              <path d="M6 9c1-1 3-1 4 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              <path
+                d="M6 9c1-1 3-1 4 0"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+              />
             </svg>
           }
           label="Empreinte CO₂"
-          value={statsLoading ? '…' : (((stats?.co2GramsThisMonth ?? 0) / 1000).toFixed(1))}
+          value={statsLoading ? '…' : ((stats?.co2GramsThisMonth ?? 0) / 1000).toFixed(1)}
           unit="kg"
           subtitle="émis ce mois-ci"
         />
@@ -156,9 +158,7 @@ export default function ActivitePage() {
             </svg>
           }
           label="Distance"
-          value={
-            statsLoading ? '…' : (((stats?.distanceMetersThisMonth ?? 0) / 1000).toFixed(1))
-          }
+          value={statsLoading ? '…' : ((stats?.distanceMetersThisMonth ?? 0) / 1000).toFixed(1)}
           unit="km"
           subtitle="parcourus ce mois-ci"
         />

@@ -541,7 +541,12 @@ export default function ProfilPage() {
                 strokeWidth="1.3"
                 strokeLinejoin="round"
               />
-              <path d="M6 9c1-1 3-1 4 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              <path
+                d="M6 9c1-1 3-1 4 0"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+              />
             </svg>
           }
           label="Impact écologique"
@@ -1192,7 +1197,6 @@ export default function ProfilPage() {
             </div>
           )}
         </div>
-
       </section>
 
       {/* ── Modal ajout adresse ── */}

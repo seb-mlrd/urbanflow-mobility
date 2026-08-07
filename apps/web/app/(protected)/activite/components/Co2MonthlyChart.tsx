@@ -47,7 +47,11 @@ export function Co2MonthlyChart({ data }: { data: MonthlyCo2Point[] }) {
       style={{ background: 'var(--color-surface-container)' }}
     >
       <div className="flex items-center justify-between gap-3 mb-1">
-        <h2 id={titleId} className="text-sm font-semibold" style={{ color: 'var(--color-on-surface)' }}>
+        <h2
+          id={titleId}
+          className="text-sm font-semibold"
+          style={{ color: 'var(--color-on-surface)' }}
+        >
           Émissions de CO₂ par mois
         </h2>
         <button
@@ -85,7 +89,10 @@ export function Co2MonthlyChart({ data }: { data: MonthlyCo2Point[] }) {
             </thead>
             <tbody>
               {data.map((d) => (
-                <tr key={d.month} style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
+                <tr
+                  key={d.month}
+                  style={{ borderBottom: '1px solid var(--color-outline-variant)' }}
+                >
                   <td className="py-2" style={{ color: 'var(--color-on-surface)' }}>
                     {formatMonthFull(d.month)}
                   </td>
@@ -123,12 +130,7 @@ export function Co2MonthlyChart({ data }: { data: MonthlyCo2Point[] }) {
                     strokeWidth={1}
                     opacity={0.6}
                   />
-                  <text
-                    x={0}
-                    y={y - 4}
-                    fontSize={10}
-                    fill="var(--color-on-surface-variant)"
-                  >
+                  <text x={0} y={y - 4} fontSize={10} fill="var(--color-on-surface-variant)">
                     {formatKg(niceMax * step)}
                   </text>
                 </g>
@@ -225,7 +227,9 @@ export function Co2MonthlyChart({ data }: { data: MonthlyCo2Point[] }) {
               }}
             >
               {formatMonthFull(data[hovered].month)} —{' '}
-              <span style={{ color: 'var(--color-primary)' }}>{formatKg(data[hovered].co2Grams)}</span>
+              <span style={{ color: 'var(--color-primary)' }}>
+                {formatKg(data[hovered].co2Grams)}
+              </span>
             </div>
           )}
         </div>
