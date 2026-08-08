@@ -31,8 +31,11 @@ const withBundleAnalyzer = createBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
 
+const path = require('path');
+
 const nextConfig: NextConfig = {
-  outputFileTracingRoot: __dirname,
+  output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname, '../../'),
 };
 
 export default withBundleAnalyzer(withPWA(nextConfig));
