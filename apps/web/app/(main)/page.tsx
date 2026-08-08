@@ -72,12 +72,12 @@ export default function HomePage() {
     setLastSearch({
       fromLabel: values.fromLabel,
       toLabel: values.toLabel,
-      selectedModes: values.selectedModes,
-      datetime: values.datetime,
       fromLat: values.fromLat,
       fromLng: values.fromLng,
       toLat: values.toLat,
       toLng: values.toLng,
+      selectedModes: values.selectedModes,
+      datetime: values.datetime,
     });
     setShowForm(false);
     setLoading(true);
