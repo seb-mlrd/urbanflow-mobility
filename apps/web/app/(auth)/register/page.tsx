@@ -104,6 +104,15 @@ export default function RegisterPage() {
   return (
     <AuthCard activeTab="register" leftContent={registerLeftContent}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full" noValidate>
+        <div className="mb-1">
+          <h1 className="text-xl font-bold" style={{ color: 'var(--color-on-surface)' }}>
+            Créer votre compte
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--color-on-surface-variant)' }}>
+            Rejoignez UrbanFlow pour optimiser vos trajets et suivre votre impact.
+          </p>
+        </div>
+
         {/* Prénom + Nom côte à côte, même largeur totale que les autres champs */}
         <div className="flex flex-col md:flex-row gap-4">
           <Input

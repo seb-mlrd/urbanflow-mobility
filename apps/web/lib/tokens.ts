@@ -42,48 +42,48 @@ export const colors = {
 // ─── Typographie ─────────────────────────────────────────────────────────────
 
 export const typography = {
-  /** 40px / 700 / -0.02em — titres majeurs */
+  /** 2.5rem (40px) / 700 / -0.02em — titres majeurs */
   headlineXl: {
-    fontSize: '40px',
+    fontSize: '2.5rem',
     fontWeight: '700',
-    lineHeight: '48px',
+    lineHeight: '3rem',
     letterSpacing: '-0.02em',
   } satisfies CSSProperties,
 
-  /** 32px / 600 / -0.01em — titres de section desktop */
+  /** 2rem (32px) / 600 / -0.01em — titres de section desktop */
   headlineLg: {
-    fontSize: '32px',
+    fontSize: '2rem',
     fontWeight: '600',
-    lineHeight: '40px',
+    lineHeight: '2.5rem',
     letterSpacing: '-0.01em',
   } satisfies CSSProperties,
 
-  /** 28px / 600 — titres de section mobile */
+  /** 1.75rem (28px) / 600 — titres de section mobile */
   headlineLgMobile: {
-    fontSize: '28px',
+    fontSize: '1.75rem',
     fontWeight: '600',
-    lineHeight: '36px',
+    lineHeight: '2.25rem',
   } satisfies CSSProperties,
 
-  /** 16px / 400 — corps de texte principal */
+  /** 1rem (16px) / 400 — corps de texte principal */
   bodyMd: {
-    fontSize: '16px',
+    fontSize: '1rem',
     fontWeight: '400',
-    lineHeight: '24px',
+    lineHeight: '1.5rem',
   } satisfies CSSProperties,
 
-  /** 14px / 400 — corps de texte secondaire */
+  /** 0.875rem (14px) / 400 — corps de texte secondaire */
   bodySm: {
-    fontSize: '14px',
+    fontSize: '0.875rem',
     fontWeight: '400',
-    lineHeight: '20px',
+    lineHeight: '1.25rem',
   } satisfies CSSProperties,
 
-  /** 12px / 600 / uppercase / +0.05em — labels et métadonnées */
+  /** 0.75rem (12px) / 600 / uppercase / +0.05em — labels et métadonnées */
   labelMd: {
-    fontSize: '12px',
+    fontSize: '0.75rem',
     fontWeight: '600',
-    lineHeight: '16px',
+    lineHeight: '1rem',
     letterSpacing: '0.05em',
     textTransform: 'uppercase' as const,
   } satisfies CSSProperties,

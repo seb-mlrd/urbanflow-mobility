@@ -2,53 +2,33 @@
 
 import { TRANSPORT_MODES } from '@urbanflow/shared';
 import type { LineSubscriptionDto, RouteDto } from '@urbanflow/shared';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import type { JourneyMonthlyStats } from '../../../lib/journey-types';
 import { Input } from '../../../components/ui/Input';
 import { Modal } from '../../../components/ui/Modal';
+import { Switch } from '../../../components/ui/Switch';
+import { SegmentedControl } from '../../../components/ui/SegmentedControl';
+import { StatCard } from '../../../components/ui/StatCard';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { useAccessibilityStore } from '../../../store/useAccessibilityStore';
 import { useGeolocation } from '../../../lib/hooks/useGeolocation';
 import { useInstallPrompt } from '../../../lib/hooks/useInstallPrompt';
 
-const OTHER_SETTINGS = [
-  {
-    key: 'environnement',
-    label: 'Mon impact environnemental',
-    subtitle: 'Consommation CO₂ par mois/trajet',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <path
-          d="M10 17C10 17 3 13 3 7.5a7 7 0 0 1 7-7 7 7 0 0 1 7 7C17 13 10 17 10 17Z"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M10 10V17M10 10C10 10 7 8 7 5.5"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    key: 'parametres',
-    label: "Paramètres de l'application",
-    subtitle: 'Notifications, Langue, Thème',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.4" />
-        <path
-          d="M10 2v2M10 16v2M2 10h2M16 10h2M4.1 4.1l1.4 1.4M14.5 14.5l1.4 1.4M4.1 15.9l1.4-1.4M14.5 5.5l1.4-1.4"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-        />
-      </svg>
-    ),
-  },
-];
+function SettingsIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.4" />
+      <path
+        d="M10 2v2M10 16v2M2 10h2M16 10h2M4.1 4.1l1.4 1.4M14.5 14.5l1.4 1.4M4.1 15.9l1.4-1.4M14.5 5.5l1.4-1.4"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 interface Address {
   id: string;
@@ -69,27 +49,6 @@ const fieldConfig = [
   { label: 'Nom', key: 'lastName' as const, type: 'text', autoComplete: 'family-name' },
   { label: 'Email', key: 'email' as const, type: 'email', autoComplete: 'email' },
 ];
-
-function ChevronRight() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-      style={{ color: 'var(--color-on-surface-variant)' }}
-    >
-      <path
-        d="M6 4l4 4-4 4"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 function ChevronDown({ open }: { open: boolean }) {
   return (
@@ -137,6 +96,28 @@ export default function ProfilPage() {
 
   const geo = useGeolocation();
   const installPrompt = useInstallPrompt();
+
+  const { data: monthlyStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['journey-history', 'stats'],
+    enabled: Boolean(accessToken),
+    queryFn: async (): Promise<JourneyMonthlyStats> => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/journey-history/stats`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!res.ok) throw new Error('Impossible de charger les statistiques.');
+      return res.json();
+    },
+  });
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const theme = useAccessibilityStore((s) => s.theme);
+  const setTheme = useAccessibilityStore((s) => s.setTheme);
+  const textScale = useAccessibilityStore((s) => s.textScale);
+  const setTextScale = useAccessibilityStore((s) => s.setTextScale);
+  const highContrast = useAccessibilityStore((s) => s.highContrast);
+  const toggleHighContrast = useAccessibilityStore((s) => s.toggleHighContrast);
+  const reducedMotion = useAccessibilityStore((s) => s.reducedMotion);
+  const toggleReducedMotion = useAccessibilityStore((s) => s.toggleReducedMotion);
 
   const [addressOpen, setAddressOpen] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -549,21 +530,11 @@ export default function ProfilPage() {
       </section>
 
       {/* ── Stats row ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-        <section
-          aria-labelledby="stat-co2"
-          className="rounded-xl p-4 relative overflow-hidden"
-          style={{ background: 'var(--color-surface-container)' }}
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              aria-hidden="true"
-              style={{ color: 'var(--color-primary)' }}
-            >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+        <StatCard
+          accent
+          icon={
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path
                 d="M8 2C5 2 3 4.5 3 7c0 2 1.5 3.5 3 4v2h4v-2c1.5-.5 3-2 3-4 0-2.5-2-5-5-5Z"
                 stroke="currentColor"
@@ -577,93 +548,15 @@ export default function ProfilPage() {
                 strokeLinecap="round"
               />
             </svg>
-            <h2
-              id="stat-co2"
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: 'var(--color-primary)', letterSpacing: '0.08em' }}
-            >
-              Impact écologique
-            </h2>
-          </div>
-          <p className="text-3xl font-bold mb-1" style={{ color: 'var(--color-on-surface)' }}>
-            124 <span className="text-xl font-semibold">kg</span>
-          </p>
-          <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
-            de CO₂ économisés ce mois
-          </p>
-          <svg
-            width="80"
-            height="80"
-            viewBox="0 0 16 16"
-            fill="none"
-            aria-hidden="true"
-            className="absolute right-3 bottom-2 opacity-10"
-            style={{ color: 'var(--color-primary)' }}
-          >
-            <path
-              d="M8 2C5 2 3 4.5 3 7c0 2 1.5 3.5 3 4v2h4v-2c1.5-.5 3-2 3-4 0-2.5-2-5-5-5Z"
-              stroke="currentColor"
-              strokeWidth="0.8"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </section>
-
-        <section
-          aria-labelledby="stat-points"
-          className="rounded-xl p-4"
-          style={{ background: 'var(--color-surface-container)' }}
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              aria-hidden="true"
-              style={{ color: 'var(--color-secondary)' }}
-            >
-              <path
-                d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.2l-3.7 2.1.7-4.1-3-2.9 4.2-.7L8 1Z"
-                stroke="currentColor"
-                strokeWidth="1.2"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <h2
-              id="stat-points"
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: 'var(--color-on-surface-variant)', letterSpacing: '0.08em' }}
-            >
-              Points Flow
-            </h2>
-          </div>
-          <p className="text-3xl font-bold mb-2" style={{ color: 'var(--color-on-surface)' }}>
-            2,450
-          </p>
-          <button
-            type="button"
-            className="text-sm font-medium"
-            style={{ color: 'var(--color-primary)' }}
-          >
-            Voir les récompenses
-          </button>
-        </section>
-
-        <section
-          aria-labelledby="stat-trajets"
-          className="rounded-xl p-4"
-          style={{ background: 'var(--color-surface-container)' }}
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              aria-hidden="true"
-              style={{ color: 'var(--color-on-surface-variant)' }}
-            >
+          }
+          label="Impact écologique"
+          value={statsLoading ? '…' : ((monthlyStats?.co2GramsThisMonth ?? 0) / 1000).toFixed(1)}
+          unit="kg"
+          subtitle="de CO₂ émis ce mois"
+        />
+        <StatCard
+          icon={
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path
                 d="M8 2v12M4 6l4-4 4 4M4 10l4 4 4-4"
                 stroke="currentColor"
@@ -672,21 +565,11 @@ export default function ProfilPage() {
                 strokeLinejoin="round"
               />
             </svg>
-            <h2
-              id="stat-trajets"
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: 'var(--color-on-surface-variant)', letterSpacing: '0.08em' }}
-            >
-              Trajets (mois)
-            </h2>
-          </div>
-          <p className="text-3xl font-bold mb-1" style={{ color: 'var(--color-on-surface)' }}>
-            48
-          </p>
-          <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
-            +12% vs mois dernier
-          </p>
-        </section>
+          }
+          label="Trajets (mois)"
+          value={statsLoading ? '…' : String(monthlyStats?.tripsThisMonth ?? 0)}
+          subtitle="trajets effectués ce mois"
+        />
       </div>
 
       {/* ── Liste des paramètres ── */}
@@ -1216,18 +1099,13 @@ export default function ProfilPage() {
           </div>
         </div>
 
-        {/* ── Autres items ── */}
-        {OTHER_SETTINGS.map(({ key, label, subtitle, icon }, i) => (
+        {/* ── Paramètres de l'application — item expandable ── */}
+        <div>
           <button
-            key={key}
             type="button"
+            onClick={() => setSettingsOpen((v) => !v)}
+            aria-expanded={settingsOpen}
             className="w-full flex items-center gap-4 px-4 py-4 min-h-[64px] text-left transition-colors duration-150"
-            style={{
-              borderBottom:
-                i < OTHER_SETTINGS.length - 1
-                  ? '1px solid var(--color-outline-variant)'
-                  : undefined,
-            }}
             onMouseEnter={(e) =>
               (e.currentTarget.style.background = 'var(--color-surface-container-high)')
             }
@@ -1240,25 +1118,85 @@ export default function ProfilPage() {
                 color: 'var(--color-on-surface-variant)',
               }}
             >
-              {icon}
+              <SettingsIcon />
             </span>
             <span className="flex-1 min-w-0">
               <span
                 className="block text-sm font-medium"
                 style={{ color: 'var(--color-on-surface)' }}
               >
-                {label}
+                Paramètres de l&apos;application
               </span>
               <span
-                className="block text-xs mt-0.5"
+                className="block text-xs mt-0.5 truncate"
                 style={{ color: 'var(--color-on-surface-variant)' }}
               >
-                {subtitle}
+                Thème, taille du texte, contraste, mouvement
               </span>
             </span>
-            <ChevronRight />
+            <ChevronDown open={settingsOpen} />
           </button>
-        ))}
+
+          {settingsOpen && (
+            <div
+              className="px-4 pb-4 flex flex-col gap-4 pt-4"
+              style={{ borderTop: '1px solid var(--color-outline-variant)' }}
+            >
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-sm font-medium" style={{ color: 'var(--color-on-surface)' }}>
+                  Thème
+                </span>
+                <SegmentedControl
+                  groupLabel="Thème"
+                  value={theme}
+                  onChange={(v) => setTheme(v as 'dark' | 'light')}
+                  options={[
+                    { value: 'dark', label: 'Sombre' },
+                    { value: 'light', label: 'Clair' },
+                  ]}
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-sm font-medium" style={{ color: 'var(--color-on-surface)' }}>
+                  Taille du texte
+                </span>
+                <SegmentedControl
+                  groupLabel="Taille du texte"
+                  value={textScale}
+                  onChange={(v) => setTextScale(v as 'small' | 'medium' | 'large')}
+                  options={[
+                    { value: 'small', label: 'Petite' },
+                    { value: 'medium', label: 'Moyenne' },
+                    { value: 'large', label: 'Grande' },
+                  ]}
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-sm font-medium" style={{ color: 'var(--color-on-surface)' }}>
+                  Contraste élevé
+                </span>
+                <Switch
+                  label="Contraste élevé"
+                  checked={highContrast}
+                  onChange={toggleHighContrast}
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-sm font-medium" style={{ color: 'var(--color-on-surface)' }}>
+                  Réduire les animations
+                </span>
+                <Switch
+                  label="Réduire les animations"
+                  checked={reducedMotion}
+                  onChange={toggleReducedMotion}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* ── Modal ajout adresse ── */}
@@ -1278,9 +1216,15 @@ export default function ProfilPage() {
               value={draftAddressQuery}
               onChange={(e) => handleAddressQueryChange(e.target.value)}
               autoComplete="off"
+              role="combobox"
+              aria-expanded={suggestions.length > 0}
+              aria-controls="address-suggestions"
             />
             {suggestions.length > 0 && (
               <ul
+                id="address-suggestions"
+                role="listbox"
+                aria-label="Suggestions d'adresse"
                 className="absolute left-0 right-0 top-full mt-1 rounded-xl overflow-hidden z-10"
                 style={{
                   background: 'var(--color-surface-container-highest)',
@@ -1288,9 +1232,11 @@ export default function ProfilPage() {
                 }}
               >
                 {suggestions.map((s, i) => (
-                  <li key={i}>
+                  <li key={i} role="presentation">
                     <button
                       type="button"
+                      role="option"
+                      aria-selected={false}
                       className="w-full text-left px-4 py-3 text-sm transition-colors duration-150"
                       style={{ color: 'var(--color-on-surface)' }}
                       onMouseEnter={(e) =>

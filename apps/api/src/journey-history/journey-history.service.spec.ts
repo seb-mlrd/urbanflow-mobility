@@ -8,7 +8,10 @@ const mockQueryBuilder = {
   addSelect: jest.fn(),
   where: jest.fn(),
   andWhere: jest.fn(),
+  groupBy: jest.fn(),
+  orderBy: jest.fn(),
   getRawOne: jest.fn(),
+  getRawMany: jest.fn(),
 };
 
 const mockRepo = {
@@ -50,6 +53,8 @@ describe('JourneyHistoryService', () => {
     mockQueryBuilder.addSelect.mockReturnThis();
     mockQueryBuilder.where.mockReturnThis();
     mockQueryBuilder.andWhere.mockReturnThis();
+    mockQueryBuilder.groupBy.mockReturnThis();
+    mockQueryBuilder.orderBy.mockReturnThis();
     mockRepo.createQueryBuilder.mockReturnValue(mockQueryBuilder);
   });
 
@@ -72,7 +77,7 @@ describe('JourneyHistoryService', () => {
   });
 
   describe('findRecentForProfile()', () => {
-    it('retourne les trajets du profil, les plus récents en premier, limités à 10', async () => {
+    it('retourne les trajets du profil, les plus récents en premier, limités à 50 par défaut', async () => {
       mockRepo.find.mockResolvedValue([{ id: 'history-1', ...dto }]);
 
       const result = await service.findRecentForProfile('profile-123');
@@ -80,17 +85,33 @@ describe('JourneyHistoryService', () => {
       expect(mockRepo.find).toHaveBeenCalledWith({
         where: { profileId: 'profile-123' },
         order: { departureAt: 'DESC' },
-        take: 10,
+        take: 50,
       });
       expect(result).toHaveLength(1);
+    });
+
+    it('borne la limite demandée entre 1 et 100', async () => {
+      mockRepo.find.mockResolvedValue([]);
+
+      await service.findRecentForProfile('profile-123', 500);
+      expect(mockRepo.find).toHaveBeenLastCalledWith(
+        expect.objectContaining({ take: 100 }),
+      );
+
+      await service.findRecentForProfile('profile-123', 0);
+      expect(mockRepo.find).toHaveBeenLastCalledWith(
+        expect.objectContaining({ take: 1 }),
+      );
     });
   });
 
   describe('getMonthlyStats()', () => {
-    it('agrège co2Grams et le nombre de trajets du profil pour le mois en cours', async () => {
+    it('agrège co2Grams, distance, durée et le nombre de trajets du profil pour le mois en cours', async () => {
       mockQueryBuilder.getRawOne.mockResolvedValue({
         co2Grams: '1930',
         trips: '3',
+        distanceMeters: '15000',
+        durationSeconds: '3600',
       });
 
       const result = await service.getMonthlyStats('profile-123');
@@ -100,18 +121,65 @@ describe('JourneyHistoryService', () => {
         'journey.profileId = :profileId',
         { profileId: 'profile-123' },
       );
-      expect(result).toEqual({ co2GramsThisMonth: 1930, tripsThisMonth: 3 });
+      expect(result).toEqual({
+        co2GramsThisMonth: 1930,
+        tripsThisMonth: 3,
+        distanceMetersThisMonth: 15000,
+        durationSecondsThisMonth: 3600,
+      });
     });
 
-    it('retourne 0/0 si aucun trajet ce mois-ci', async () => {
+    it('retourne 0 partout si aucun trajet ce mois-ci', async () => {
       mockQueryBuilder.getRawOne.mockResolvedValue({
         co2Grams: '0',
         trips: '0',
+        distanceMeters: '0',
+        durationSeconds: '0',
       });
 
       const result = await service.getMonthlyStats('profile-123');
 
-      expect(result).toEqual({ co2GramsThisMonth: 0, tripsThisMonth: 0 });
+      expect(result).toEqual({
+        co2GramsThisMonth: 0,
+        tripsThisMonth: 0,
+        distanceMetersThisMonth: 0,
+        durationSecondsThisMonth: 0,
+      });
+    });
+  });
+
+  describe('getMonthlyCo2Breakdown()', () => {
+    beforeEach(() => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-03-15T12:00:00Z'));
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('retourne les N derniers mois, zéro-comblés, triés du plus ancien au plus récent', async () => {
+      mockQueryBuilder.getRawMany.mockResolvedValue([
+        { month: '2026-01', co2Grams: '500' },
+        { month: '2026-03', co2Grams: '1200' },
+      ]);
+
+      const result = await service.getMonthlyCo2Breakdown('profile-123', 3);
+
+      expect(result).toEqual([
+        { month: '2026-01', co2Grams: 500 },
+        { month: '2026-02', co2Grams: 0 },
+        { month: '2026-03', co2Grams: 1200 },
+      ]);
+    });
+
+    it('borne le nombre de mois demandé entre 1 et 24', async () => {
+      mockQueryBuilder.getRawMany.mockResolvedValue([]);
+
+      const result = await service.getMonthlyCo2Breakdown('profile-123', 100);
+      expect(result).toHaveLength(24);
+
+      const resultMin = await service.getMonthlyCo2Breakdown('profile-123', 0);
+      expect(resultMin).toHaveLength(1);
     });
   });
 });
