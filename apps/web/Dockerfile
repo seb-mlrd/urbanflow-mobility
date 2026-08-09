@@ -3,6 +3,8 @@ RUN corepack enable
 WORKDIR /app
 
 FROM base AS build
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @urbanflow/shared build
