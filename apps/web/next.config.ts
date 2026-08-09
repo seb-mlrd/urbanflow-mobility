@@ -1,3 +1,4 @@
+import path from 'path';
 import type { NextConfig } from 'next';
 import withPWAInit from '@ducanh2912/next-pwa';
 import createBundleAnalyzer from '@next/bundle-analyzer';
@@ -30,8 +31,6 @@ const withPWA = withPWAInit({
 const withBundleAnalyzer = createBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
-
-const path = require('path');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
