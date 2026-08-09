@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { firstValueFrom, timeout } from 'rxjs';
+import { CarbonService } from './carbon.service.js';
 
 const OTP_TIMEOUT_MS = 5_000;
 
@@ -65,6 +66,36 @@ function makePlanQuery(transportModes: string, numItineraries: number): string {
   `;
 }
 
+const ALTERNATIVE_QUERY = `
+  query PlanAlternative($fromLat: Float!, $fromLon: Float!, $toLat: Float!, $toLon: Float!, $date: String!, $time: String!, $bannedRoutes: String!) {
+    plan(
+      from: { lat: $fromLat, lon: $fromLon }
+      to: { lat: $toLat, lon: $toLon }
+      date: $date
+      time: $time
+      numItineraries: 1
+      transportModes: [{mode: TRANSIT}, {mode: WALK}]
+      banned: { routes: $bannedRoutes }
+    ) {
+      itineraries {
+        duration
+        startTime
+        endTime
+        legs {
+          mode
+          startTime
+          endTime
+          distance
+          from { name lat lon }
+          to { name lat lon }
+          route { shortName longName }
+          legGeometry { points }
+        }
+      }
+    }
+  }
+`;
+
 const MODE_QUERIES = [
   {
     dominantMode: 'TRANSIT',
@@ -111,7 +142,44 @@ const QUERIES = {
       }
     }
   `,
+  routeById: `
+    query RouteById($routeId: String!) {
+      route(id: $routeId) {
+        shortName
+        longName
+      }
+    }
+  `,
+  allRoutes: `
+    query AllRoutes {
+      routes {
+        gtfsId
+        shortName
+        longName
+        mode
+        color
+        textColor
+      }
+    }
+  `,
 };
+
+interface OtpRouteResponse {
+  data?: { route?: { shortName: string | null; longName: string | null } };
+}
+
+interface OtpRoute {
+  gtfsId: string;
+  shortName: string | null;
+  longName: string | null;
+  mode: string | null;
+  color: string | null;
+  textColor: string | null;
+}
+
+interface OtpAllRoutesResponse {
+  data?: { routes?: OtpRoute[] };
+}
 
 @Injectable()
 export class OtpAdapterService {
@@ -122,6 +190,7 @@ export class OtpAdapterService {
     private readonly httpService: HttpService,
     private readonly config: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly carbonService: CarbonService,
   ) {
     this.otpUrl = this.config.getOrThrow<string>('OTP_GRAPHQL_URL');
   }
@@ -147,7 +216,10 @@ export class OtpAdapterService {
       MODE_QUERIES.map(({ query }) => this.query(query, vars)),
     );
 
-    const itineraries: (OtpItinerary & { dominantMode: string })[] = [];
+    const itineraries: (OtpItinerary & {
+      dominantMode: string;
+      co2Grams: number;
+    })[] = [];
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
       if (result.status === 'rejected') {
@@ -162,6 +234,7 @@ export class OtpAdapterService {
         itineraries.push({
           ...itin,
           dominantMode: MODE_QUERIES[i].dominantMode,
+          co2Grams: this.carbonService.computeItineraryCo2Grams(itin.legs),
         });
       }
     }
@@ -197,6 +270,68 @@ export class OtpAdapterService {
 
     await this.cacheManager.set(cacheKey, data, 20_000);
     return data;
+  }
+
+  async planAlternative(
+    fromLat: number,
+    fromLng: number,
+    toLat: number,
+    toLng: number,
+    bannedRouteGtfsId: string,
+  ): Promise<OtpItinerary | null> {
+    const dt = new Date();
+    const vars = {
+      fromLat,
+      fromLon: fromLng,
+      toLat,
+      toLon: toLng,
+      date: dt.toISOString().slice(0, 10),
+      time: dt.toTimeString().slice(0, 8),
+      bannedRoutes: bannedRouteGtfsId,
+    };
+
+    const data = (await this.query(ALTERNATIVE_QUERY, vars)) as OtpPlanResponse;
+    return data?.data?.plan?.itineraries?.[0] ?? null;
+  }
+
+  async getAllRoutes() {
+    const cacheKey = 'otp:routes:all';
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) return cached;
+
+    const data = (await this.query(
+      QUERIES.allRoutes,
+      {},
+    )) as OtpAllRoutesResponse;
+    const routes = (data?.data?.routes ?? [])
+      .filter((r): r is OtpRoute & { shortName: string } => !!r.shortName)
+      .map((r) => ({
+        gtfsId: r.gtfsId,
+        shortName: r.shortName,
+        longName: r.longName,
+        mode: r.mode,
+        color: r.color,
+      }))
+      .sort((a, b) =>
+        a.shortName.localeCompare(b.shortName, undefined, { numeric: true }),
+      );
+
+    await this.cacheManager.set(cacheKey, routes, 3_600_000);
+    return routes;
+  }
+
+  async getRouteShortName(routeGtfsId: string): Promise<string | null> {
+    const cacheKey = `otp:route:${routeGtfsId}`;
+    const cached = await this.cacheManager.get<string | null>(cacheKey);
+    if (cached !== undefined && cached !== null) return cached;
+
+    const data = (await this.query(QUERIES.routeById, {
+      routeId: routeGtfsId,
+    })) as OtpRouteResponse;
+    const shortName = data?.data?.route?.shortName ?? null;
+
+    await this.cacheManager.set(cacheKey, shortName, 3_600_000);
+    return shortName;
   }
 
   private async query(

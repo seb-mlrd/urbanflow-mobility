@@ -16,6 +16,8 @@ import { ProfileModule } from './profile/profile.module';
 import { AddressModule } from './address/address.module';
 import { TransportModule } from './transport/transport.module';
 import { MobilityModule } from './mobility/mobility.module';
+import { JourneyHistoryModule } from './journey-history/journey-history.module';
+import { DisruptionAlertsModule } from './disruption-alerts/disruption-alerts.module';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { MobilityModule } from './mobility/mobility.module';
     AddressModule,
     TransportModule,
     MobilityModule,
+    JourneyHistoryModule,
+    DisruptionAlertsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

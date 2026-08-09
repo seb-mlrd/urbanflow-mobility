@@ -3,16 +3,31 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useNotificationsStore } from '../../store/useNotificationsStore';
 import { TopBar } from '../../components/ui/TopBar';
 import { Sidebar } from '../../components/ui/Sidebar';
 import { BottomNav } from '../../components/ui/BottomNav';
+import { useAlertsSocket } from '../../lib/hooks/useAlertsSocket';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const accessToken = useAuthStore((s) => s.accessToken);
   const setAuth = useAuthStore((s) => s.setAuth);
+  const setUnreadCount = useNotificationsStore((s) => s.setUnreadCount);
   const [ready, setReady] = useState(() => Boolean(accessToken));
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useAlertsSocket();
+
+  useEffect(() => {
+    if (!accessToken) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/unread-count`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setUnreadCount(data.count))
+      .catch(() => {});
+  }, [accessToken, setUnreadCount]);
 
   useEffect(() => {
     // Si on a déjà un token en mémoire (navigation interne), pas besoin de refresh
@@ -51,11 +66,15 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: 'var(--color-surface)' }}>
+      <a href="#main-content" className="skip-link">
+        Aller au contenu principal
+      </a>
       <TopBar onMenuToggle={() => setSidebarOpen((v) => !v)} sidebarOpen={sidebarOpen} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar isOpen={sidebarOpen} />
         <main
           id="main-content"
+          tabIndex={-1}
           className="flex-1 overflow-y-auto pb-20 md:pb-0"
           style={{ background: 'var(--color-surface)' }}
         >

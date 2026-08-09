@@ -6,3 +6,8 @@ coverage
 pnpm-lock.yaml
 *.min.js
 .env*
+*.md
+next-env.d.ts
+apps/web/public/sw.js
+apps/web/public/swe-worker-*.js
+apps/web/public/workbox-*.js

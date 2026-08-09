@@ -1,3 +1,4 @@
+import path from 'path';
 import type { NextConfig } from 'next';
 import withPWAInit from '@ducanh2912/next-pwa';
 import createBundleAnalyzer from '@next/bundle-analyzer';
@@ -32,7 +33,8 @@ const withBundleAnalyzer = createBundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
-  outputFileTracingRoot: __dirname,
+  output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname, '../../'),
 };
 
 export default withBundleAnalyzer(withPWA(nextConfig));
