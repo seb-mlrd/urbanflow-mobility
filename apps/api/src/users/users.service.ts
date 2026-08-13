@@ -32,4 +32,8 @@ export class UsersService {
     await this.usersRepository.update(id, data);
     return this.usersRepository.findOneOrFail({ where: { id } });
   }
+
+  async delete(id: string): Promise<void> {
+    await this.usersRepository.delete(id);
+  }
 }

@@ -2,13 +2,16 @@ import {
   Body,
   Controller,
   ConflictException,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Patch,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import {
   IsArray,
   IsBoolean,
@@ -92,5 +95,15 @@ export class ProfileController {
     }
 
     return this.profileService.findByUserId(req.user.sub);
+  }
+
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteAccount(
+    @Request() req: AuthenticatedRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.profileService.deleteAccount(req.user.sub);
+    res.clearCookie('refresh_token', { path: '/auth' });
   }
 }

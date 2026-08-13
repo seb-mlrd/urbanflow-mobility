@@ -64,4 +64,8 @@ export class ProfileService {
     await this.usersService.update(userId, data);
     return this.findByUserId(userId);
   }
+
+  async deleteAccount(userId: string): Promise<void> {
+    await this.usersService.delete(userId);
+  }
 }
