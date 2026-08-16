@@ -3,6 +3,7 @@
 import { TRANSPORT_MODES } from '@urbanflow/shared';
 import type { LineSubscriptionDto, RouteDto } from '@urbanflow/shared';
 import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import type { JourneyMonthlyStats } from '../../../lib/journey-types';
@@ -1343,6 +1344,31 @@ export default function ProfilPage() {
           </div>
         </div>
       </Modal>
+
+      {/* ── Informations légales ── */}
+      <section
+        aria-label="Informations légales"
+        className="rounded-xl overflow-hidden mb-4"
+        style={{ background: 'var(--color-surface-container)' }}
+      >
+        <Link
+          href="/cgu"
+          className="flex items-center gap-3 px-4 py-3 min-h-[44px] text-sm font-medium transition-colors duration-150"
+          style={{
+            color: 'var(--color-on-surface)',
+            borderBottom: '1px solid var(--color-outline-variant)',
+          }}
+        >
+          Conditions Générales d&apos;Utilisation
+        </Link>
+        <Link
+          href="/confidentialite"
+          className="flex items-center gap-3 px-4 py-3 min-h-[44px] text-sm font-medium transition-colors duration-150"
+          style={{ color: 'var(--color-on-surface)' }}
+        >
+          Politique de confidentialité
+        </Link>
+      </section>
 
       {/* ── Déconnexion ── */}
       <button

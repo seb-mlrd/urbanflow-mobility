@@ -5,6 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { AuthCard } from '../../../components/auth/AuthCard';
 import { AuthFeatureList } from '../../../components/auth/AuthFeatureList';
+import {
+  HistoryIcon,
+  LeafIcon,
+  BellIcon,
+  DashboardIcon,
+} from '../../../components/auth/AuthFeatureIcons';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import {
@@ -20,10 +26,26 @@ const loginLeftContent = (
     title="Bon retour parmi nous !"
     description="Reconnectez-vous pour retrouver vos itinéraires, votre bilan carbone et vos récompenses mobilité."
     features={[
-      { title: 'Vos trajets enregistrés', desc: 'Historique et favoris synchronisés' },
-      { title: 'Votre bilan CO₂', desc: 'Historique et objectifs sauvegardés' },
-      { title: 'Vos alertes actives', desc: 'Perturbations sur vos lignes habituelles' },
-      { title: 'Tableau de bord personnel', desc: 'Visualisez vos habitudes de mobilité' },
+      {
+        title: 'Vos trajets enregistrés',
+        desc: 'Historique et favoris synchronisés',
+        icon: <HistoryIcon />,
+      },
+      {
+        title: 'Votre bilan CO₂',
+        desc: 'Historique et objectifs sauvegardés',
+        icon: <LeafIcon />,
+      },
+      {
+        title: 'Vos alertes actives',
+        desc: 'Perturbations sur vos lignes habituelles',
+        icon: <BellIcon />,
+      },
+      {
+        title: 'Tableau de bord personnel',
+        desc: 'Visualisez vos habitudes de mobilité',
+        icon: <DashboardIcon />,
+      },
     ]}
   />
 );

@@ -49,6 +49,20 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </Link>
       </nav>
       <div className="flex flex-col flex-1">{children}</div>
+      <footer
+        className="flex items-center justify-center gap-4 px-6 py-4 text-xs shrink-0"
+        style={{
+          color: 'var(--color-on-surface-variant)',
+          borderTop: '1px solid var(--color-outline-variant)',
+        }}
+      >
+        <Link href="/cgu" className="underline">
+          Conditions Générales d&apos;Utilisation
+        </Link>
+        <Link href="/confidentialite" className="underline">
+          Politique de confidentialité
+        </Link>
+      </footer>
     </div>
   );
 }
