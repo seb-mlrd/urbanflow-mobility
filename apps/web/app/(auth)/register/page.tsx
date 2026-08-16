@@ -5,6 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { AuthCard } from '../../../components/auth/AuthCard';
 import { AuthFeatureList } from '../../../components/auth/AuthFeatureList';
+import {
+  RouteIcon,
+  LeafIcon,
+  BellIcon,
+  DashboardIcon,
+} from '../../../components/auth/AuthFeatureIcons';
 import { Button } from '../../../components/ui/Button';
 import { Checkbox } from '../../../components/ui/Checkbox';
 import { Input } from '../../../components/ui/Input';
@@ -23,10 +29,26 @@ const registerLeftContent = (
     title="Déplacez-vous plus intelligemment"
     description="Rejoignez des milliers de citoyens qui optimisent leurs trajets urbains tout en réduisant leur empreinte carbone."
     features={[
-      { title: 'Itinéraires multimodaux', desc: 'Vélo, TC, trottinette, covoiturage combinés' },
-      { title: 'Suivi empreinte carbone', desc: 'Mesurez et réduisez votre impact CO₂' },
-      { title: 'Alertes en temps réel', desc: 'Perturbations et alternatives immédiates' },
-      { title: 'Tableau de bord personnel', desc: 'Visualisez vos habitudes de mobilité' },
+      {
+        title: 'Itinéraires multimodaux',
+        desc: 'Vélo, TC, trottinette, covoiturage combinés',
+        icon: <RouteIcon />,
+      },
+      {
+        title: 'Suivi empreinte carbone',
+        desc: 'Mesurez et réduisez votre impact CO₂',
+        icon: <LeafIcon />,
+      },
+      {
+        title: 'Alertes en temps réel',
+        desc: 'Perturbations et alternatives immédiates',
+        icon: <BellIcon />,
+      },
+      {
+        title: 'Tableau de bord personnel',
+        desc: 'Visualisez vos habitudes de mobilité',
+        icon: <DashboardIcon />,
+      },
     ]}
   />
 );
