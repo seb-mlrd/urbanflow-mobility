@@ -20,6 +20,7 @@ Services externes utilisés : **OpenTripPlanner** (calcul d'itinéraires, GTFS +
 - [Base de données & migrations](#base-de-données--migrations)
 - [Tests](#tests)
 - [CI](#ci)
+- [Déploiement](#déploiement)
 - [Style de code & bonnes pratiques](#style-de-code--bonnes-pratiques)
 - [Structure du projet](#structure-du-projet)
 
@@ -198,6 +199,24 @@ En cas d'échec du `format:check`, corriger automatiquement avec :
 
 ```bash
 pnpm format
+```
+
+## Déploiement
+
+Le déploiement est géré par `.github/workflows/deploy.yml`, séparé de la CI. Il se déclenche automatiquement (via `workflow_run`) quand le workflow CI a réussi sur `main` ou `develop`, mais chaque job (`deploy-prod` / `deploy-preprod`) référence un [GitHub Environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) (`production` / `preprod`) avec des reviewers requis : le déploiement reste donc en attente d'une approbation manuelle dans l'onglet **Actions** avant de s'exécuter.
+
+| Branche | Environment GitHub | Répertoire sur le VPS |
+|---|---|---|
+| `main` | `production` | `/home/urbanflow/urbanflow-prod` |
+| `develop` | `preprod` | `/home/urbanflow/urbanflow-preprod` |
+
+Une fois approuvé, le job se connecte en SSH au VPS (secrets `VPS_HOST` / `VPS_SSH_KEY`) et exécute :
+
+```bash
+git pull origin <branche>
+docker compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml exec -T api pnpm --filter @urbanflow/api migration:run
 ```
 
 ## Style de code & bonnes pratiques

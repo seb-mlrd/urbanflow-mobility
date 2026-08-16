@@ -1,8 +1,10 @@
+import type { ReactNode } from 'react';
 import { colors, typography } from '../../lib/tokens';
 
 interface Feature {
   title: string;
   desc: string;
+  icon: ReactNode;
 }
 
 interface AuthFeatureListProps {
@@ -35,10 +37,12 @@ export function AuthFeatureList({ badge, title, description, features }: AuthFea
         {features.map((item) => (
           <li key={item.title} className="flex items-start gap-3">
             <span
-              className="mt-0.5 w-5 h-5 shrink-0 rounded-sm"
+              className="mt-0.5 w-8 h-8 shrink-0 rounded-lg flex items-center justify-center"
               aria-hidden="true"
-              style={{ background: colors.secondaryContainer }}
-            />
+              style={{ background: colors.secondaryContainer, color: colors.onSecondaryContainer }}
+            >
+              {item.icon}
+            </span>
             <div>
               <p style={{ ...typography.bodySm, fontWeight: '600', color: colors.onSurface }}>
                 {item.title}

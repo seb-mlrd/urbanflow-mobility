@@ -12,17 +12,26 @@ const withPWA = withPWAInit({
       {
         urlPattern: /^https?.*\/(api)\/.*/,
         handler: 'NetworkFirst',
-        options: { cacheName: 'pages-and-api' },
+        options: {
+          cacheName: 'pages-and-api-v2',
+          cacheableResponse: { statuses: [0, 200] },
+        },
       },
       {
         urlPattern: /\.(?:js|css|woff2?)$/,
         handler: 'CacheFirst',
-        options: { cacheName: 'static-assets' },
+        options: {
+          cacheName: 'static-assets',
+          cacheableResponse: { statuses: [0, 200] },
+        },
       },
       {
         urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/,
         handler: 'StaleWhileRevalidate',
-        options: { cacheName: 'images' },
+        options: {
+          cacheName: 'images',
+          cacheableResponse: { statuses: [0, 200] },
+        },
       },
     ],
   },
