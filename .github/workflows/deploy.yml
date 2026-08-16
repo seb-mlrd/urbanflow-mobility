@@ -1,0 +1,51 @@
+name: Déploiement
+
+# Se déclenche uniquement quand le workflow CI a réussi sur main ou develop.
+# Chaque job référence un GitHub Environment (production / preprod) avec
+# "Required reviewers" activé : le job attend une approbation manuelle
+# dans l'onglet Actions avant de s'exécuter réellement.
+on:
+  workflow_run:
+    workflows: ["CI — Qualité de code & Tests"]
+    types: [completed]
+
+jobs:
+  deploy-preprod:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'develop'
+    environment: preprod
+    steps:
+      - name: Déploiement via SSH (préprod)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: urbanflow
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /home/urbanflow/urbanflow-preprod
+            git pull origin develop
+            docker compose -f docker-compose.prod.yml build
+            docker compose -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yml exec -T api pnpm --filter @urbanflow/api migration:run
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    environment: production
+    steps:
+      - name: Déploiement via SSH (production)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: urbanflow
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /home/urbanflow/urbanflow-prod
+            git pull origin main
+            docker compose -f docker-compose.prod.yml build
+            docker compose -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yml exec -T api pnpm --filter @urbanflow/api migration:run
