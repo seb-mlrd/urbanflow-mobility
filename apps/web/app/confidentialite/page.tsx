@@ -21,8 +21,13 @@ export default function ConfidentialitePage() {
           <li>Données de compte : prénom, nom, adresse email, mot de passe (chiffré) ;</li>
           <li>Préférences : modes de transport favoris, lignes suivies, adresses enregistrées ;</li>
           <li>Données de géolocalisation, uniquement avec votre consentement explicite ;</li>
-          <li>Historique de trajets et statistiques d&apos;impact carbone associées à votre compte ;</li>
-          <li>Données techniques : jeton de session, préférences d&apos;affichage et d&apos;accessibilité.</li>
+          <li>
+            Historique de trajets et statistiques d&apos;impact carbone associées à votre compte ;
+          </li>
+          <li>
+            Données techniques : jeton de session, préférences d&apos;affichage et
+            d&apos;accessibilité.
+          </li>
         </ul>
       </LegalSection>
 
@@ -54,8 +59,8 @@ export default function ConfidentialitePage() {
       <LegalSection title="6. Destinataires des données">
         <p>
           Vos données ne sont ni vendues ni partagées à des fins commerciales. Elles peuvent être
-          transmises à nos prestataires techniques (hébergement, infrastructure) strictement dans
-          la mesure nécessaire au fonctionnement du Service, sous obligation contractuelle de
+          transmises à nos prestataires techniques (hébergement, infrastructure) strictement dans la
+          mesure nécessaire au fonctionnement du Service, sous obligation contractuelle de
           confidentialité.
         </p>
       </LegalSection>
@@ -67,16 +72,19 @@ export default function ConfidentialitePage() {
         </p>
         <ul className="list-disc pl-5 flex flex-col gap-1">
           <li>Accès et rectification : modifiez vos informations depuis la page Profil ;</li>
-          <li>Effacement : supprimez votre compte et l&apos;ensemble de vos données depuis la page Profil ;</li>
+          <li>
+            Effacement : supprimez votre compte et l&apos;ensemble de vos données depuis la page
+            Profil ;
+          </li>
           <li>Opposition à la géolocalisation : révocable à tout moment depuis la page Profil.</li>
         </ul>
       </LegalSection>
 
       <LegalSection title="8. Sécurité">
         <p>
-          Vos mots de passe sont stockés de manière chiffrée. L&apos;accès à votre compte est protégé
-          par authentification, et vos sessions sont automatiquement invalidées à la déconnexion ou
-          à la suppression de votre compte.
+          Vos mots de passe sont stockés de manière chiffrée. L&apos;accès à votre compte est
+          protégé par authentification, et vos sessions sont automatiquement invalidées à la
+          déconnexion ou à la suppression de votre compte.
         </p>
       </LegalSection>
 

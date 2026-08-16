@@ -26,10 +26,7 @@ export function StatusPage({
   secondaryAction,
 }: StatusPageProps) {
   return (
-    <div
-      className="flex flex-col min-h-screen"
-      style={{ background: colors.surface }}
-    >
+    <div className="flex flex-col min-h-screen" style={{ background: colors.surface }}>
       <nav
         className="flex items-center px-6 h-14 shrink-0"
         style={{ background: colors.surfaceContainer, borderBottom: borders.default }}
@@ -53,11 +50,7 @@ export function StatusPage({
         </span>
 
         <div className="flex flex-col gap-2 max-w-md">
-          <span
-            style={{ ...typography.labelMd, color: colors.primary }}
-          >
-            Erreur {code}
-          </span>
+          <span style={{ ...typography.labelMd, color: colors.primary }}>Erreur {code}</span>
           <h1 style={{ ...typography.headlineLgMobile, color: colors.onSurface }}>{title}</h1>
           <p style={{ ...typography.bodyMd, color: colors.onSurfaceVariant }}>{description}</p>
         </div>

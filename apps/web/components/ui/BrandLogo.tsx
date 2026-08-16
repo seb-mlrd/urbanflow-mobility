@@ -11,7 +11,8 @@ interface BrandLogoProps {
 
 export function BrandLogo({ height = 22 }: BrandLogoProps) {
   const theme = useAccessibilityStore((s) => s.theme);
-  const src = theme === 'light' ? '/logo/logo-horizontal-light-bg.png' : '/logo/logo-horizontal-dark-bg.png';
+  const src =
+    theme === 'light' ? '/logo/logo-horizontal-light-bg.png' : '/logo/logo-horizontal-dark-bg.png';
 
   return (
     <Image

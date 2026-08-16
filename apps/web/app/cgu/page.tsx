@@ -31,9 +31,9 @@ export default function CguPage() {
         <p>
           Vous êtes responsable de l&apos;exactitude des informations fournies lors de
           l&apos;inscription et de la confidentialité de vos identifiants de connexion. Toute
-          activité effectuée depuis votre compte est présumée réalisée par vous. Vous pouvez à
-          tout moment modifier vos informations ou supprimer définitivement votre compte depuis la
-          page Profil.
+          activité effectuée depuis votre compte est présumée réalisée par vous. Vous pouvez à tout
+          moment modifier vos informations ou supprimer définitivement votre compte depuis la page
+          Profil.
         </p>
       </LegalSection>
 
@@ -84,7 +84,11 @@ export default function CguPage() {
           Les présentes CGU sont soumises au droit français. Pour toute question relative à ces
           conditions, vous pouvez nous contacter via la page Profil ou à l&apos;adresse indiquée
           dans notre{' '}
-          <a href="/confidentialite" className="underline" style={{ color: 'var(--color-primary)' }}>
+          <a
+            href="/confidentialite"
+            className="underline"
+            style={{ color: 'var(--color-primary)' }}
+          >
             politique de confidentialité
           </a>
           .
