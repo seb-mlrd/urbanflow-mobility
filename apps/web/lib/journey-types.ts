@@ -34,6 +34,19 @@ export interface JourneyHistoryRecord {
   arrivalAt: string;
 }
 
+export interface PlannedItinerary {
+  id: string;
+  fromLabel: string;
+  toLabel: string;
+  fromLat: number;
+  fromLng: number;
+  toLat: number;
+  toLng: number;
+  plannedAt: string;
+  selectedModes: string[];
+  createdAt: string;
+}
+
 export interface JourneyMonthlyStats {
   co2GramsThisMonth: number;
   tripsThisMonth: number;

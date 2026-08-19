@@ -1,10 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
 import { JourneySearch, type JourneySearchValues } from './components/JourneySearch';
 import { JourneyResults } from './components/JourneyResults';
 import { GeolocationConsentModal } from '../../components/GeolocationConsentModal';
+import { AuthRequiredModal } from '../../components/AuthRequiredModal';
 import { useGeolocation } from '../../lib/hooks/useGeolocation';
 import { filterAndSortItineraries, type SortBy } from '../../lib/journey-utils';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -33,9 +35,19 @@ const SORT_TABS: { key: SortBy; label: string }[] = [
 ];
 
 export default function HomePage() {
+  return (
+    <Suspense fallback={null}>
+      <HomePageContent />
+    </Suspense>
+  );
+}
+
+function HomePageContent() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<JourneyResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [planMessage, setPlanMessage] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [lastSearch, setLastSearch] = useState<Pick<
     JourneySearchValues,
     | 'fromLabel'
@@ -51,6 +63,8 @@ export default function HomePage() {
   const [showForm, setShowForm] = useState(true);
   const [sortBy, setSortBy] = useState<SortBy>('duration');
   const geo = useGeolocation();
+  const searchParams = useSearchParams();
+  const accessToken = useAuthStore((s) => s.accessToken);
   const profileModes = useAuthStore((s) => s.transportModes);
   const isJourneyActive = useActiveJourneyStore((s) => s.isActive);
   const startActiveJourney = useActiveJourneyStore((s) => s.start);
@@ -67,6 +81,63 @@ export default function HomePage() {
   }
 
   const hasResultsTopBar = !showForm && lastSearch !== null;
+
+  const deepLinkValues = useMemo<JourneySearchValues | null>(() => {
+    const fromLat = searchParams.get('fromLat');
+    const fromLng = searchParams.get('fromLng');
+    const toLat = searchParams.get('toLat');
+    const toLng = searchParams.get('toLng');
+    if (!fromLat || !fromLng || !toLat || !toLng) return null;
+    return {
+      fromLabel: searchParams.get('fromLabel') ?? '',
+      fromLat: Number(fromLat),
+      fromLng: Number(fromLng),
+      toLabel: searchParams.get('toLabel') ?? '',
+      toLat: Number(toLat),
+      toLng: Number(toLng),
+      datetime: searchParams.get('datetime') ?? '',
+      selectedModes: searchParams.get('modes')?.split(',').filter(Boolean) ?? [],
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!deepLinkValues) return;
+    setShowForm(false);
+    handleSearch(deepLinkValues);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handlePlan(values: JourneySearchValues) {
+    if (!accessToken) {
+      setShowAuthModal(true);
+      return;
+    }
+    setPlanMessage(null);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/planification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          fromLabel: values.fromLabel,
+          toLabel: values.toLabel,
+          fromLat: values.fromLat,
+          fromLng: values.fromLng,
+          toLat: values.toLat,
+          toLng: values.toLng,
+          plannedAt: new Date(values.datetime).toISOString(),
+          selectedModes: values.selectedModes,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      setPlanMessage('Itinéraire planifié avec succès.');
+    } catch {
+      setError('Impossible de planifier cet itinéraire.');
+    }
+  }
 
   async function handleSearch(values: JourneySearchValues) {
     setLastSearch({
@@ -223,8 +294,27 @@ export default function HomePage() {
               aria-label="Recherche d'itinéraire"
               className={`${showForm ? '' : 'hidden'} rounded-xl p-4 md:rounded-none md:p-0 bg-[var(--color-surface-container)] md:bg-transparent`}
             >
-              <JourneySearch onSearch={handleSearch} loading={loading} geo={geo} />
+              <JourneySearch
+                onSearch={handleSearch}
+                onPlan={handlePlan}
+                initialValues={deepLinkValues ?? undefined}
+                loading={loading}
+                geo={geo}
+              />
             </section>
+
+            {planMessage && (
+              <p
+                role="status"
+                className="text-sm flex items-center gap-2 px-4 py-3 rounded-xl"
+                style={{
+                  color: 'var(--color-on-primary-container)',
+                  background: 'var(--color-primary-container)',
+                }}
+              >
+                {planMessage}
+              </p>
+            )}
 
             {!showForm && (
               <>
@@ -311,6 +401,8 @@ export default function HomePage() {
         onAllow={geo.confirmConsent}
         onDecline={geo.declineConsent}
       />
+
+      <AuthRequiredModal open={showAuthModal} onClose={() => setShowAuthModal(false)} />
 
       {isJourneyActive && <ActiveJourneyOverlay />}
     </div>

@@ -17,6 +17,7 @@ import { AddressModule } from './address/address.module';
 import { TransportModule } from './transport/transport.module';
 import { MobilityModule } from './mobility/mobility.module';
 import { JourneyHistoryModule } from './journey-history/journey-history.module';
+import { PlanificationModule } from './planification/planification.module';
 import { DisruptionAlertsModule } from './disruption-alerts/disruption-alerts.module';
 
 @Module({
@@ -49,6 +50,7 @@ import { DisruptionAlertsModule } from './disruption-alerts/disruption-alerts.mo
     TransportModule,
     MobilityModule,
     JourneyHistoryModule,
+    PlanificationModule,
     DisruptionAlertsModule,
   ],
   controllers: [AppController],
