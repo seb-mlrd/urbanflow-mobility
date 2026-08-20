@@ -1,4 +1,10 @@
-import { IsArray, IsISO8601, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsISO8601,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreatePlanificationDto {
   @IsString()

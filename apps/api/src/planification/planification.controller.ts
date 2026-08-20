@@ -27,7 +27,10 @@ export class PlanificationController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Request() req: AuthenticatedRequest, @Body() dto: CreatePlanificationDto) {
+  async create(
+    @Request() req: AuthenticatedRequest,
+    @Body() dto: CreatePlanificationDto,
+  ) {
     const profile = await this.profileService.findByUserId(req.user.sub);
     return this.planificationService.create(profile.id, dto);
   }
@@ -42,7 +45,10 @@ export class PlanificationController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
     const profile = await this.profileService.findByUserId(req.user.sub);
-    const deleted = await this.planificationService.removeForProfile(id, profile.id);
+    const deleted = await this.planificationService.removeForProfile(
+      id,
+      profile.id,
+    );
     if (!deleted) throw new NotFoundException();
   }
 }

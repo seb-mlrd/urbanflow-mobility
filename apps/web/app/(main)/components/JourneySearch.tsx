@@ -127,9 +127,7 @@ export function JourneySearch({ onSearch, onPlan, initialValues, loading, geo }:
   const [toLat, setToLat] = useState<number | null>(initialValues?.toLat ?? null);
   const [toLng, setToLng] = useState<number | null>(initialValues?.toLng ?? null);
   const [datetime, setDatetime] = useState(initialValues?.datetime ?? '');
-  const [selectedModes, setSelectedModes] = useState<string[]>(
-    initialValues?.selectedModes ?? [],
-  );
+  const [selectedModes, setSelectedModes] = useState<string[]>(initialValues?.selectedModes ?? []);
   const [appliedGeoPosition, setAppliedGeoPosition] = useState(geo.position);
 
   if (geo.status === 'success' && geo.position && geo.position !== appliedGeoPosition) {

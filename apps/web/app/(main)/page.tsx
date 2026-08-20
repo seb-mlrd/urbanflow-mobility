@@ -60,10 +60,18 @@ function HomePageContent() {
     | 'toLng'
   > | null>(null);
   const [selectedItineraryIndex, setSelectedItineraryIndex] = useState<number | null>(null);
-  const [showForm, setShowForm] = useState(true);
+  const searchParams = useSearchParams();
+  const [showForm, setShowForm] = useState(
+    () =>
+      !(
+        searchParams.get('fromLat') &&
+        searchParams.get('fromLng') &&
+        searchParams.get('toLat') &&
+        searchParams.get('toLng')
+      ),
+  );
   const [sortBy, setSortBy] = useState<SortBy>('duration');
   const geo = useGeolocation();
-  const searchParams = useSearchParams();
   const accessToken = useAuthStore((s) => s.accessToken);
   const profileModes = useAuthStore((s) => s.transportModes);
   const isJourneyActive = useActiveJourneyStore((s) => s.isActive);
@@ -103,7 +111,6 @@ function HomePageContent() {
 
   useEffect(() => {
     if (!deepLinkValues) return;
-    setShowForm(false);
     handleSearch(deepLinkValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

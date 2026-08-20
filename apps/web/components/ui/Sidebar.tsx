@@ -37,8 +37,21 @@ const AUTHENTICATED_ITEMS = [
     href: '/planification',
     icon: (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-        <rect x="2.5" y="3.5" width="13" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M2.5 7h13M6 2v3M12 2v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <rect
+          x="2.5"
+          y="3.5"
+          width="13"
+          height="12"
+          rx="2"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M2.5 7h13M6 2v3M12 2v3"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
       </svg>
     ),
   },

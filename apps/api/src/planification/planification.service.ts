@@ -11,7 +11,10 @@ export class PlanificationService {
     private readonly repo: Repository<PlannedItinerary>,
   ) {}
 
-  create(profileId: string, dto: CreatePlanificationDto): Promise<PlannedItinerary> {
+  create(
+    profileId: string,
+    dto: CreatePlanificationDto,
+  ): Promise<PlannedItinerary> {
     return this.repo.save(
       this.repo.create({
         ...dto,

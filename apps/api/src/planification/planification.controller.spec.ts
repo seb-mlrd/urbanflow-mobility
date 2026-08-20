@@ -46,26 +46,40 @@ describe('PlanificationController', () => {
   describe('create()', () => {
     it("résout le profil via le JWT et crée l'itinéraire planifié avec le bon profileId", async () => {
       mockProfileService.findByUserId.mockResolvedValue({ id: 'profile-abc' });
-      mockPlanificationService.create.mockResolvedValue({ id: 'plan-1', ...dto });
+      mockPlanificationService.create.mockResolvedValue({
+        id: 'plan-1',
+        ...dto,
+      });
 
-      const req = { user: { sub: 'user-123', email: 'a@b.c' } } as AuthenticatedRequest;
+      const req = {
+        user: { sub: 'user-123', email: 'a@b.c' },
+      } as AuthenticatedRequest;
       await controller.create(req, dto);
 
       expect(mockProfileService.findByUserId).toHaveBeenCalledWith('user-123');
-      expect(mockPlanificationService.create).toHaveBeenCalledWith('profile-abc', dto);
+      expect(mockPlanificationService.create).toHaveBeenCalledWith(
+        'profile-abc',
+        dto,
+      );
     });
   });
 
   describe('findAll()', () => {
     it('résout le profil via le JWT et retourne ses itinéraires planifiés', async () => {
       mockProfileService.findByUserId.mockResolvedValue({ id: 'profile-abc' });
-      mockPlanificationService.findAllForProfile.mockResolvedValue([{ id: 'plan-1', ...dto }]);
+      mockPlanificationService.findAllForProfile.mockResolvedValue([
+        { id: 'plan-1', ...dto },
+      ]);
 
-      const req = { user: { sub: 'user-123', email: 'a@b.c' } } as AuthenticatedRequest;
+      const req = {
+        user: { sub: 'user-123', email: 'a@b.c' },
+      } as AuthenticatedRequest;
       const result = await controller.findAll(req);
 
       expect(mockProfileService.findByUserId).toHaveBeenCalledWith('user-123');
-      expect(mockPlanificationService.findAllForProfile).toHaveBeenCalledWith('profile-abc');
+      expect(mockPlanificationService.findAllForProfile).toHaveBeenCalledWith(
+        'profile-abc',
+      );
       expect(result).toEqual([{ id: 'plan-1', ...dto }]);
     });
   });
@@ -75,7 +89,9 @@ describe('PlanificationController', () => {
       mockProfileService.findByUserId.mockResolvedValue({ id: 'profile-abc' });
       mockPlanificationService.removeForProfile.mockResolvedValue(true);
 
-      const req = { user: { sub: 'user-123', email: 'a@b.c' } } as AuthenticatedRequest;
+      const req = {
+        user: { sub: 'user-123', email: 'a@b.c' },
+      } as AuthenticatedRequest;
       await controller.remove(req, 'plan-1');
 
       expect(mockPlanificationService.removeForProfile).toHaveBeenCalledWith(
@@ -88,9 +104,13 @@ describe('PlanificationController', () => {
       mockProfileService.findByUserId.mockResolvedValue({ id: 'profile-abc' });
       mockPlanificationService.removeForProfile.mockResolvedValue(false);
 
-      const req = { user: { sub: 'user-123', email: 'a@b.c' } } as AuthenticatedRequest;
+      const req = {
+        user: { sub: 'user-123', email: 'a@b.c' },
+      } as AuthenticatedRequest;
 
-      await expect(controller.remove(req, 'plan-1')).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(req, 'plan-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
