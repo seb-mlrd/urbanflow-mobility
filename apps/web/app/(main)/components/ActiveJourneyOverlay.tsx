@@ -178,7 +178,7 @@ export function ActiveJourneyOverlay() {
       </div>
 
       <div className="relative flex-1">
-        <JourneyMap geo={IDLE_GEO} selectedItinerary={itinerary}>
+        <JourneyMap geo={IDLE_GEO} selectedItinerary={itinerary} showMobilitySpots={false}>
           <FollowCamera
             position={position}
             followMode={followMode}
