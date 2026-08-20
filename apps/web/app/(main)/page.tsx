@@ -12,6 +12,8 @@ import { filterAndSortItineraries, type SortBy } from '../../lib/journey-utils';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useActiveJourneyStore } from '../../store/useActiveJourneyStore';
 import type { JourneyResponse } from '../../lib/journey-types';
+import { TRANSPORT_MODES } from '@urbanflow/shared';
+import { TRANSPORT_MODE_ICONS } from '../../lib/transport-icons';
 
 const JourneyMap = dynamic(() => import('./components/JourneyMap').then((m) => m.JourneyMap), {
   ssr: false,
@@ -31,7 +33,6 @@ const ActiveJourneyOverlay = dynamic(
 const SORT_TABS: { key: SortBy; label: string }[] = [
   { key: 'duration', label: 'Durée' },
   { key: 'co2', label: 'CO2' },
-  { key: 'price', label: 'Prix' },
 ];
 
 export default function HomePage() {
@@ -71,6 +72,7 @@ function HomePageContent() {
       ),
   );
   const [sortBy, setSortBy] = useState<SortBy>('duration');
+  const [activeModes, setActiveModes] = useState<string[]>([]);
   const geo = useGeolocation();
   const accessToken = useAuthStore((s) => s.accessToken);
   const profileModes = useAuthStore((s) => s.transportModes);
@@ -78,9 +80,15 @@ function HomePageContent() {
   const startActiveJourney = useActiveJourneyStore((s) => s.start);
 
   const filteredItineraries = useMemo(
-    () => filterAndSortItineraries(result, profileModes, lastSearch?.selectedModes ?? [], sortBy),
-    [result, profileModes, lastSearch, sortBy],
+    () => filterAndSortItineraries(result, profileModes, activeModes, sortBy),
+    [result, profileModes, activeModes, sortBy],
   );
+
+  function toggleActiveMode(mode: string) {
+    setActiveModes((prev) =>
+      prev.includes(mode) ? prev.filter((m) => m !== mode) : [...prev, mode],
+    );
+  }
 
   const [appliedItineraries, setAppliedItineraries] = useState(filteredItineraries);
   if (filteredItineraries !== appliedItineraries) {
@@ -157,6 +165,7 @@ function HomePageContent() {
       selectedModes: values.selectedModes,
       datetime: values.datetime,
     });
+    setActiveModes(values.selectedModes);
     setShowForm(false);
     setLoading(true);
     setError(null);
@@ -357,11 +366,9 @@ function HomePageContent() {
                       <button
                         key={tab.key}
                         type="button"
-                        disabled={tab.key === 'price'}
                         aria-pressed={tab.key === sortBy}
-                        title={tab.key === 'price' ? 'Bientôt disponible' : undefined}
                         onClick={() => setSortBy(tab.key)}
-                        className="text-sm font-medium px-3 py-1.5 rounded-full transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="text-sm font-medium px-3 py-1.5 rounded-full transition-colors duration-150"
                         style={{
                           background:
                             tab.key === sortBy
@@ -376,6 +383,41 @@ function HomePageContent() {
                         {tab.label}
                       </button>
                     ))}
+                  </div>
+                )}
+
+                {!loading && (
+                  <div
+                    className="flex flex-wrap items-center gap-2"
+                    role="group"
+                    aria-label="Filtrer par mode de transport"
+                  >
+                    {TRANSPORT_MODES.map((mode) => {
+                      const active = activeModes.includes(mode);
+                      return (
+                        <button
+                          key={mode}
+                          type="button"
+                          aria-pressed={active}
+                          onClick={() => toggleActiveMode(mode)}
+                          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors duration-150"
+                          style={{
+                            background: active
+                              ? 'var(--color-primary)'
+                              : 'var(--color-surface-container-high)',
+                            color: active
+                              ? 'var(--color-on-primary)'
+                              : 'var(--color-on-surface-variant)',
+                            border: active
+                              ? '1px solid transparent'
+                              : '1px solid var(--color-outline-variant)',
+                          }}
+                        >
+                          {TRANSPORT_MODE_ICONS[mode]}
+                          {mode}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
 

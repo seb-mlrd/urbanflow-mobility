@@ -18,7 +18,7 @@ export function getActualDominantMode(legs: { mode: string }[]): string {
   return 'WALK';
 }
 
-export type SortBy = 'duration' | 'co2' | 'price';
+export type SortBy = 'duration' | 'co2';
 
 function sortItineraries<T extends { duration: number; co2Grams: number }>(
   itineraries: T[],

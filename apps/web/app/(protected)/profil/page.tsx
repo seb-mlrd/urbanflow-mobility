@@ -456,9 +456,6 @@ export default function ProfilPage() {
           >
             {user.firstName} {user.lastName}
           </h1>
-          <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
-            Commuter Quotidien • Premium
-          </p>
         </div>
 
         {isEditing ? (

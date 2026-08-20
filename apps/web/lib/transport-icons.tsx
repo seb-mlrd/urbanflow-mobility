@@ -1,4 +1,4 @@
-import { Bike, Bus, Car, Footprints, Train, TrainFront, Zap } from 'lucide-react';
+import { Bike, Bus, Car, Footprints, Train, TrainFront } from 'lucide-react';
 
 export const OTP_MODE_LABELS: Record<string, string> = {
   WALK: 'Marche',
@@ -24,7 +24,6 @@ export const OTP_MODE_ICONS: Record<string, React.ReactNode> = {
 
 export const TRANSPORT_MODE_ICONS: Record<string, React.ReactNode> = {
   Vélo: <Bike size={16} aria-hidden="true" />,
-  Trottinette: <Zap size={16} aria-hidden="true" />,
   Transports: <Bus size={16} aria-hidden="true" />,
   Marche: <Footprints size={16} aria-hidden="true" />,
   Voiture: <Car size={16} aria-hidden="true" />,
