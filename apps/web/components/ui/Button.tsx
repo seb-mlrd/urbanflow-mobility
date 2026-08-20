@@ -22,7 +22,7 @@ export function Button({
   return (
     <button
       disabled={disabled || loading}
-      className="w-full h-14 active:scale-[0.98] transition-transform disabled:opacity-50"
+      className="w-full h-14 cursor-pointer active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
       style={{
         ...typography.bodyMd,
         fontWeight: '600',

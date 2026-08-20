@@ -68,6 +68,29 @@ export function filterAndSortItineraries(
   ];
 }
 
+function pad(n: number): string {
+  return String(n).padStart(2, '0');
+}
+
+export function toDatetimeLocalValue(date: Date): string {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+export const DATETIME_PRESETS: { label: string; compute: () => Date }[] = [
+  { label: 'Maintenant', compute: () => new Date() },
+  { label: 'Dans 30 min', compute: () => new Date(Date.now() + 30 * 60_000) },
+  { label: 'Dans 1 h', compute: () => new Date(Date.now() + 60 * 60_000) },
+  {
+    label: 'Demain 8 h',
+    compute: () => {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      d.setHours(8, 0, 0, 0);
+      return d;
+    },
+  },
+];
+
 export function formatDuration(seconds: number): string {
   const m = Math.round(seconds / 60);
   if (m < 60) return `${m} min`;
