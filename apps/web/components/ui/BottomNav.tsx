@@ -6,7 +6,7 @@ import { colors, borders, radius, typography } from '../../lib/tokens';
 import { useAuthStore } from '../../store/useAuthStore';
 
 const HOME_ITEM = {
-  label: 'Itinéraire',
+  label: 'Recherche',
   href: '/',
   icon: (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
