@@ -8,22 +8,27 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { AuthenticatedRequest } from '../auth/jwt-payload.type.js';
 import { ProfileService } from './profile.service.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 
+@ApiTags('profile')
+@ApiBearerAuth()
 @Controller('profile')
 @UseGuards(JwtAuthGuard)
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
+  @ApiOperation({ summary: "Récupère le profil de l'utilisateur connecté" })
   @Get()
   @HttpCode(HttpStatus.OK)
   getProfile(@Request() req: AuthenticatedRequest) {
     return this.profileService.findByUserId(req.user.sub);
   }
 
+  @ApiOperation({ summary: "Met à jour le profil de l'utilisateur connecté" })
   @Patch()
   @HttpCode(HttpStatus.OK)
   updateProfile(
