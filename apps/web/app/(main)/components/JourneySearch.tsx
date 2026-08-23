@@ -7,7 +7,7 @@ import { TRANSPORT_MODE_ICONS } from '../../../lib/transport-icons';
 import { GEO_ERROR_MESSAGES, type UseGeolocationResult } from '../../../lib/hooks/useGeolocation';
 import { DATETIME_PRESETS, toDatetimeLocalValue } from '../../../lib/journey-utils';
 
-interface Suggestion {
+export interface Suggestion {
   label: string;
   lat: number;
   lng: number;
@@ -32,7 +32,7 @@ interface Props {
   geo: UseGeolocationResult;
 }
 
-function AddressField({
+export function AddressField({
   label,
   value,
   onChange,

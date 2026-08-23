@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import { JourneySearch, type JourneySearchValues } from './components/JourneySearch';
+import { AddressField, JourneySearch, type JourneySearchValues } from './components/JourneySearch';
 import { JourneyResults } from './components/JourneyResults';
 import { GeolocationConsentModal } from '../../components/GeolocationConsentModal';
 import { AuthRequiredModal } from '../../components/AuthRequiredModal';
@@ -74,6 +74,14 @@ function HomePageContent() {
   );
   const [sortBy, setSortBy] = useState<SortBy>('duration');
   const [activeModes, setActiveModes] = useState<string[]>([]);
+  const [editingTopBar, setEditingTopBar] = useState(false);
+  const [editFromLabel, setEditFromLabel] = useState('');
+  const [editFromLat, setEditFromLat] = useState<number | null>(null);
+  const [editFromLng, setEditFromLng] = useState<number | null>(null);
+  const [editToLabel, setEditToLabel] = useState('');
+  const [editToLat, setEditToLat] = useState<number | null>(null);
+  const [editToLng, setEditToLng] = useState<number | null>(null);
+  const [editDatetime, setEditDatetime] = useState('');
   const geo = useGeolocation();
   const accessToken = useAuthStore((s) => s.accessToken);
   const profileModes = useAuthStore((s) => s.transportModes);
@@ -189,6 +197,44 @@ function HomePageContent() {
     }
   }
 
+  function openTopBarEdit() {
+    if (!lastSearch) return;
+    setEditFromLabel(lastSearch.fromLabel);
+    setEditFromLat(lastSearch.fromLat);
+    setEditFromLng(lastSearch.fromLng);
+    setEditToLabel(lastSearch.toLabel);
+    setEditToLat(lastSearch.toLat);
+    setEditToLng(lastSearch.toLng);
+    setEditDatetime(lastSearch.datetime);
+    setEditingTopBar(true);
+  }
+
+  function swapTopBarEdit() {
+    setEditFromLabel(editToLabel);
+    setEditFromLat(editToLat);
+    setEditFromLng(editToLng);
+    setEditToLabel(editFromLabel);
+    setEditToLat(editFromLat);
+    setEditToLng(editFromLng);
+  }
+
+  function submitTopBarEdit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (editFromLat === null || editFromLng === null || editToLat === null || editToLng === null)
+      return;
+    handleSearch({
+      fromLabel: editFromLabel,
+      fromLat: editFromLat,
+      fromLng: editFromLng,
+      toLabel: editToLabel,
+      toLat: editToLat,
+      toLng: editToLng,
+      datetime: editDatetime,
+      selectedModes: lastSearch?.selectedModes ?? [],
+    });
+    setEditingTopBar(false);
+  }
+
   function handleStartJourney() {
     if (selectedItineraryIndex === null || !lastSearch) return;
     const itinerary = filteredItineraries[selectedItineraryIndex];
@@ -210,7 +256,134 @@ function HomePageContent() {
 
   return (
     <div className="flex flex-col">
-      {!showForm && lastSearch && (
+      {!showForm && lastSearch && editingTopBar && (
+        <form
+          onSubmit={submitTopBarEdit}
+          className="flex flex-col md:flex-row md:items-end gap-2 md:gap-3 px-4 md:px-6 py-3 shrink-0"
+          style={{
+            background: 'var(--color-surface-container)',
+            borderBottom: '1px solid var(--color-outline-variant)',
+          }}
+        >
+          <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-2">
+            <div className="flex-1 min-w-0">
+              <AddressField
+                label="Départ"
+                value={editFromLabel}
+                onChange={(v) => {
+                  setEditFromLabel(v);
+                  setEditFromLat(null);
+                  setEditFromLng(null);
+                }}
+                onSelect={(s) => {
+                  setEditFromLabel(s.label);
+                  setEditFromLat(s.lat);
+                  setEditFromLng(s.lng);
+                }}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={swapTopBarEdit}
+              aria-label="Intervertir départ et arrivée"
+              title="Intervertir départ et arrivée"
+              className="hidden sm:flex shrink-0 items-center justify-center w-9 h-9 self-end mb-1.5 rounded-full cursor-pointer transition-colors duration-150"
+              style={{
+                background: 'var(--color-surface-container-high)',
+                border: '1px solid var(--color-outline-variant)',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M5 2v10M5 12 2.5 9.5M5 12l2.5-2.5"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ color: 'var(--color-on-surface-variant)' }}
+                />
+                <path
+                  d="M11 14V4M11 4 8.5 6.5M11 4l2.5 2.5"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ color: 'var(--color-on-surface-variant)' }}
+                />
+              </svg>
+            </button>
+            <div className="flex-1 min-w-0">
+              <AddressField
+                label="Arrivée"
+                value={editToLabel}
+                onChange={(v) => {
+                  setEditToLabel(v);
+                  setEditToLat(null);
+                  setEditToLng(null);
+                }}
+                onSelect={(s) => {
+                  setEditToLabel(s.label);
+                  setEditToLat(s.lat);
+                  setEditToLng(s.lng);
+                }}
+              />
+            </div>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <input
+              type="date"
+              value={editDatetime.split('T')[0] ?? ''}
+              onChange={(e) => {
+                const time = editDatetime.split('T')[1] ?? '08:00';
+                setEditDatetime(e.target.value ? `${e.target.value}T${time}` : '');
+              }}
+              className="rounded-xl px-3 h-12 text-sm outline-none"
+              style={{
+                background: 'var(--color-surface-container-high)',
+                color: 'var(--color-on-surface)',
+                border: '1px solid var(--color-outline-variant)',
+              }}
+            />
+            <input
+              type="time"
+              value={editDatetime.split('T')[1] ?? ''}
+              onChange={(e) => {
+                const date = editDatetime.split('T')[0] || new Date().toISOString().slice(0, 10);
+                setEditDatetime(e.target.value ? `${date}T${e.target.value}` : '');
+              }}
+              className="rounded-xl px-3 h-12 text-sm outline-none"
+              style={{
+                background: 'var(--color-surface-container-high)',
+                color: 'var(--color-on-surface)',
+                border: '1px solid var(--color-outline-variant)',
+              }}
+            />
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <button
+              type="submit"
+              disabled={editFromLat === null || editToLat === null}
+              className="flex-1 md:flex-none shrink-0 h-12 text-sm font-semibold px-3 md:px-4 rounded-xl transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
+            >
+              Rechercher
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditingTopBar(false)}
+              className="shrink-0 h-12 text-sm font-medium px-3 md:px-4 rounded-xl transition-colors duration-150"
+              style={{
+                color: 'var(--color-on-surface-variant)',
+                border: '1px solid var(--color-outline-variant)',
+              }}
+            >
+              Annuler
+            </button>
+          </div>
+        </form>
+      )}
+
+      {!showForm && lastSearch && !editingTopBar && (
         <div
           className="flex items-center gap-2 md:gap-3 px-4 md:px-6 h-14 md:h-16 shrink-0"
           style={{
@@ -271,7 +444,7 @@ function HomePageContent() {
           </span>
           <button
             type="button"
-            onClick={() => setShowForm(true)}
+            onClick={openTopBarEdit}
             className="shrink-0 text-sm font-semibold px-3 md:px-4 py-2 rounded-xl transition-colors duration-150"
             style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
           >
