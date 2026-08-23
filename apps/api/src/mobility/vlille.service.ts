@@ -1,4 +1,9 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -85,6 +90,18 @@ export class VlilleService {
     } catch (err) {
       this.logger.warn(`Échec du rafraîchissement V'Lille: ${String(err)}`);
     }
+  }
+
+  async getSnapshotOrThrow(): Promise<MobilitySnapshot<BikeStation>> {
+    const snapshot = await this.cacheManager.get<MobilitySnapshot<BikeStation>>(
+      VlilleService.CACHE_KEY,
+    );
+    if (!snapshot) {
+      throw new ServiceUnavailableException(
+        "Les données V'Lille sont indisponibles",
+      );
+    }
+    return snapshot;
   }
 
   private merge(

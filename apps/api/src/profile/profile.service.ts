@@ -1,8 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service.js';
 import { Profile } from './profile.entity.js';
+import type { UpdateProfileDto } from './dto/update-profile.dto.js';
+
+const PG_UNIQUE_VIOLATION = '23505';
 
 @Injectable()
 export class ProfileService {
@@ -62,6 +69,33 @@ export class ProfileService {
     data: { firstName?: string; lastName?: string; email?: string },
   ): Promise<Profile> {
     await this.usersService.update(userId, data);
+    return this.findByUserId(userId);
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<Profile> {
+    const { transportModes, geolocationConsent, ...userFields } = dto;
+
+    try {
+      if (Object.keys(userFields).length > 0) {
+        await this.updateUserInfo(userId, userFields);
+      }
+      if (transportModes !== undefined) {
+        await this.updateTransportModes(userId, transportModes);
+      }
+      if (geolocationConsent !== undefined) {
+        await this.setGeolocationConsent(userId, geolocationConsent);
+      }
+    } catch (err) {
+      const code =
+        err && typeof err === 'object'
+          ? (err as { code?: string }).code
+          : undefined;
+      if (code === PG_UNIQUE_VIOLATION) {
+        throw new ConflictException('Cette adresse email est déjà utilisée.');
+      }
+      throw err;
+    }
+
     return this.findByUserId(userId);
   }
 }

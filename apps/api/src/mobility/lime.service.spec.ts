@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { ServiceUnavailableException } from '@nestjs/common';
 import { of, throwError } from 'rxjs';
 import { LimeService } from './lime.service.js';
 
@@ -92,5 +93,23 @@ describe('LimeService', () => {
     await service.refresh();
 
     expect(mockCacheManager.set).not.toHaveBeenCalled();
+  });
+
+  describe('getSnapshotOrThrow()', () => {
+    it('retourne le snapshot en cache', async () => {
+      const snapshot = { vehicles: [], lastUpdated: 1, fetchedAt: 2 };
+      mockCacheManager.get.mockResolvedValue(snapshot);
+
+      await expect(service.getSnapshotOrThrow()).resolves.toBe(snapshot);
+      expect(mockCacheManager.get).toHaveBeenCalledWith(LimeService.CACHE_KEY);
+    });
+
+    it('lève ServiceUnavailableException si le cache est vide', async () => {
+      mockCacheManager.get.mockResolvedValue(undefined);
+
+      await expect(service.getSnapshotOrThrow()).rejects.toThrow(
+        ServiceUnavailableException,
+      );
+    });
   });
 });

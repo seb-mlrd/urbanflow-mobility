@@ -1,4 +1,9 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -76,5 +81,17 @@ export class LimeService {
     } catch (err) {
       this.logger.warn(`Échec du rafraîchissement Lime: ${String(err)}`);
     }
+  }
+
+  async getSnapshotOrThrow(): Promise<MobilitySnapshot<Scooter>> {
+    const snapshot = await this.cacheManager.get<MobilitySnapshot<Scooter>>(
+      LimeService.CACHE_KEY,
+    );
+    if (!snapshot) {
+      throw new ServiceUnavailableException(
+        'Les données des trottinettes sont indisponibles',
+      );
+    }
+    return snapshot;
   }
 }
