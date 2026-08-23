@@ -1,29 +1,12 @@
-import {
-  IsArray,
-  IsISO8601,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsArray, IsISO8601, IsOptional, IsString } from 'class-validator';
+import { RouteCoordinatesDto } from '../../common/dto/route-coordinates.dto.js';
 
-export class CreatePlanificationDto {
+export class CreatePlanificationDto extends RouteCoordinatesDto {
   @IsString()
   fromLabel!: string;
 
   @IsString()
   toLabel!: string;
-
-  @IsNumber()
-  fromLat!: number;
-
-  @IsNumber()
-  fromLng!: number;
-
-  @IsNumber()
-  toLat!: number;
-
-  @IsNumber()
-  toLng!: number;
 
   @IsISO8601()
   plannedAt!: string;
