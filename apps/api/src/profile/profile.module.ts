@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from '../users/users.module.js';
 import { Profile } from './profile.entity.js';
@@ -9,18 +7,7 @@ import { ProfileService } from './profile.service.js';
 import { CurrentProfileInterceptor } from './current-profile.interceptor.js';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Profile]),
-    UsersModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '7d' },
-      }),
-      inject: [ConfigService],
-    }),
-  ],
+  imports: [TypeOrmModule.forFeature([Profile]), UsersModule],
   controllers: [ProfileController],
   providers: [ProfileService, CurrentProfileInterceptor],
   exports: [ProfileService, CurrentProfileInterceptor],
