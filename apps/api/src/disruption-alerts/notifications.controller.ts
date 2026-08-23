@@ -5,49 +5,41 @@ import {
   HttpStatus,
   Param,
   Patch,
-  Request,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
-import type { AuthenticatedRequest } from '../auth/jwt-payload.type.js';
-import { ProfileService } from '../profile/profile.service.js';
+import { CurrentProfile } from '../profile/current-profile.decorator.js';
+import { CurrentProfileInterceptor } from '../profile/current-profile.interceptor.js';
+import type { Profile } from '../profile/profile.entity.js';
 import { NotificationsService } from './notifications.service.js';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(CurrentProfileInterceptor)
 export class NotificationsController {
-  constructor(
-    private readonly notificationsService: NotificationsService,
-    private readonly profileService: ProfileService,
-  ) {}
+  constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get()
-  async findAll(@Request() req: AuthenticatedRequest) {
-    const profile = await this.profileService.findByUserId(req.user.sub);
+  findAll(@CurrentProfile() profile: Profile) {
     return this.notificationsService.findAllForProfile(profile.id);
   }
 
   @Get('unread-count')
-  async unreadCount(@Request() req: AuthenticatedRequest) {
-    const profile = await this.profileService.findByUserId(req.user.sub);
+  async unreadCount(@CurrentProfile() profile: Profile) {
     const count = await this.notificationsService.countUnread(profile.id);
     return { count };
   }
 
   @Patch(':id/read')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async markRead(
-    @Request() req: AuthenticatedRequest,
-    @Param('id') id: string,
-  ) {
-    const profile = await this.profileService.findByUserId(req.user.sub);
+  async markRead(@CurrentProfile() profile: Profile, @Param('id') id: string) {
     await this.notificationsService.markRead(profile.id, id);
   }
 
   @Patch('read-all')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async markAllRead(@Request() req: AuthenticatedRequest) {
-    const profile = await this.profileService.findByUserId(req.user.sub);
+  async markAllRead(@CurrentProfile() profile: Profile) {
     await this.notificationsService.markAllRead(profile.id);
   }
 }

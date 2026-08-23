@@ -7,43 +7,41 @@ import {
   HttpStatus,
   Param,
   Post,
-  Request,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
-import type { AuthenticatedRequest } from '../auth/jwt-payload.type.js';
-import { ProfileService } from '../profile/profile.service.js';
+import { CurrentProfile } from '../profile/current-profile.decorator.js';
+import { CurrentProfileInterceptor } from '../profile/current-profile.interceptor.js';
+import type { Profile } from '../profile/profile.entity.js';
 import { LineSubscriptionsService } from './line-subscriptions.service.js';
 import { CreateLineSubscriptionDto } from './dto/create-line-subscription.dto.js';
 
 @Controller('line-subscriptions')
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(CurrentProfileInterceptor)
 export class LineSubscriptionsController {
   constructor(
     private readonly lineSubscriptionsService: LineSubscriptionsService,
-    private readonly profileService: ProfileService,
   ) {}
 
   @Get()
-  async findAll(@Request() req: AuthenticatedRequest) {
-    const profile = await this.profileService.findByUserId(req.user.sub);
+  findAll(@CurrentProfile() profile: Profile) {
     return this.lineSubscriptionsService.findAllForProfile(profile.id);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(
-    @Request() req: AuthenticatedRequest,
+  create(
+    @CurrentProfile() profile: Profile,
     @Body() dto: CreateLineSubscriptionDto,
   ) {
-    const profile = await this.profileService.findByUserId(req.user.sub);
     return this.lineSubscriptionsService.create(profile.id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
-    const profile = await this.profileService.findByUserId(req.user.sub);
+  async remove(@CurrentProfile() profile: Profile, @Param('id') id: string) {
     await this.lineSubscriptionsService.remove(profile.id, id);
   }
 }

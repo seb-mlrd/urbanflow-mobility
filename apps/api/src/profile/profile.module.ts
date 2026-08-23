@@ -6,6 +6,7 @@ import { UsersModule } from '../users/users.module.js';
 import { Profile } from './profile.entity.js';
 import { ProfileController } from './profile.controller.js';
 import { ProfileService } from './profile.service.js';
+import { CurrentProfileInterceptor } from './current-profile.interceptor.js';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { ProfileService } from './profile.service.js';
     }),
   ],
   controllers: [ProfileController],
-  providers: [ProfileService],
-  exports: [ProfileService],
+  providers: [ProfileService, CurrentProfileInterceptor],
+  exports: [ProfileService, CurrentProfileInterceptor],
 })
 export class ProfileModule {}
