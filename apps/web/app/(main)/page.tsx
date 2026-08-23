@@ -457,10 +457,7 @@ function HomePageContent() {
         <div
           className={`px-4 py-4 md:px-0 md:py-0 max-w-6xl md:max-w-none mx-auto w-full flex flex-col md:flex-row gap-6 md:gap-0 md:overflow-hidden ${hasResultsTopBar ? 'md:h-[calc(100vh-120px)]' : 'md:h-[calc(100vh-56px)]'}`}
         >
-          <div
-            className="flex flex-col gap-6 md:w-[420px] md:flex-shrink-0 md:h-full md:overflow-y-auto md:px-6 md:py-6 md:gap-4"
-            style={{ borderRight: '1px solid var(--color-outline-variant)' }}
-          >
+          <div className="flex flex-col gap-6 md:w-[420px] md:flex-shrink-0 md:h-full md:overflow-y-auto md:border-r md:border-[var(--color-outline-variant)] md:px-6 md:py-6 md:gap-4">
             <header className="md:hidden">
               <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--color-on-surface)' }}>
                 Itinéraire
@@ -504,30 +501,30 @@ function HomePageContent() {
               </p>
             )}
 
+            {error && (
+              <p
+                role="alert"
+                className="text-sm flex items-center gap-2 px-4 py-3 rounded-xl"
+                style={{
+                  color: 'var(--color-error)',
+                  background: 'var(--color-error-container)',
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4" />
+                  <path
+                    d="M8 5v3.5M8 10.5v.5"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                {error}
+              </p>
+            )}
+
             {!showForm && (
               <>
-                {error && (
-                  <p
-                    role="alert"
-                    className="text-sm flex items-center gap-2 px-4 py-3 rounded-xl"
-                    style={{
-                      color: 'var(--color-error)',
-                      background: 'var(--color-error-container)',
-                    }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4" />
-                      <path
-                        d="M8 5v3.5M8 10.5v.5"
-                        stroke="currentColor"
-                        strokeWidth="1.4"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    {error}
-                  </p>
-                )}
-
                 {filteredItineraries.length > 0 && (
                   <div
                     className="flex items-center gap-2"
