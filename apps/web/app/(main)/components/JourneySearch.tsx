@@ -5,8 +5,9 @@ import { Input } from '../../../components/ui/Input';
 import { TRANSPORT_MODES } from '@urbanflow/shared';
 import { TRANSPORT_MODE_ICONS } from '../../../lib/transport-icons';
 import { GEO_ERROR_MESSAGES, type UseGeolocationResult } from '../../../lib/hooks/useGeolocation';
+import { DATETIME_PRESETS, toDatetimeLocalValue } from '../../../lib/journey-utils';
 
-interface Suggestion {
+export interface Suggestion {
   label: string;
   lat: number;
   lng: number;
@@ -25,11 +26,13 @@ export interface JourneySearchValues {
 
 interface Props {
   onSearch: (values: JourneySearchValues) => void;
+  onPlan?: (values: JourneySearchValues) => void;
+  initialValues?: Partial<JourneySearchValues>;
   loading: boolean;
   geo: UseGeolocationResult;
 }
 
-function AddressField({
+export function AddressField({
   label,
   value,
   onChange,
@@ -95,7 +98,7 @@ function AddressField({
             <li key={i}>
               <button
                 type="button"
-                className="w-full text-left px-4 py-3 text-sm transition-colors duration-150"
+                className="w-full text-left px-4 py-3 text-sm cursor-pointer transition-colors duration-150"
                 style={{ color: 'var(--color-on-surface)' }}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.background = 'var(--color-surface-container-high)')
@@ -116,15 +119,15 @@ function AddressField({
   );
 }
 
-export function JourneySearch({ onSearch, loading, geo }: Props) {
-  const [fromLabel, setFromLabel] = useState('');
-  const [fromLat, setFromLat] = useState<number | null>(null);
-  const [fromLng, setFromLng] = useState<number | null>(null);
-  const [toLabel, setToLabel] = useState('');
-  const [toLat, setToLat] = useState<number | null>(null);
-  const [toLng, setToLng] = useState<number | null>(null);
-  const [datetime, setDatetime] = useState('');
-  const [selectedModes, setSelectedModes] = useState<string[]>([]);
+export function JourneySearch({ onSearch, onPlan, initialValues, loading, geo }: Props) {
+  const [fromLabel, setFromLabel] = useState(initialValues?.fromLabel ?? '');
+  const [fromLat, setFromLat] = useState<number | null>(initialValues?.fromLat ?? null);
+  const [fromLng, setFromLng] = useState<number | null>(initialValues?.fromLng ?? null);
+  const [toLabel, setToLabel] = useState(initialValues?.toLabel ?? '');
+  const [toLat, setToLat] = useState<number | null>(initialValues?.toLat ?? null);
+  const [toLng, setToLng] = useState<number | null>(initialValues?.toLng ?? null);
+  const [datetime, setDatetime] = useState(initialValues?.datetime ?? '');
+  const [selectedModes, setSelectedModes] = useState<string[]>(initialValues?.selectedModes ?? []);
   const [appliedGeoPosition, setAppliedGeoPosition] = useState(geo.position);
 
   if (geo.status === 'success' && geo.position && geo.position !== appliedGeoPosition) {
@@ -211,7 +214,7 @@ export function JourneySearch({ onSearch, loading, geo }: Props) {
                 onClick={geo.requestLocation}
                 aria-label="Utiliser ma position"
                 title="Utiliser ma position"
-                className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-150"
+                className="flex items-center justify-center w-8 h-8 rounded-lg cursor-pointer transition-colors duration-150"
                 style={{ color: 'var(--color-primary)' }}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -246,7 +249,7 @@ export function JourneySearch({ onSearch, loading, geo }: Props) {
           onClick={handleSwap}
           aria-label="Intervertir départ et arrivée"
           title="Intervertir départ et arrivée"
-          className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full transition-colors duration-150"
+          className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full cursor-pointer transition-colors duration-150"
           style={{
             background: 'var(--color-surface-container-high)',
             border: '1px solid var(--color-outline-variant)',
@@ -281,30 +284,78 @@ export function JourneySearch({ onSearch, loading, geo }: Props) {
         <button
           type="button"
           onClick={geo.revokeConsent}
-          className="self-start text-xs underline"
+          className="self-start text-xs underline cursor-pointer"
           style={{ color: 'var(--color-on-surface-variant)' }}
         >
           Oublier ma position
         </button>
       )}
-      <div className="flex flex-col gap-1">
-        <label
-          className="text-xs font-semibold uppercase tracking-wider"
-          style={{ color: 'var(--color-on-surface-variant)' }}
-        >
-          Date et heure (facultatif)
-        </label>
-        <input
-          type="datetime-local"
-          value={datetime}
-          onChange={(e) => setDatetime(e.target.value)}
-          className="w-full rounded-xl px-4 py-3 text-sm min-h-[48px] outline-none"
-          style={{
-            background: 'var(--color-surface-container-high)',
-            color: 'var(--color-on-surface)',
-            border: '1px solid var(--color-outline-variant)',
-          }}
-        />
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <label
+            className="text-xs font-semibold uppercase tracking-wider"
+            style={{ color: 'var(--color-on-surface-variant)' }}
+          >
+            Date et heure (facultatif)
+          </label>
+          {datetime && (
+            <button
+              type="button"
+              onClick={() => setDatetime('')}
+              className="text-xs underline cursor-pointer"
+              style={{ color: 'var(--color-on-surface-variant)' }}
+            >
+              Effacer
+            </button>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="date"
+            value={datetime.split('T')[0] ?? ''}
+            onChange={(e) => {
+              const time = datetime.split('T')[1] ?? '08:00';
+              setDatetime(e.target.value ? `${e.target.value}T${time}` : '');
+            }}
+            className="flex-1 min-w-0 rounded-xl px-4 py-3 text-sm min-h-[48px] outline-none"
+            style={{
+              background: 'var(--color-surface-container-high)',
+              color: 'var(--color-on-surface)',
+              border: '1px solid var(--color-outline-variant)',
+            }}
+          />
+          <input
+            type="time"
+            value={datetime.split('T')[1] ?? ''}
+            onChange={(e) => {
+              const date = datetime.split('T')[0] || toDatetimeLocalValue(new Date()).split('T')[0];
+              setDatetime(e.target.value ? `${date}T${e.target.value}` : '');
+            }}
+            className="flex-1 min-w-0 rounded-xl px-4 py-3 text-sm min-h-[48px] outline-none"
+            style={{
+              background: 'var(--color-surface-container-high)',
+              color: 'var(--color-on-surface)',
+              border: '1px solid var(--color-outline-variant)',
+            }}
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {DATETIME_PRESETS.map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() => setDatetime(toDatetimeLocalValue(preset.compute()))}
+              className="px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-colors duration-150"
+              style={{
+                background: 'var(--color-surface-container-high)',
+                color: 'var(--color-on-surface-variant)',
+                border: '1px solid var(--color-outline-variant)',
+              }}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="flex flex-col gap-2">
         <span
@@ -326,7 +377,7 @@ export function JourneySearch({ onSearch, loading, geo }: Props) {
                 type="button"
                 onClick={() => toggleMode(mode)}
                 aria-pressed={active}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors duration-150"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors duration-150"
                 style={{
                   background: active
                     ? 'var(--color-primary)'
@@ -350,11 +401,38 @@ export function JourneySearch({ onSearch, loading, geo }: Props) {
         )}
       </div>
 
+      {datetime && onPlan && (
+        <button
+          type="button"
+          disabled={!canSearch}
+          onClick={() =>
+            onPlan({
+              fromLabel,
+              fromLat: fromLat!,
+              fromLng: fromLng!,
+              toLabel,
+              toLat: toLat!,
+              toLng: toLng!,
+              datetime,
+              selectedModes,
+            })
+          }
+          className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-3 rounded-xl min-h-[48px] cursor-pointer transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{
+            background: 'var(--color-surface-container-high)',
+            color: 'var(--color-on-surface)',
+            border: '1px solid var(--color-outline-variant)',
+          }}
+        >
+          Planifier mon itinéraire
+        </button>
+      )}
+
       <button
         type="submit"
         disabled={loading || (fromLat !== null && toLat === null)}
         aria-busy={loading}
-        className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-3 rounded-xl min-h-[48px] transition-colors duration-150 disabled:opacity-50"
+        className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-3 rounded-xl min-h-[48px] cursor-pointer transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)' }}
       >
         {loading ? 'Recherche en cours…' : 'Rechercher un itinéraire'}

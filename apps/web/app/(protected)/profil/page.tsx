@@ -13,6 +13,7 @@ import { Switch } from '../../../components/ui/Switch';
 import { SegmentedControl } from '../../../components/ui/SegmentedControl';
 import { StatCard } from '../../../components/ui/StatCard';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { authFetch } from '../../../lib/auth-fetch';
 import { useAccessibilityStore } from '../../../store/useAccessibilityStore';
 import { useGeolocation } from '../../../lib/hooks/useGeolocation';
 import { useInstallPrompt } from '../../../lib/hooks/useInstallPrompt';
@@ -102,9 +103,7 @@ export default function ProfilPage() {
     queryKey: ['journey-history', 'stats'],
     enabled: Boolean(accessToken),
     queryFn: async (): Promise<JourneyMonthlyStats> => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/journey-history/stats`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const res = await authFetch('/journey-history/stats');
       if (!res.ok) throw new Error('Impossible de charger les statistiques.');
       return res.json();
     },
@@ -143,10 +142,7 @@ export default function ProfilPage() {
 
   useEffect(() => {
     if (!accessToken) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/addresses`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-      credentials: 'include',
-    })
+    authFetch('/addresses')
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         setAddresses(data);
@@ -169,10 +165,7 @@ export default function ProfilPage() {
   async function loadAddresses() {
     if (addressLoaded) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/addresses`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        credentials: 'include',
-      });
+      const res = await authFetch('/addresses');
       if (res.ok) setAddresses(await res.json());
     } catch {}
     setAddressLoaded(true);
@@ -234,10 +227,9 @@ export default function ProfilPage() {
     if (!draftName.trim() || draftLat === null || draftLng === null) return;
     setSavingAddress(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/addresses`, {
+      const res = await authFetch('/addresses', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: draftName.trim(),
           label: draftAddressQuery,
@@ -256,11 +248,7 @@ export default function ProfilPage() {
 
   async function deleteAddress(id: string) {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/addresses/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${accessToken}` },
-        credentials: 'include',
-      });
+      await authFetch(`/addresses/${id}`, { method: 'DELETE' });
       setAddresses((prev) => prev.filter((a) => a.id !== id));
     } catch {}
   }
@@ -268,10 +256,7 @@ export default function ProfilPage() {
   async function loadLineSubs() {
     if (lineSubsLoaded) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/line-subscriptions`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        credentials: 'include',
-      });
+      const res = await authFetch('/line-subscriptions');
       if (res.ok) setLineSubs(await res.json());
     } catch {}
     setLineSubsLoaded(true);
@@ -302,10 +287,9 @@ export default function ProfilPage() {
     if (!selectedRoute) return;
     setSavingLineSub(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/line-subscriptions`, {
+      const res = await authFetch('/line-subscriptions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           routeGtfsId: selectedRoute.gtfsId,
           routeShortName: selectedRoute.shortName,
@@ -322,11 +306,7 @@ export default function ProfilPage() {
 
   async function deleteLineSub(id: string) {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/line-subscriptions/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${accessToken}` },
-        credentials: 'include',
-      });
+      await authFetch(`/line-subscriptions/${id}`, { method: 'DELETE' });
       setLineSubs((prev) => prev.filter((s) => s.id !== id));
     } catch {}
   }
@@ -345,10 +325,9 @@ export default function ProfilPage() {
   async function saveModes() {
     setSavingModes(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+      const res = await authFetch('/profile', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ transportModes: draftModes }),
       });
       if (res.ok) {
@@ -386,10 +365,9 @@ export default function ProfilPage() {
     setSaving(true);
     setSaveError(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+      const res = await authFetch('/profile', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editForm),
       });
       if (!res.ok) {
@@ -399,7 +377,7 @@ export default function ProfilPage() {
       }
       const profile = await res.json();
       setAuth(
-        accessToken!,
+        useAuthStore.getState().accessToken!,
         {
           id: profile.user.id,
           firstName: profile.user.firstName,
@@ -456,9 +434,6 @@ export default function ProfilPage() {
           >
             {user.firstName} {user.lastName}
           </h1>
-          <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
-            Commuter Quotidien • Premium
-          </p>
         </div>
 
         {isEditing ? (

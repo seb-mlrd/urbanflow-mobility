@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProfileModule } from '../profile/profile.module.js';
 import { TransportModule } from '../transport/transport.module.js';
@@ -23,14 +22,6 @@ import { NotificationsController } from './notifications.controller.js';
     ConfigModule,
     TransportModule,
     ProfileModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '15m' },
-      }),
-      inject: [ConfigService],
-    }),
     TypeOrmModule.forFeature([
       DisruptionAlert,
       LineSubscription,

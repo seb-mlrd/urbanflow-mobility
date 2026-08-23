@@ -6,7 +6,7 @@ import { colors, borders, radius, typography } from '../../lib/tokens';
 import { useAuthStore } from '../../store/useAuthStore';
 
 const HOME_ITEM = {
-  label: 'Itinéraire',
+  label: 'Recherche',
   href: '/',
   icon: (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -34,6 +34,21 @@ const AUTHENTICATED_ITEMS = [
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    label: 'Planification',
+    href: '/planification',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <path
+          d="M3 8h14M7 2.5v3M13 2.5v3"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
         />
       </svg>
     ),

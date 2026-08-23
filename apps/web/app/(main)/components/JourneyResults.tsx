@@ -2,7 +2,7 @@
 
 import { Leaf, Navigation } from 'lucide-react';
 import { OTP_MODE_ICONS, OTP_MODE_LABELS } from '../../../lib/transport-icons';
-import { formatDuration, formatCo2 } from '../../../lib/journey-utils';
+import { formatDuration, formatCo2, formatDistance } from '../../../lib/journey-utils';
 import type { Itinerary } from '../../../lib/journey-types';
 
 function formatTime(ms: number) {
@@ -246,7 +246,7 @@ export function JourneyResults({
                     >
                       {formatTime(leg.startTime)} ·{' '}
                       {formatDuration((leg.endTime - leg.startTime) / 1000)}
-                      {leg.mode === 'WALK' && ` · ${Math.round(leg.distance)} m`}
+                      {leg.mode === 'WALK' && ` · ${formatDistance(leg.distance)}`}
                     </p>
                   </div>
                 </li>

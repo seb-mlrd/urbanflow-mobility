@@ -92,7 +92,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors duration-150"
+            className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-colors duration-150"
             style={{ color: 'var(--color-on-surface-variant)' }}
             onMouseEnter={(e) =>
               (e.currentTarget.style.background = 'var(--color-surface-container-high)')

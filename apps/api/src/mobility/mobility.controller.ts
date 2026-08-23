@@ -1,35 +1,25 @@
-import {
-  Controller,
-  Get,
-  Inject,
-  ServiceUnavailableException,
-} from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import type { Cache } from 'cache-manager';
+import { Controller, Get } from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { VlilleService } from './vlille.service.js';
 import { LimeService } from './lime.service.js';
 
+@ApiTags('mobility')
 @Controller('mobility')
 export class MobilityController {
-  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {}
+  constructor(
+    private readonly vlilleService: VlilleService,
+    private readonly limeService: LimeService,
+  ) {}
 
+  @ApiOperation({ summary: "Récupère l'état des stations de vélos V'Lille" })
   @Get('bikes')
-  async getBikes() {
-    const data = await this.cacheManager.get(VlilleService.CACHE_KEY);
-    if (!data)
-      throw new ServiceUnavailableException(
-        "Les données V'Lille sont indisponibles",
-      );
-    return data;
+  getBikes() {
+    return this.vlilleService.getSnapshotOrThrow();
   }
 
+  @ApiOperation({ summary: 'Récupère la position des trottinettes Lime disponibles' })
   @Get('scooters')
-  async getScooters() {
-    const data = await this.cacheManager.get(LimeService.CACHE_KEY);
-    if (!data)
-      throw new ServiceUnavailableException(
-        'Les données des trottinettes sont indisponibles',
-      );
-    return data;
+  getScooters() {
+    return this.limeService.getSnapshotOrThrow();
   }
 }

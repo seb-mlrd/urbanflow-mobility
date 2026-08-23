@@ -11,12 +11,14 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { envValidationSchema } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
+import { GlobalJwtModule } from './auth/jwt.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
 import { AddressModule } from './address/address.module';
 import { TransportModule } from './transport/transport.module';
 import { MobilityModule } from './mobility/mobility.module';
 import { JourneyHistoryModule } from './journey-history/journey-history.module';
+import { PlanificationModule } from './planification/planification.module';
 import { DisruptionAlertsModule } from './disruption-alerts/disruption-alerts.module';
 
 @Module({
@@ -43,12 +45,14 @@ import { DisruptionAlertsModule } from './disruption-alerts/disruption-alerts.mo
       }),
     }),
     DatabaseModule,
+    GlobalJwtModule,
     AuthModule,
     ProfileModule,
     AddressModule,
     TransportModule,
     MobilityModule,
     JourneyHistoryModule,
+    PlanificationModule,
     DisruptionAlertsModule,
   ],
   controllers: [AppController],

@@ -11,6 +11,7 @@ import { useGeolocation, type UseGeolocationResult } from '../../../lib/hooks/us
 import { useJourneyTracking } from '../../../lib/hooks/useJourneyTracking';
 import { useActiveJourneyStore } from '../../../store/useActiveJourneyStore';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { authFetch } from '../../../lib/auth-fetch';
 import {
   getItineraryEndpoints,
   getItineraryRouteCoordinates,
@@ -112,9 +113,9 @@ export function ActiveJourneyOverlay() {
     });
 
     if (!accessToken) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/journey-history`, {
+    authFetch('/journey-history', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     }).catch(() => {});
   }, [
