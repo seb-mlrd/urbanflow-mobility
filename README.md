@@ -205,10 +205,10 @@ pnpm format
 
 Le déploiement est géré par `.github/workflows/deploy.yml`, séparé de la CI. Il se déclenche automatiquement (via `workflow_run`) quand le workflow CI a réussi sur `main` ou `develop`, mais chaque job (`deploy-prod` / `deploy-preprod`) référence un [GitHub Environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) (`production` / `preprod`) avec des reviewers requis : le déploiement reste donc en attente d'une approbation manuelle dans l'onglet **Actions** avant de s'exécuter.
 
-| Branche | Environment GitHub | Répertoire sur le VPS |
+| Branche | Environment GitHub | URL |
 |---|---|---|
-| `main` | `production` | `/home/urbanflow/urbanflow-prod` |
-| `develop` | `preprod` | `/home/urbanflow/urbanflow-preprod` |
+| `main` | `production` | [urbanflow-mobility.com](https://urbanflow-mobility.com) |
+| `develop` | `preprod` | [preprod.urbanflow-mobility.com](https://preprod.urbanflow-mobility.com) |
 
 Une fois approuvé, le job se connecte en SSH au VPS (secrets `VPS_HOST` / `VPS_SSH_KEY`) et exécute :
 
