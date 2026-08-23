@@ -8,10 +8,8 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import { firstValueFrom, timeout } from 'rxjs';
 import type { Scooter, MobilitySnapshot } from '@urbanflow/shared';
-
-const FETCH_TIMEOUT_MS = 5_000;
+import { fetchGbfsResource } from './gbfs.util.js';
 
 interface LimeVehicle {
   bike_id: string;
@@ -49,13 +47,12 @@ export class LimeService {
 
   async refresh(): Promise<void> {
     try {
-      const res = await firstValueFrom(
-        this.httpService
-          .get<LimeFreeBikeStatusResponse>(this.feedUrl)
-          .pipe(timeout(FETCH_TIMEOUT_MS)),
+      const res = await fetchGbfsResource<LimeFreeBikeStatusResponse>(
+        this.httpService,
+        this.feedUrl,
       );
 
-      const scooters: Scooter[] = res.data.data.bikes
+      const scooters: Scooter[] = res.data.bikes
         .filter((b) => b.vehicle_type === 'scooter')
         .map((b) => ({
           id: b.bike_id,
@@ -69,7 +66,7 @@ export class LimeService {
 
       const snapshot: MobilitySnapshot<Scooter> = {
         vehicles: scooters,
-        lastUpdated: res.data.last_updated,
+        lastUpdated: res.last_updated,
         fetchedAt: Date.now(),
       };
 
