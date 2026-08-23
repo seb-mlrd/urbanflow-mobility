@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UserNotificationDto } from '@urbanflow/shared';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useNotificationsStore } from '../../../store/useNotificationsStore';
+import { authFetch } from '../../../lib/auth-fetch';
 import { OTP_MODE_ICONS, OTP_MODE_LABELS } from '../../../lib/transport-icons';
 import { formatDuration } from '../../../lib/journey-utils';
 import type { Itinerary } from '../../../lib/journey-types';
@@ -130,9 +131,7 @@ export default function NotificationsPage() {
     queryKey: ['notifications'],
     enabled: Boolean(accessToken),
     queryFn: async (): Promise<UserNotificationDto[]> => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const res = await authFetch('/notifications');
       if (!res.ok) throw new Error('Impossible de charger les notifications.');
       return res.json();
     },
@@ -143,10 +142,7 @@ export default function NotificationsPage() {
     queryClient.setQueryData<UserNotificationDto[]>(['notifications'], (prev) =>
       prev?.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${id}/read`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${accessToken}` },
-    }).catch(() => {});
+    await authFetch(`/notifications/${id}/read`, { method: 'PATCH' }).catch(() => {});
   }
 
   return (

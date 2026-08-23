@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
+import { authFetch } from '../auth-fetch';
 import {
   ConsentStatus,
   clearStoredConsent,
@@ -67,9 +68,9 @@ export function useGeolocation(): UseGeolocationResult {
   const syncConsentToBackend = useCallback(
     (granted: boolean) => {
       if (!accessToken) return;
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+      authFetch('/profile', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ geolocationConsent: granted }),
       }).catch(() => {});
     },

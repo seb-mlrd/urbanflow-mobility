@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { authFetch } from '../../../lib/auth-fetch';
 import { OTP_MODE_ICONS, OTP_MODE_LABELS } from '../../../lib/transport-icons';
 import type { PlannedItinerary } from '../../../lib/journey-types';
 
@@ -93,9 +94,7 @@ export default function PlanificationPage() {
     queryKey: ['planification', 'list'],
     enabled: Boolean(accessToken),
     queryFn: async (): Promise<PlannedItinerary[]> => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/planification`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const res = await authFetch('/planification');
       if (!res.ok) throw new Error('Impossible de charger vos itinéraires planifiés.');
       return res.json();
     },
@@ -103,10 +102,7 @@ export default function PlanificationPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/planification/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const res = await authFetch(`/planification/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['planification', 'list'] }),

@@ -11,6 +11,7 @@ import { useGeolocation } from '../../lib/hooks/useGeolocation';
 import { filterAndSortItineraries, type SortBy } from '../../lib/journey-utils';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useActiveJourneyStore } from '../../store/useActiveJourneyStore';
+import { authFetch } from '../../lib/auth-fetch';
 import type { JourneyResponse } from '../../lib/journey-types';
 import { TRANSPORT_MODES } from '@urbanflow/shared';
 import { TRANSPORT_MODE_ICONS } from '../../lib/transport-icons';
@@ -129,13 +130,11 @@ function HomePageContent() {
       return;
     }
     setPlanMessage(null);
+    setError(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/planification`, {
+      const res = await authFetch('/planification', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fromLabel: values.fromLabel,
           toLabel: values.toLabel,

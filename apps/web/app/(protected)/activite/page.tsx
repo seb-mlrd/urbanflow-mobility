@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { authFetch } from '../../../lib/auth-fetch';
 import { OTP_MODE_ICONS, OTP_MODE_LABELS } from '../../../lib/transport-icons';
 import { formatCo2, formatDistance, formatDuration } from '../../../lib/journey-utils';
 import type {
@@ -62,9 +63,7 @@ export default function ActivitePage() {
     queryKey: ['journey-history', 'stats'],
     enabled: Boolean(accessToken),
     queryFn: async (): Promise<JourneyMonthlyStats> => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/journey-history/stats`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const res = await authFetch('/journey-history/stats');
       if (!res.ok) throw new Error('Impossible de charger les statistiques.');
       return res.json();
     },
@@ -74,9 +73,7 @@ export default function ActivitePage() {
     queryKey: ['journey-history', 'list'],
     enabled: Boolean(accessToken),
     queryFn: async (): Promise<JourneyHistoryRecord[]> => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/journey-history`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const res = await authFetch('/journey-history');
       if (!res.ok) throw new Error("Impossible de charger l'historique.");
       return res.json();
     },
@@ -86,10 +83,7 @@ export default function ActivitePage() {
     queryKey: ['journey-history', 'monthly-breakdown'],
     enabled: Boolean(accessToken),
     queryFn: async (): Promise<MonthlyCo2Point[]> => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/journey-history/monthly-breakdown?months=6`,
-        { headers: { Authorization: `Bearer ${accessToken}` } },
-      );
+      const res = await authFetch('/journey-history/monthly-breakdown?months=6');
       if (!res.ok) throw new Error('Impossible de charger la répartition mensuelle.');
       return res.json();
     },
