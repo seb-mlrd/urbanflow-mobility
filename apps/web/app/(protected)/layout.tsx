@@ -8,6 +8,7 @@ import { TopBar } from '../../components/ui/TopBar';
 import { Sidebar } from '../../components/ui/Sidebar';
 import { BottomNav } from '../../components/ui/BottomNav';
 import { useAlertsSocket } from '../../lib/hooks/useAlertsSocket';
+import { authFetch } from '../../lib/auth-fetch';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -21,9 +22,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     if (!accessToken) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/unread-count`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
+    authFetch('/notifications/unread-count')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => data && setUnreadCount(data.count))
       .catch(() => {});

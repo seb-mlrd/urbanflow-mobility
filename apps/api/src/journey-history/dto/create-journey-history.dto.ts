@@ -1,6 +1,7 @@
 import { IsNumber, IsString, Min } from 'class-validator';
+import { RouteCoordinatesDto } from '../../common/dto/route-coordinates.dto.js';
 
-export class CreateJourneyHistoryDto {
+export class CreateJourneyHistoryDto extends RouteCoordinatesDto {
   @IsString()
   dominantMode!: string;
 
@@ -21,18 +22,6 @@ export class CreateJourneyHistoryDto {
 
   @IsString()
   toLabel!: string;
-
-  @IsNumber()
-  fromLat!: number;
-
-  @IsNumber()
-  fromLng!: number;
-
-  @IsNumber()
-  toLat!: number;
-
-  @IsNumber()
-  toLng!: number;
 
   @IsNumber()
   departureAt!: number;

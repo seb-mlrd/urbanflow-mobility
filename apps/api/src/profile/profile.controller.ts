@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  ConflictException,
   Get,
   HttpCode,
   HttpStatus,
@@ -9,41 +8,10 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import {
-  IsArray,
-  IsBoolean,
-  IsEmail,
-  IsOptional,
-  IsString,
-} from 'class-validator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { AuthenticatedRequest } from '../auth/jwt-payload.type.js';
 import { ProfileService } from './profile.service.js';
-
-class UpdateProfileDto {
-  @IsString()
-  @IsOptional()
-  firstName?: string;
-
-  @IsString()
-  @IsOptional()
-  lastName?: string;
-
-  @IsEmail()
-  @IsOptional()
-  email?: string;
-
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  transportModes?: string[];
-
-  @IsBoolean()
-  @IsOptional()
-  geolocationConsent?: boolean;
-}
-
-const PG_UNIQUE_VIOLATION = '23505';
+import { UpdateProfileDto } from './dto/update-profile.dto.js';
 
 @Controller('profile')
 @UseGuards(JwtAuthGuard)
@@ -58,39 +26,10 @@ export class ProfileController {
 
   @Patch()
   @HttpCode(HttpStatus.OK)
-  async updateProfile(
+  updateProfile(
     @Request() req: AuthenticatedRequest,
     @Body() dto: UpdateProfileDto,
   ) {
-    const { transportModes, geolocationConsent, ...userFields } = dto;
-
-    try {
-      if (Object.keys(userFields).length > 0) {
-        await this.profileService.updateUserInfo(req.user.sub, userFields);
-      }
-      if (transportModes !== undefined) {
-        await this.profileService.updateTransportModes(
-          req.user.sub,
-          transportModes,
-        );
-      }
-      if (geolocationConsent !== undefined) {
-        await this.profileService.setGeolocationConsent(
-          req.user.sub,
-          geolocationConsent,
-        );
-      }
-    } catch (err) {
-      const code =
-        err && typeof err === 'object'
-          ? (err as { code?: string }).code
-          : undefined;
-      if (code === PG_UNIQUE_VIOLATION) {
-        throw new ConflictException('Cette adresse email est déjà utilisée.');
-      }
-      throw err;
-    }
-
-    return this.profileService.findByUserId(req.user.sub);
+    return this.profileService.updateProfile(req.user.sub, dto);
   }
 }

@@ -1,12 +1,15 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import { firstValueFrom, timeout } from 'rxjs';
 import type { BikeStation, MobilitySnapshot } from '@urbanflow/shared';
-
-const FETCH_TIMEOUT_MS = 5_000;
+import { fetchGbfsResource } from './gbfs.util.js';
 
 interface VlilleStationInformation {
   station_id: string;
@@ -58,22 +61,20 @@ export class VlilleService {
 
   async refresh(): Promise<void> {
     try {
-      const [infoRes, statusRes] = await Promise.all([
-        firstValueFrom(
-          this.httpService
-            .get<VlilleStationInformationResponse>(this.infoUrl)
-            .pipe(timeout(FETCH_TIMEOUT_MS)),
+      const [info, status] = await Promise.all([
+        fetchGbfsResource<VlilleStationInformationResponse>(
+          this.httpService,
+          this.infoUrl,
         ),
-        firstValueFrom(
-          this.httpService
-            .get<VlilleStationStatusResponse>(this.statusUrl)
-            .pipe(timeout(FETCH_TIMEOUT_MS)),
+        fetchGbfsResource<VlilleStationStatusResponse>(
+          this.httpService,
+          this.statusUrl,
         ),
       ]);
 
       const snapshot: MobilitySnapshot<BikeStation> = {
-        vehicles: this.merge(infoRes.data, statusRes.data),
-        lastUpdated: statusRes.data.last_updated,
+        vehicles: this.merge(info, status),
+        lastUpdated: status.last_updated,
         fetchedAt: Date.now(),
       };
 
@@ -85,6 +86,18 @@ export class VlilleService {
     } catch (err) {
       this.logger.warn(`Échec du rafraîchissement V'Lille: ${String(err)}`);
     }
+  }
+
+  async getSnapshotOrThrow(): Promise<MobilitySnapshot<BikeStation>> {
+    const snapshot = await this.cacheManager.get<MobilitySnapshot<BikeStation>>(
+      VlilleService.CACHE_KEY,
+    );
+    if (!snapshot) {
+      throw new ServiceUnavailableException(
+        "Les données V'Lille sont indisponibles",
+      );
+    }
+    return snapshot;
   }
 
   private merge(
