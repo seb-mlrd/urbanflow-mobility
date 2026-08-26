@@ -126,6 +126,7 @@ export default function NotificationsPage() {
   const accessToken = useAuthStore((s) => s.accessToken);
   const queryClient = useQueryClient();
   const markReadInStore = useNotificationsStore((s) => s.markRead);
+  const markAllReadInStore = useNotificationsStore((s) => s.markAllRead);
 
   const { data: notifications, isLoading } = useQuery({
     queryKey: ['notifications'],
@@ -145,11 +146,33 @@ export default function NotificationsPage() {
     await authFetch(`/notifications/${id}/read`, { method: 'PATCH' }).catch(() => {});
   }
 
+  async function handleMarkAllRead() {
+    markAllReadInStore();
+    queryClient.setQueryData<UserNotificationDto[]>(['notifications'], (prev) =>
+      prev?.map((n) => ({ ...n, read: true })),
+    );
+    await authFetch('/notifications/read-all', { method: 'PATCH' }).catch(() => {});
+  }
+
+  const hasUnread = notifications?.some((n) => !n.read) ?? false;
+
   return (
     <div className="px-4 py-4 md:px-6 md:py-6 max-w-2xl mx-auto">
-      <h1 className="text-xl font-bold mb-4" style={{ color: 'var(--color-on-surface)' }}>
-        Notifications
-      </h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-bold" style={{ color: 'var(--color-on-surface)' }}>
+          Notifications
+        </h1>
+        {hasUnread && (
+          <button
+            type="button"
+            onClick={handleMarkAllRead}
+            className="text-xs font-medium shrink-0"
+            style={{ color: 'var(--color-primary)' }}
+          >
+            Tout marquer comme lu
+          </button>
+        )}
+      </div>
 
       {isLoading && (
         <p
