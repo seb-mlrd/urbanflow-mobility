@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  ConflictException,
   Delete,
   Get,
   HttpCode,
@@ -13,13 +12,6 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import type { Response } from 'express';
-import {
-  IsArray,
-  IsBoolean,
-  IsEmail,
-  IsOptional,
-  IsString,
-} from 'class-validator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { AuthenticatedRequest } from '../auth/jwt-payload.type.js';
 import { ProfileService } from './profile.service.js';

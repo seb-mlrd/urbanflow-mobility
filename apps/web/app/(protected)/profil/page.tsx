@@ -1433,7 +1433,12 @@ export default function ProfilPage() {
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <path d="M6.5 7v4.5M9.5 7v4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            <path
+              d="M6.5 7v4.5M9.5 7v4.5"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            />
           </svg>
           Supprimer mon compte
         </button>
@@ -1443,9 +1448,9 @@ export default function ProfilPage() {
       <Modal open={deleteModalOpen} onClose={closeDeleteModal} title="Supprimer mon compte">
         <div className="flex flex-col gap-3">
           <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
-            Cette action est irréversible. Toutes vos données (profil, adresses, lignes
-            favorites, historique de trajets) seront définitivement supprimées et vous serez
-            déconnecté immédiatement.
+            Cette action est irréversible. Toutes vos données (profil, adresses, lignes favorites,
+            historique de trajets) seront définitivement supprimées et vous serez déconnecté
+            immédiatement.
           </p>
 
           {deleteError && (

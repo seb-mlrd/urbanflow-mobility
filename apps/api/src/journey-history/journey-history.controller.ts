@@ -9,7 +9,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { CurrentProfile } from '../profile/current-profile.decorator.js';
 import { CurrentProfileInterceptor } from '../profile/current-profile.interceptor.js';
@@ -41,7 +46,9 @@ export class JourneyHistoryController {
     return this.journeyHistoryService.getMonthlyStats(profile.id);
   }
 
-  @ApiOperation({ summary: 'Récupère la répartition mensuelle des émissions de CO2' })
+  @ApiOperation({
+    summary: 'Récupère la répartition mensuelle des émissions de CO2',
+  })
   @ApiQuery({ name: 'months', required: false, example: '6' })
   @Get('monthly-breakdown')
   getMonthlyBreakdown(
