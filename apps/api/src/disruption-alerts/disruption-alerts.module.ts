@@ -8,7 +8,7 @@ import { AlertsGateway } from './alerts.gateway.js';
 import { DisruptionAlert } from './entities/disruption-alert.entity.js';
 import { LineSubscription } from './entities/line-subscription.entity.js';
 import { UserNotification } from './entities/user-notification.entity.js';
-import { GtfsRtAlertsService } from './gtfs-rt-alerts.service.js';
+import { MelPerturbationsService } from './mel-perturbations.service.js';
 import { DisruptionAlertsService } from './disruption-alerts.service.js';
 import { DisruptionAlertsScheduler } from './disruption-alerts.scheduler.js';
 import { LineSubscriptionsService } from './line-subscriptions.service.js';
@@ -30,7 +30,7 @@ import { NotificationsController } from './notifications.controller.js';
   ],
   controllers: [LineSubscriptionsController, NotificationsController],
   providers: [
-    GtfsRtAlertsService,
+    MelPerturbationsService,
     DisruptionAlertsService,
     DisruptionAlertsScheduler,
     AlertsGateway,

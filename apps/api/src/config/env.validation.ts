@@ -21,9 +21,9 @@ export const envValidationSchema = Joi.object({
     .default(
       'https://data.lime.bike/api/partners/v2/gbfs/lille/free_bike_status',
     ),
-  GTFS_RT_ALERTS_URL: Joi.string()
+  MEL_PERTURBATIONS_URL: Joi.string()
     .uri()
     .default(
-      'https://proxy.transport.data.gouv.fr/resource/ilevia-lille-gtfs-rt',
+      'https://data.lillemetropole.fr/geoserver/ogc/features/v1/collections/dsp_ilevia:perturbations/items',
     ),
 });

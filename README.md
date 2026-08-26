@@ -66,7 +66,7 @@ cp .env.example .env.local
 | `OTP_GRAPHQL_URL` | Endpoint GraphQL d'OpenTripPlanner (défaut `http://localhost:8888/otp/gtfs/v1`) |
 | `GBFS_VLILLE_STATION_INFORMATION_URL`, `GBFS_VLILLE_STATION_STATUS_URL` | Flux GBFS des stations V'Lille (Ilevia) |
 | `GBFS_LIME_FREE_BIKE_STATUS_URL` | Flux GBFS des trottinettes Lime |
-| `GTFS_RT_ALERTS_URL` | Flux GTFS-RT des alertes de perturbation ilévia |
+| `MEL_PERTURBATIONS_URL` | API MEL (OGC Features) des alertes de perturbation ilévia |
 
 Ces variables sont lues à la fois par Docker Compose (`POSTGRES_*`) et par les apps `web`/`api` (les autres).
 

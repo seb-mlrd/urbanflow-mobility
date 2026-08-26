@@ -13,7 +13,12 @@ export class NearbyStopsQueryDto {
   @Type(() => Number)
   lng!: number;
 
-  @ApiPropertyOptional({ example: 500, minimum: 50, maximum: 2000, default: 500 })
+  @ApiPropertyOptional({
+    example: 500,
+    minimum: 50,
+    maximum: 2000,
+    default: 500,
+  })
   @IsNumber()
   @IsOptional()
   @Min(50)
