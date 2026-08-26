@@ -5,6 +5,7 @@ import { Input } from '../../../components/ui/Input';
 import { TRANSPORT_MODES } from '@urbanflow/shared';
 import { TRANSPORT_MODE_ICONS } from '../../../lib/transport-icons';
 import { GEO_ERROR_MESSAGES, type UseGeolocationResult } from '../../../lib/hooks/useGeolocation';
+import { useSavedAddresses, type SavedAddress } from '../../../lib/hooks/useSavedAddresses';
 import { DATETIME_PRESETS, toDatetimeLocalValue } from '../../../lib/journey-utils';
 
 export interface Suggestion {
@@ -38,14 +39,17 @@ export function AddressField({
   onChange,
   onSelect,
   rightElement,
+  savedAddresses,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   onSelect: (s: Suggestion) => void;
   rightElement?: React.ReactNode;
+  savedAddresses?: SavedAddress[];
 }) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [focused, setFocused] = useState(false);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function handleChange(v: string) {
@@ -77,12 +81,17 @@ export function AddressField({
     }, 300);
   }
 
+  const showSavedAddresses =
+    focused && value.length === 0 && suggestions.length === 0 && (savedAddresses?.length ?? 0) > 0;
+
   return (
     <div className="relative">
       <Input
         label={label}
         value={value}
         onChange={(e) => handleChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setTimeout(() => setFocused(false), 150)}
         autoComplete="off"
         rightElement={rightElement}
       />
@@ -115,6 +124,59 @@ export function AddressField({
           ))}
         </ul>
       )}
+      {showSavedAddresses && (
+        <ul
+          className="absolute left-0 right-0 top-full mt-1 rounded-xl overflow-hidden z-20"
+          style={{
+            background: 'var(--color-surface-container-highest)',
+            border: '1px solid var(--color-outline-variant)',
+          }}
+        >
+          {savedAddresses!.map((a) => (
+            <li key={a.id}>
+              <button
+                type="button"
+                className="w-full flex items-center gap-3 text-left px-4 py-3 text-sm cursor-pointer transition-colors duration-150"
+                style={{ color: 'var(--color-on-surface)' }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = 'var(--color-surface-container-high)')
+                }
+                onMouseLeave={(e) => (e.currentTarget.style.background = '')}
+                onClick={() => {
+                  onSelect({ label: a.label, lat: a.lat, lng: a.lng });
+                  setFocused(false);
+                }}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                  className="shrink-0"
+                  style={{ color: 'var(--color-on-surface-variant)' }}
+                >
+                  <path
+                    d="M2.5 7L8 2.5 13.5 7v6a.7.7 0 0 1-.7.7H3.2a.7.7 0 0 1-.7-.7V7Z"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="flex-1 min-w-0">
+                  <span className="block font-medium truncate">{a.name}</span>
+                  <span
+                    className="block text-xs truncate"
+                    style={{ color: 'var(--color-on-surface-variant)' }}
+                  >
+                    {a.label}
+                  </span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -129,6 +191,7 @@ export function JourneySearch({ onSearch, onPlan, initialValues, loading, geo }:
   const [datetime, setDatetime] = useState(initialValues?.datetime ?? '');
   const [selectedModes, setSelectedModes] = useState<string[]>(initialValues?.selectedModes ?? []);
   const [appliedGeoPosition, setAppliedGeoPosition] = useState(geo.position);
+  const savedAddresses = useSavedAddresses();
 
   if (geo.status === 'success' && geo.position && geo.position !== appliedGeoPosition) {
     setAppliedGeoPosition(geo.position);
@@ -208,6 +271,7 @@ export function JourneySearch({ onSearch, onPlan, initialValues, loading, geo }:
               setFromLat(s.lat);
               setFromLng(s.lng);
             }}
+            savedAddresses={savedAddresses}
             rightElement={
               <button
                 type="button"
@@ -242,6 +306,7 @@ export function JourneySearch({ onSearch, onPlan, initialValues, loading, geo }:
               setToLat(s.lat);
               setToLng(s.lng);
             }}
+            savedAddresses={savedAddresses}
           />
         </div>
         <button

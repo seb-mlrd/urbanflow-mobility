@@ -8,6 +8,7 @@ import { JourneyResults } from './components/JourneyResults';
 import { GeolocationConsentModal } from '../../components/GeolocationConsentModal';
 import { AuthRequiredModal } from '../../components/AuthRequiredModal';
 import { useGeolocation } from '../../lib/hooks/useGeolocation';
+import { useSavedAddresses } from '../../lib/hooks/useSavedAddresses';
 import { filterAndSortItineraries, type SortBy } from '../../lib/journey-utils';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useActiveJourneyStore } from '../../store/useActiveJourneyStore';
@@ -83,6 +84,7 @@ function HomePageContent() {
   const [editToLng, setEditToLng] = useState<number | null>(null);
   const [editDatetime, setEditDatetime] = useState('');
   const geo = useGeolocation();
+  const savedAddresses = useSavedAddresses();
   const accessToken = useAuthStore((s) => s.accessToken);
   const profileModes = useAuthStore((s) => s.transportModes);
   const isJourneyActive = useActiveJourneyStore((s) => s.isActive);
@@ -280,6 +282,7 @@ function HomePageContent() {
                   setEditFromLat(s.lat);
                   setEditFromLng(s.lng);
                 }}
+                savedAddresses={savedAddresses}
               />
             </div>
             <button
@@ -326,6 +329,7 @@ function HomePageContent() {
                   setEditToLat(s.lat);
                   setEditToLng(s.lng);
                 }}
+                savedAddresses={savedAddresses}
               />
             </div>
           </div>

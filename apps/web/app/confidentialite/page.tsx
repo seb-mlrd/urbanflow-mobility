@@ -10,8 +10,17 @@ export default function ConfidentialitePage() {
     <LegalLayout title="Politique de confidentialité" lastUpdated="13 août 2026">
       <LegalSection title="1. Responsable de traitement">
         <p>
-          UrbanFlow est responsable du traitement des données personnelles collectées via le
-          Service, conformément au Règlement Général sur la Protection des Données (RGPD).
+          Le responsable du traitement des données personnelles collectées via le Service
+          UrbanFlow, conformément au Règlement Général sur la Protection des Données (RGPD), est
+          Sébastien Maillard, joignable à l&apos;adresse{' '}
+          <a
+            href="mailto:sebmlrd06@gmail.com"
+            className="underline"
+            style={{ color: 'var(--color-primary)' }}
+          >
+            sebmlrd06@gmail.com
+          </a>
+          .
         </p>
       </LegalSection>
 
@@ -63,6 +72,27 @@ export default function ConfidentialitePage() {
           mesure nécessaire au fonctionnement du Service, sous obligation contractuelle de
           confidentialité.
         </p>
+        <p>
+          Par ailleurs, certaines fonctionnalités appellent directement depuis votre navigateur des
+          services tiers, sans transiter par nos serveurs :
+        </p>
+        <ul className="list-disc pl-5 flex flex-col gap-1">
+          <li>
+            <strong>Base Adresse Nationale</strong> (api-adresse.data.gouv.fr, service public
+            français) : reçoit le texte que vous saisissez lors d&apos;une recherche d&apos;adresse,
+            ou vos coordonnées GPS lors de la géolocalisation automatique de votre position, afin de
+            vous proposer des suggestions ou un nom de lieu ;
+          </li>
+          <li>
+            <strong>CARTO</strong> (fournisseur de fonds de carte) : reçoit une requête technique
+            (incluant votre adresse IP) à chaque affichage de la carte, nécessaire au chargement des
+            tuiles cartographiques.
+          </li>
+        </ul>
+        <p>
+          Ces services sont soumis à leurs propres politiques de confidentialité et ne reçoivent
+          aucune autre donnée de votre compte (identité, historique, etc.).
+        </p>
       </LegalSection>
 
       <LegalSection title="7. Vos droits">
@@ -72,6 +102,10 @@ export default function ConfidentialitePage() {
         </p>
         <ul className="list-disc pl-5 flex flex-col gap-1">
           <li>Accès et rectification : modifiez vos informations depuis la page Profil ;</li>
+          <li>
+            Portabilité : sur simple demande à l&apos;adresse indiquée à l&apos;article 9, nous vous
+            transmettons une copie structurée de l&apos;ensemble de vos données ;
+          </li>
           <li>
             Effacement : supprimez votre compte et l&apos;ensemble de vos données depuis la page
             Profil ;
@@ -91,7 +125,15 @@ export default function ConfidentialitePage() {
       <LegalSection title="9. Contact">
         <p>
           Pour toute question relative à vos données personnelles ou pour exercer vos droits, vous
-          pouvez nous contacter depuis la page Profil de l&apos;application.
+          pouvez nous contacter depuis la page Profil de l&apos;application, ou par email à{' '}
+          <a
+            href="mailto:sebmlrd06@gmail.com"
+            className="underline"
+            style={{ color: 'var(--color-primary)' }}
+          >
+            sebmlrd06@gmail.com
+          </a>
+          .
         </p>
       </LegalSection>
     </LegalLayout>
