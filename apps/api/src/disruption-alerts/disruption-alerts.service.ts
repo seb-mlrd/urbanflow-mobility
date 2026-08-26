@@ -1,19 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, LessThan, Repository } from 'typeorm';
 import { OtpAdapterService } from '../transport/otp-adapter.service.js';
 import { AlertsGateway } from './alerts.gateway.js';
 import { DisruptionAlert } from './entities/disruption-alert.entity.js';
 import { LineSubscription } from './entities/line-subscription.entity.js';
 import { UserNotification } from './entities/user-notification.entity.js';
-import { GtfsRtAlertsService } from './gtfs-rt-alerts.service.js';
+import { MelPerturbationsService } from './mel-perturbations.service.js';
+
+const RETENTION_DAYS = 30;
 
 @Injectable()
 export class DisruptionAlertsService {
   private readonly logger = new Logger(DisruptionAlertsService.name);
 
   constructor(
-    private readonly gtfsRtAlertsService: GtfsRtAlertsService,
+    private readonly melPerturbationsService: MelPerturbationsService,
     private readonly otpAdapterService: OtpAdapterService,
     private readonly alertsGateway: AlertsGateway,
     @InjectRepository(DisruptionAlert)
@@ -27,10 +29,10 @@ export class DisruptionAlertsService {
   async refresh(): Promise<void> {
     let liveAlerts;
     try {
-      liveAlerts = await this.gtfsRtAlertsService.fetchAlerts();
+      liveAlerts = await this.melPerturbationsService.fetchAlerts();
     } catch (err) {
       this.logger.warn(
-        `Échec du rafraîchissement des alertes GTFS-RT: ${String(err)}`,
+        `Échec du rafraîchissement des perturbations MEL: ${String(err)}`,
       );
       return;
     }
@@ -84,6 +86,26 @@ export class DisruptionAlertsService {
 
       await this.notifySubscribers(saved);
     }
+  }
+
+  async cleanupOldData(): Promise<void> {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - RETENTION_DAYS);
+
+    const alertsResult = await this.alertRepo.delete({
+      isActive: false,
+      updatedAt: LessThan(cutoff),
+    });
+    const notificationsResult = await this.notificationRepo.delete({
+      read: true,
+      createdAt: LessThan(cutoff),
+    });
+
+    this.logger.log(
+      `Nettoyage : ${alertsResult.affected ?? 0} alerte(s) inactive(s) et ` +
+        `${notificationsResult.affected ?? 0} notification(s) lue(s) supprimées ` +
+        `(> ${RETENTION_DAYS} jours).`,
+    );
   }
 
   private async notifySubscribers(alert: DisruptionAlert): Promise<void> {

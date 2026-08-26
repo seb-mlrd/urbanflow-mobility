@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { Interval } from '@nestjs/schedule';
+import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { DisruptionAlertsService } from './disruption-alerts.service.js';
 
 const REFRESH_INTERVAL_MS = 60_000;
@@ -17,5 +17,10 @@ export class DisruptionAlertsScheduler implements OnModuleInit {
   @Interval(REFRESH_INTERVAL_MS)
   async refresh() {
     await this.disruptionAlertsService.refresh();
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async cleanup() {
+    await this.disruptionAlertsService.cleanupOldData();
   }
 }
