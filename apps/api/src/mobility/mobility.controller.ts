@@ -17,7 +17,9 @@ export class MobilityController {
     return this.vlilleService.getSnapshotOrThrow();
   }
 
-  @ApiOperation({ summary: 'Récupère la position des trottinettes Lime disponibles' })
+  @ApiOperation({
+    summary: 'Récupère la position des trottinettes Lime disponibles',
+  })
   @Get('scooters')
   getScooters() {
     return this.limeService.getSnapshotOrThrow();

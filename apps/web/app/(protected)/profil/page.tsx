@@ -140,6 +140,10 @@ export default function ProfilPage() {
   const [selectedRoute, setSelectedRoute] = useState<RouteDto | null>(null);
   const [savingLineSub, setSavingLineSub] = useState(false);
 
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!accessToken) return;
     authFetch('/addresses')
@@ -348,6 +352,34 @@ export default function ProfilPage() {
     }).catch(() => {});
     clearAuth();
     router.push('/');
+  }
+
+  function closeDeleteModal() {
+    if (deleting) return;
+    setDeleteModalOpen(false);
+    setDeleteError(null);
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        setDeleteError('Une erreur est survenue.');
+        return;
+      }
+      clearAuth();
+      router.push('/');
+    } catch {
+      setDeleteError('Impossible de contacter le serveur.');
+    } finally {
+      setDeleting(false);
+    }
   }
 
   function startEditing() {
@@ -1371,6 +1403,101 @@ export default function ProfilPage() {
         </svg>
         Déconnexion
       </button>
+
+      {/* ── Zone dangereuse ── */}
+      <section
+        aria-labelledby="danger-zone-heading"
+        className="mt-6 pt-5"
+        style={{ borderTop: '1px solid var(--color-outline-variant)' }}
+      >
+        <h2
+          id="danger-zone-heading"
+          className="text-xs font-semibold uppercase tracking-wide mb-2 px-1"
+          style={{ color: 'var(--color-on-surface-variant)' }}
+        >
+          Zone dangereuse
+        </h2>
+        <button
+          type="button"
+          onClick={() => setDeleteModalOpen(true)}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold min-h-[48px] transition-colors duration-150"
+          style={{ color: 'var(--color-on-error)', background: 'var(--color-error)' }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="M2 4h12M5.5 4V2.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V4M13 4l-.8 9.5a1 1 0 0 1-1 .9H4.8a1 1 0 0 1-1-.9L3 4"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M6.5 7v4.5M9.5 7v4.5"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            />
+          </svg>
+          Supprimer mon compte
+        </button>
+      </section>
+
+      {/* ── Modal confirmation suppression de compte ── */}
+      <Modal open={deleteModalOpen} onClose={closeDeleteModal} title="Supprimer mon compte">
+        <div className="flex flex-col gap-3">
+          <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>
+            Cette action est irréversible. Toutes vos données (profil, adresses, lignes favorites,
+            historique de trajets) seront définitivement supprimées et vous serez déconnecté
+            immédiatement.
+          </p>
+
+          {deleteError && (
+            <p
+              role="alert"
+              className="text-sm flex items-center gap-1.5"
+              style={{ color: 'var(--color-error)' }}
+            >
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.5" />
+                <path
+                  d="M7 4v3.5M7 9.5v.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+              {deleteError}
+            </p>
+          )}
+
+          <div className="flex gap-3 mt-1">
+            <button
+              type="button"
+              onClick={handleDeleteAccount}
+              disabled={deleting}
+              aria-busy={deleting}
+              className="flex-1 flex items-center justify-center text-sm font-semibold px-4 py-2.5 rounded-lg min-h-[44px] transition-colors duration-150 disabled:opacity-50"
+              style={{ background: 'var(--color-error)', color: 'var(--color-on-error)' }}
+            >
+              {deleting ? 'Suppression…' : 'Supprimer définitivement'}
+            </button>
+            <button
+              type="button"
+              onClick={closeDeleteModal}
+              disabled={deleting}
+              className="px-4 py-2.5 rounded-lg text-sm font-medium min-h-[44px] transition-colors duration-150"
+              style={{
+                color: 'var(--color-on-surface-variant)',
+                border: '1px solid var(--color-outline-variant)',
+              }}
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

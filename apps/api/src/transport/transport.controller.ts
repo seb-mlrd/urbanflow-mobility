@@ -27,7 +27,7 @@ export class TransportController {
     return this.otpAdapter.getStopsNearby(dto.lat, dto.lng, dto.radius);
   }
 
-  @ApiOperation({ summary: "Liste les prochains départs pour un arrêt donné" })
+  @ApiOperation({ summary: 'Liste les prochains départs pour un arrêt donné' })
   @ApiParam({ name: 'stopId', example: 'STIF:StopPoint:Q:41115:' })
   @Get('departures/:stopId')
   getDepartures(@Param('stopId') stopId: string) {

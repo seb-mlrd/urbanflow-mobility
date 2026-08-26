@@ -10,7 +10,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { CurrentProfile } from '../profile/current-profile.decorator.js';
 import { CurrentProfileInterceptor } from '../profile/current-profile.interceptor.js';
@@ -28,13 +33,17 @@ export class LineSubscriptionsController {
     private readonly lineSubscriptionsService: LineSubscriptionsService,
   ) {}
 
-  @ApiOperation({ summary: "Liste les abonnements aux lignes de l'utilisateur" })
+  @ApiOperation({
+    summary: "Liste les abonnements aux lignes de l'utilisateur",
+  })
   @Get()
   findAll(@CurrentProfile() profile: Profile) {
     return this.lineSubscriptionsService.findAllForProfile(profile.id);
   }
 
-  @ApiOperation({ summary: "Abonne l'utilisateur aux perturbations d'une ligne" })
+  @ApiOperation({
+    summary: "Abonne l'utilisateur aux perturbations d'une ligne",
+  })
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(

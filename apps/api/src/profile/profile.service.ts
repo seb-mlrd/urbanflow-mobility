@@ -98,4 +98,8 @@ export class ProfileService {
 
     return this.findByUserId(userId);
   }
+
+  async deleteAccount(userId: string): Promise<void> {
+    await this.usersService.delete(userId);
+  }
 }

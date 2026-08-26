@@ -59,7 +59,9 @@ export class AuthController {
     return { accessToken };
   }
 
-  @ApiOperation({ summary: 'Déconnecte l\'utilisateur et invalide le refresh token' })
+  @ApiOperation({
+    summary: "Déconnecte l'utilisateur et invalide le refresh token",
+  })
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
