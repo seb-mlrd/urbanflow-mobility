@@ -13,7 +13,8 @@ const hankenGrotesk = Hanken_Grotesk({
 
 export const metadata: Metadata = {
   title: 'UrbanFlow',
-  description: 'Mobilité urbaine intelligente',
+  description:
+    'UrbanFlow planifie vos trajets à Lille en temps réel : marche, vélo, trottinette, transports en commun et voiture, pour l’itinéraire le plus rapide et le plus écologique.',
   manifest: '/manifest.json',
   icons: {
     icon: [

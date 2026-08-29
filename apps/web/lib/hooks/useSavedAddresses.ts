@@ -17,10 +17,7 @@ export function useSavedAddresses(): SavedAddress[] {
   const [addresses, setAddresses] = useState<SavedAddress[]>([]);
 
   useEffect(() => {
-    if (!accessToken) {
-      setAddresses([]);
-      return;
-    }
+    if (!accessToken) return;
     let cancelled = false;
     authFetch('/addresses')
       .then((res) => (res.ok ? res.json() : []))
@@ -33,5 +30,5 @@ export function useSavedAddresses(): SavedAddress[] {
     };
   }, [accessToken]);
 
-  return addresses;
+  return accessToken ? addresses : [];
 }

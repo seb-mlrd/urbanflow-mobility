@@ -239,9 +239,27 @@ export class OtpAdapterService {
       }
     }
 
-    itineraries.sort((a, b) => a.duration - b.duration);
+    // écart de durée/horaire plutôt qu'une égalité stricte.
+    const DURATION_TOLERANCE_S = 60;
+    const TIME_TOLERANCE_MS = 60_000;
+    const legModes = (itin: OtpItinerary) =>
+      itin.legs.map((l) => l.mode).join('|');
+    const isSameItinerary = (a: OtpItinerary, b: OtpItinerary) =>
+      legModes(a) === legModes(b) &&
+      Math.abs(a.duration - b.duration) <= DURATION_TOLERANCE_S &&
+      Math.abs(a.startTime - b.startTime) <= TIME_TOLERANCE_MS &&
+      Math.abs(a.endTime - b.endTime) <= TIME_TOLERANCE_MS;
 
-    const response = { itineraries };
+    const dedupedItineraries: typeof itineraries = [];
+    for (const itin of itineraries) {
+      if (!dedupedItineraries.some((kept) => isSameItinerary(kept, itin))) {
+        dedupedItineraries.push(itin);
+      }
+    }
+
+    dedupedItineraries.sort((a, b) => a.duration - b.duration);
+
+    const response = { itineraries: dedupedItineraries };
     await this.cacheManager.set(cacheKey, response, 30_000);
     return response;
   }
