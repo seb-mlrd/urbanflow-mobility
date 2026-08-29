@@ -361,7 +361,7 @@ export function JourneySearch({ onSearch, onPlan, initialValues, loading, geo }:
             className="text-xs font-semibold uppercase tracking-wider"
             style={{ color: 'var(--color-on-surface-variant)' }}
           >
-            Date et heure (facultatif)
+            Date et heure de départ (facultatif)
           </label>
           {datetime && (
             <button

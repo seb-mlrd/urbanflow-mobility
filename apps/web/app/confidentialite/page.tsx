@@ -10,9 +10,9 @@ export default function ConfidentialitePage() {
     <LegalLayout title="Politique de confidentialité" lastUpdated="13 août 2026">
       <LegalSection title="1. Responsable de traitement">
         <p>
-          Le responsable du traitement des données personnelles collectées via le Service
-          UrbanFlow, conformément au Règlement Général sur la Protection des Données (RGPD), est
-          Sébastien Maillard, joignable à l&apos;adresse{' '}
+          Le responsable du traitement des données personnelles collectées via le Service UrbanFlow,
+          conformément au Règlement Général sur la Protection des Données (RGPD), est Sébastien
+          Maillard, joignable à l&apos;adresse{' '}
           <a
             href="mailto:sebmlrd06@gmail.com"
             className="underline"
