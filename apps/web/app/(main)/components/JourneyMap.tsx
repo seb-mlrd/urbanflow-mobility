@@ -252,8 +252,9 @@ export function JourneyMap({ geo, selectedItinerary, showMobilitySpots = true, c
         style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
-          url="https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}{r}.png"
-          attribution="Wikimedia maps &copy; OpenStreetMap contributors"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          subdomains={['a', 'b', 'c']}
+          attribution="&copy; OpenStreetMap contributors"
         />
         {hasUserPosition && (
           <Marker position={[center.lat, center.lng]}>
