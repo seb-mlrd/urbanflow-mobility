@@ -87,11 +87,7 @@ interface ScooterGroup {
   scooters: Scooter[];
 }
 
-// Rayon de regroupement minimal : deux trottinettes à moins de 20m sont
-// toujours fusionnées, quel que soit le niveau de zoom.
 const MIN_CLUSTER_RADIUS_METERS = 20;
-// Rayon de regroupement visuel (en pixels écran) : plus on dézoome, plus ce
-// rayon représente de mètres réels, donc plus les trottinettes se regroupent.
 const CLUSTER_PIXEL_RADIUS = 40;
 
 function metersPerPixel(zoom: number, lat: number) {
@@ -122,12 +118,12 @@ function clusterScooters(scooters: Scooter[], zoom: number): ScooterGroup[] {
   return groups;
 }
 
-function ScooterMarkers({ scooters }: { scooters: Scooter[] }) {
-  const map = useMap();
-  const [zoom, setZoom] = useState(map.getZoom());
-  useMapEvents({ zoomend: () => setZoom(map.getZoom()) });
+const MIN_MOBILITY_SPOTS_ZOOM = 15;
 
+function ScooterMarkers({ scooters, zoom }: { scooters: Scooter[]; zoom: number }) {
   const groups = useMemo(() => clusterScooters(scooters, zoom), [scooters, zoom]);
+
+  if (zoom < MIN_MOBILITY_SPOTS_ZOOM) return null;
 
   return (
     <>
@@ -150,6 +146,47 @@ function ScooterMarkers({ scooters }: { scooters: Scooter[] }) {
           </Popup>
         </Marker>
       ))}
+    </>
+  );
+}
+
+interface BikeStation {
+  id: string;
+  lat: number;
+  lon: number;
+  name: string;
+  bikesAvailable: number;
+  docksAvailable: number;
+}
+
+function MobilitySpots({
+  bikeStations,
+  scooters,
+}: {
+  bikeStations: BikeStation[];
+  scooters: Scooter[];
+}) {
+  const map = useMap();
+  const [zoom, setZoom] = useState(map.getZoom());
+  useMapEvents({ zoomend: () => setZoom(map.getZoom()) });
+
+  return (
+    <>
+      {zoom >= MIN_MOBILITY_SPOTS_ZOOM &&
+        bikeStations.map((station) => (
+          <Marker key={station.id} position={[station.lat, station.lon]} icon={BIKE_STATION_ICON}>
+            <Popup>
+              {station.name}
+              <br />
+              {station.bikesAvailable} vélo{station.bikesAvailable > 1 ? 's' : ''} disponible
+              {station.bikesAvailable > 1 ? 's' : ''}
+              <br />
+              {station.docksAvailable} place{station.docksAvailable > 1 ? 's' : ''} libre
+              {station.docksAvailable > 1 ? 's' : ''}
+            </Popup>
+          </Marker>
+        ))}
+      <ScooterMarkers scooters={scooters} zoom={zoom} />
     </>
   );
 }
@@ -215,8 +252,8 @@ export function JourneyMap({ geo, selectedItinerary, showMobilitySpots = true, c
         style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution="&copy; OpenStreetMap contributors &copy; CARTO"
+          url="https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}{r}.png"
+          attribution="Wikimedia maps &copy; OpenStreetMap contributors"
         />
         {hasUserPosition && (
           <Marker position={[center.lat, center.lng]}>
@@ -224,20 +261,7 @@ export function JourneyMap({ geo, selectedItinerary, showMobilitySpots = true, c
           </Marker>
         )}
         {children}
-        {bikeStations.map((station) => (
-          <Marker key={station.id} position={[station.lat, station.lon]} icon={BIKE_STATION_ICON}>
-            <Popup>
-              {station.name}
-              <br />
-              {station.bikesAvailable} vélo{station.bikesAvailable > 1 ? 's' : ''} disponible
-              {station.bikesAvailable > 1 ? 's' : ''}
-              <br />
-              {station.docksAvailable} place{station.docksAvailable > 1 ? 's' : ''} libre
-              {station.docksAvailable > 1 ? 's' : ''}
-            </Popup>
-          </Marker>
-        ))}
-        <ScooterMarkers scooters={scooters} />
+        <MobilitySpots bikeStations={bikeStations} scooters={scooters} />
         {hasDistinctEndpoints && (
           <>
             <Marker position={departurePosition} icon={DEPARTURE_ICON}>
