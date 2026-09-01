@@ -12,6 +12,36 @@ import { firstValueFrom, timeout } from 'rxjs';
 import { CarbonService } from './carbon.service.js';
 
 const OTP_TIMEOUT_MS = 5_000;
+const OTP_TIMEZONE = 'Europe/Paris';
+
+const PARIS_DATETIME_FORMATTER = new Intl.DateTimeFormat('en-CA', {
+  timeZone: OTP_TIMEZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+});
+
+// OTP interprète `date`/`time` comme des valeurs murales dans le fuseau du
+// graphe (Europe/Paris) : il faut donc extraire les deux depuis ce même
+// fuseau, plutôt que de mélanger toISOString() (UTC) et toTimeString()
+// (fuseau du process Node), qui divergent selon l'environnement d'exécution.
+function toParisDateAndTime(dt: Date): { date: string; time: string } {
+  const parts = PARIS_DATETIME_FORMATTER.formatToParts(dt).reduce(
+    (acc, part) => {
+      acc[part.type] = part.value;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
+  return {
+    date: `${parts.year}-${parts.month}-${parts.day}`,
+    time: `${parts.hour}:${parts.minute}:${parts.second}`,
+  };
+}
 
 interface OtpLeg {
   mode: string;
@@ -203,8 +233,7 @@ export class OtpAdapterService {
     datetime?: string,
   ) {
     const dt = datetime ? new Date(datetime) : new Date();
-    const date = dt.toISOString().slice(0, 10);
-    const time = dt.toTimeString().slice(0, 8);
+    const { date, time } = toParisDateAndTime(dt);
     const vars = { fromLat, fromLon: fromLng, toLat, toLon: toLng, date, time };
 
     const r = (n: number) => n.toFixed(4);
@@ -298,13 +327,14 @@ export class OtpAdapterService {
     bannedRouteGtfsId: string,
   ): Promise<OtpItinerary | null> {
     const dt = new Date();
+    const { date, time } = toParisDateAndTime(dt);
     const vars = {
       fromLat,
       fromLon: fromLng,
       toLat,
       toLon: toLng,
-      date: dt.toISOString().slice(0, 10),
-      time: dt.toTimeString().slice(0, 8),
+      date,
+      time,
       bannedRoutes: bannedRouteGtfsId,
     };
 
