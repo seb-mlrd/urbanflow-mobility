@@ -125,14 +125,13 @@ function HomePageContent() {
       datetime: searchParams.get('datetime') ?? '',
       selectedModes: searchParams.get('modes')?.split(',').filter(Boolean) ?? [],
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!deepLinkValues) return;
     handleSearch(deepLinkValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [deepLinkValues]);
 
   async function handlePlan(values: JourneySearchValues) {
     if (!accessToken) {
