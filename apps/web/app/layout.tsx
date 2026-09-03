@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Hanken_Grotesk } from 'next/font/google';
+import Script from 'next/script';
 import { Providers } from './providers';
 import { InstallPwaPrompt } from '../components/InstallPwaPrompt';
 import { AccessibilityEffects } from '../components/AccessibilityEffects';
@@ -39,6 +40,28 @@ export default function RootLayout({
   return (
     <html lang="fr" className={hankenGrotesk.variable} suppressHydrationWarning>
       <body suppressHydrationWarning>
+        <Script id="pwa-install-capture" strategy="beforeInteractive">
+          {`
+            (function () {
+              if (window.__pwaInstall) return;
+              window.__pwaInstall = { deferredPrompt: null, installed: false };
+              var isStandalone =
+                window.matchMedia('(display-mode: standalone)').matches ||
+                window.navigator.standalone === true;
+              if (isStandalone) window.__pwaInstall.installed = true;
+              window.addEventListener('beforeinstallprompt', function (event) {
+                event.preventDefault();
+                window.__pwaInstall.deferredPrompt = event;
+                window.dispatchEvent(new CustomEvent('pwa-install-update'));
+              });
+              window.addEventListener('appinstalled', function () {
+                window.__pwaInstall.installed = true;
+                window.__pwaInstall.deferredPrompt = null;
+                window.dispatchEvent(new CustomEvent('pwa-install-update'));
+              });
+            })();
+          `}
+        </Script>
         <Providers>
           {children}
           <InstallPwaPrompt />
