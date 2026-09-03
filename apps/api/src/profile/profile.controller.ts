@@ -48,6 +48,6 @@ export class ProfileController {
     @Res({ passthrough: true }) res: Response,
   ) {
     await this.profileService.deleteAccount(req.user.sub);
-    res.clearCookie('refresh_token', { path: '/auth' });
+    res.clearCookie('refresh_token', { path: '/api/auth' });
   }
 }
