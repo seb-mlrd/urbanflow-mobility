@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AddressField, JourneySearch, type JourneySearchValues } from './components/JourneySearch';
 import { JourneyResults } from './components/JourneyResults';
 import { GeolocationConsentModal } from '../../components/GeolocationConsentModal';
@@ -63,6 +63,7 @@ function HomePageContent() {
     | 'toLng'
   > | null>(null);
   const [selectedItineraryIndex, setSelectedItineraryIndex] = useState<number | null>(null);
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [showForm, setShowForm] = useState(
     () =>
@@ -196,6 +197,16 @@ function HomePageContent() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleBackToForm() {
+    setShowForm(true);
+    setResult(null);
+    setError(null);
+    setPlanMessage(null);
+    setSelectedItineraryIndex(null);
+    setEditingTopBar(false);
+    router.replace('/');
   }
 
   function openTopBarEdit() {
@@ -394,6 +405,28 @@ function HomePageContent() {
             borderBottom: '1px solid var(--color-outline-variant)',
           }}
         >
+          <button
+            type="button"
+            onClick={handleBackToForm}
+            aria-label="Retour à la planification"
+            title="Retour à la planification"
+            className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full cursor-pointer transition-colors duration-150"
+            style={{
+              background: 'var(--color-surface-container-high)',
+              border: '1px solid var(--color-outline-variant)',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M10 3 5 8l5 5"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ color: 'var(--color-on-surface-variant)' }}
+              />
+            </svg>
+          </button>
           <span
             className="flex-1 min-w-0 truncate text-sm font-medium px-3 py-2 rounded-xl"
             style={{
