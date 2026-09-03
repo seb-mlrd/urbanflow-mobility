@@ -23,6 +23,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: urbanflow
           key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 30m
           script: |
             cd /home/urbanflow/urbanflow-preprod
             git pull origin develop
@@ -43,6 +44,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: urbanflow
           key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 30m
           script: |
             cd /home/urbanflow/urbanflow-prod
             git pull origin main
